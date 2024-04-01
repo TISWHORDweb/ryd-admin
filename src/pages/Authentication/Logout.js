@@ -1,21 +1,18 @@
-import PropTypes from "prop-types"
 import React, { useEffect } from "react"
-
-import { logoutUser } from "../../store/actions"
-
-//redux
-import { useDispatch } from "react-redux"
 import { Col, Container, Row } from "reactstrap"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import logo from "../../assets/images/favicon.png"
 import CarouselPage from "./CarouselPage"
 
+const Logout = () => {
+  const navigate = useNavigate();
 
-const Logout = props => {
-  const dispatch = useDispatch()
   useEffect(() => {
-    dispatch(logoutUser(props.history))
-  }, [dispatch, props.history])
+    // Remove token from local storage
+    localStorage.removeItem("token");
+    // Redirect user to login page
+    navigate("/auth/login");
+  }, [navigate]);
 
   return (
     <React.Fragment>
@@ -27,8 +24,8 @@ const Logout = props => {
                 <div className="w-100">
                   <div className="d-flex flex-column h-100">
                     <div className="mb-4 mb-md-5 text-center">
-                      <Link to="index.html" className="d-block auth-logo">
-                        <img src={logo} alt="" height="28" /> <span className="logo-txt">RYD Admin</span>
+                      <Link to="/" className="d-block auth-logo">
+                        <img src={logo} alt="RYD Admin" height="28" /> <span className="logo-txt">RYD Admin</span>
                       </Link>
                     </div>
                     <div className="auth-content my-auto">
@@ -38,16 +35,14 @@ const Logout = props => {
                             <i className="bx bxs-user"></i>
                           </div>
                         </div>
-
                         <div className="mt-4 pt-2">
                           <h5>You are Logged Out</h5>
                           <p className="text-muted font-size-15">Thank you for using <span className="fw-semibold text-dark">RYD Admin</span></p>
                           <div className="mt-4">
-                            <Link to="/dashboard" className="btn btn-primary w-100 waves-effect waves-light">Sign In</Link>
+                            <Link to="/login" className="btn btn-primary w-100 waves-effect waves-light">Sign In</Link>
                           </div>
                         </div>
                       </div>
-
                       <div className="mt-5 text-center">
                         <p className="text-muted mb-0">Don't have an account ? Talk with Devs </p>
                       </div>
@@ -67,8 +62,6 @@ const Logout = props => {
   )
 }
 
-Logout.propTypes = {
-  history: PropTypes.object,
-}
+
 
 export default Logout
