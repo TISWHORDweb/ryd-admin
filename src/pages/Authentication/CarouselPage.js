@@ -13,14 +13,14 @@ const items = [
     {
         id: 1,
         img: img1,
-        name: "6lack Berrie",
+        name: "Henry Okafor",
         designation: "UI Designer",
         description: "An admin portal serves as a versatile tool for administrators to manage and control various aspects of their systems, applications, or organizations efficiently. It is used for user and content management, system monitoring and maintenance, analytics and reporting, workflow automation as well as communication and collaboration."
     },
     {
         id: 2,
         img: img1,
-        name: "6lack Berrie",
+        name: "Henry Okafor",
         designation: "UI Designer",
         description: "Securing your administrative portal is very essential. Therefore, it is important for many reasons such as protecting sensitive data, preventing unwanted access, adhering to rules, protecting against cyber attacks, avoiding financial damages and ensuring business continuity."
     },
