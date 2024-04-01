@@ -1,19 +1,10 @@
-import PropTypes from "prop-types"
 import React, { useState } from "react"
-
 import { Row, Col, Container, Form, Input, FormFeedback, Label } from "reactstrap";
-//redux
-import { useSelector, useDispatch } from "react-redux"
-
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import withRouter from "../../components/Common/withRouter"
-
-// Formik validation
+import axios from "axios";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-
-// actions
-import { loginUser, socialLogin } from "../../store/actions"
 
 // import images
 import logo from "../../assets/images/favicon.png"
@@ -22,47 +13,44 @@ import logo from "../../assets/images/favicon.png"
 import CarouselPage from "./CarouselPage"
 import { createSelector } from "reselect";
 
-const Login = props => {
-
+const Login = (props) => {
   const [passwordShow, setPasswordShow] = useState(false);
-
-  const dispatch = useDispatch()
-
-  const errorData = createSelector(
-
-    (state) => state.Login,
-    (state) => ({
-      error: state.error,
-    })
-  );
-  // Inside your component
-  const { error } = useSelector(errorData);
+  const [loginError, setLoginError] = useState(""); // State to hold login error message
+  const navigate = useNavigate(); // Use useNavigate for routing
 
   const validation = useFormik({
-    // enableReinitialize : use this flag when initial values needs to be changed
     enableReinitialize: true,
-
     initialValues: {
-      email: "admin@themesbrand.com" || '',
-      password: "123456" || '',
+      email: "",
+      password: "",
     },
     validationSchema: Yup.object({
       email: Yup.string().required("Please Enter Your Email"),
       password: Yup.string().required("Please Enter Your Password"),
     }),
-    onSubmit: (values) => {
-      dispatch(loginUser(values, props.router.navigate));
-    }
+    onSubmit: async (values) => {
+      try {
+        const response = await axios.post(
+          'http://localhost:3000/admin/auth/login',
+          values
+        );
+        if (response.data.status) {
+          
+          // Store token in localStorage
+          localStorage.setItem('token', response.data.data.token);
+
+          // Pass token to the dashboard
+          navigate('/dashboard', { state: { token: response.data.data.token } }); // Pass token in state
+
+        } else {
+          setLoginError(response.data.message); // Set login error message
+        }
+      } catch (error) {
+        setLoginError("An error occurred while logging in."); // Set generic login error message
+      }
+    }, 
   });
-
-  const signIn = type => {
-    dispatch(socialLogin(type, props.router.navigate));
-  };
-
-  //for facebook and google authentication
-  const socialResponse = type => {
-    signIn(type);
-  };
+  
 
   document.title = "Login | RYD Admin";
 
@@ -101,6 +89,9 @@ const Login = props => {
                         }}
                       >
                         {/* {error ? <Alert color="danger">{error}</Alert> : null} */}
+                        {loginError && (
+                          <div className="mb-3 text-danger">{loginError}</div>
+                        )}
                         <div className="mb-3">
                           <Label className="form-label">Email</Label>
                           <Input
@@ -198,7 +189,3 @@ const Login = props => {
 }
 
 export default withRouter(Login)
-
-Login.propTypes = {
-  history: PropTypes.object,
-}
