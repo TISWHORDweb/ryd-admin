@@ -1,54 +1,41 @@
+import React, { useState } from "react";
 import PropTypes from "prop-types";
-import React from "react";
 import { Row, Col, Alert, Container, FormFeedback, Input, Label, Form } from "reactstrap";
-
-//redux
-import { useSelector, useDispatch } from "react-redux";
-
 import { Link } from "react-router-dom";
-
-// Formik Validation
 import * as Yup from "yup";
 import { useFormik } from "formik";
-
-// action
-import { userForgetPassword } from "../../store/actions";
-
-// import images
-import logo from "../../assets/images/favicon.png"
+import logo from "../../assets/images/favicon.png";
 import CarouselPage from "./CarouselPage";
-import { createSelector } from "reselect";
+import axios from "axios";
 
-const ForgetPasswordPage = (history) => {
-
-  //meta title
+const ForgetPasswordPage = ({ history }) => {
   document.title = "Forget Password | RYD Admin";
 
-  const dispatch = useDispatch()
-
-  const forgetData = createSelector(
-    (state) => state.ForgetPassword,
-    (state) => ({
-      forgetError: state.forgetError,
-      forgetSuccessMsg: state.forgetSuccessMsg,
-    })
-  );
-  // Inside your component
-  const { forgetError, forgetSuccessMsg } = useSelector(forgetData);
+  const [forgetError, setForgetError] = useState("");
+  const [forgetSuccessMsg, setForgetSuccessMsg] = useState("");
 
   const validation = useFormik({
-    // enableReinitialize : use this flag when initial values needs to be changed
     enableReinitialize: true,
-
     initialValues: {
-      email: '',
+      email: "",
     },
     validationSchema: Yup.object({
       email: Yup.string().required("Please Enter Your Email"),
     }),
-    onSubmit: (values) => {
-      dispatch(userForgetPassword(values, history));
-    }
+    onSubmit: async (values) => {
+      try {
+        // Simulate API call to reset password
+        // Replace this with your actual API endpoint
+        const apiUrl = "https://jsonplaceholder.typicode.com/posts";
+        await axios.post(apiUrl, values);
+        setForgetSuccessMsg("Password reset instructions sent successfully");
+        setForgetError("");
+      } catch (error) {
+        console.error("Error resetting password:", error);
+        setForgetError("Failed to reset password");
+        setForgetSuccessMsg("");
+      }
+    },
   });
 
   return (
@@ -78,16 +65,8 @@ const ForgetPasswordPage = (history) => {
                         <p className="text-muted mt-2">Reset Password with RYD Admin.</p>
                       </div>
 
-                      {forgetError && forgetError ? (
-                        <Alert color="danger" style={{ marginTop: "13px" }}>
-                          {forgetError}
-                        </Alert>
-                      ) : null}
-                      {forgetSuccessMsg ? (
-                        <Alert color="success" style={{ marginTop: "13px" }}>
-                          {forgetSuccessMsg}
-                        </Alert>
-                      ) : null}
+                      {forgetError && <Alert color="danger" style={{ marginTop: "13px" }}>{forgetError}</Alert>}
+                      {forgetSuccessMsg && <Alert color="success" style={{ marginTop: "13px" }}>{forgetSuccessMsg}</Alert>}
 
                       <Form
                         className="custom-form mt-4"
@@ -98,7 +77,6 @@ const ForgetPasswordPage = (history) => {
                         }}
                       >
                         <div className="mb-3">
-
                           <Label className="form-label">Email</Label>
                           <Input
                             name="email"
@@ -108,14 +86,11 @@ const ForgetPasswordPage = (history) => {
                             onChange={validation.handleChange}
                             onBlur={validation.handleBlur}
                             value={validation.values.email || ""}
-                            invalid={
-                              validation.touched.email && validation.errors.email ? true : false
-                            }
+                            invalid={validation.touched.email && !!validation.errors.email}
                           />
-                          {validation.touched.email && validation.errors.email ? (
+                          {validation.touched.email && validation.errors.email && (
                             <FormFeedback type="invalid">{validation.errors.email}</FormFeedback>
-                          ) : null}
-
+                          )}
                         </div>
 
                         <Row className="mb-3">
@@ -128,12 +103,10 @@ const ForgetPasswordPage = (history) => {
                             </button>
                           </Col>
                         </Row>
-
                       </Form>
 
                       <div className="mt-5 text-center">
-                        <p className="text-muted mb-0">Remember It ?  <a href="/auth/login"
-                          className="text-primary fw-semibold"> Sign In </a> </p>
+                        <p className="text-muted mb-0">Remember It ?  <Link to="/auth/login" className="text-primary fw-semibold"> Sign In </Link> </p>
                       </div>
                     </div>
                     <div className="mt-4 mt-md-5 text-center">
@@ -148,11 +121,11 @@ const ForgetPasswordPage = (history) => {
         </Container>
       </div>
     </React.Fragment>
-  )
-}
+  );
+};
 
 ForgetPasswordPage.propTypes = {
   history: PropTypes.object,
-}
+};
 
 export default ForgetPasswordPage;
