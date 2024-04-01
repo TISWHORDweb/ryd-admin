@@ -187,6 +187,15 @@ const SidebarContent = props => {
             </li>
 
             <li>
+              <Link to="/manage-program" className="">
+                <FeatherIcon
+                    icon="feather"
+                />{" "}
+                <span>{props.t("Manage Program")}</span>
+              </Link>
+            </li>
+
+            <li>
               <Link to="/manage-timetable" className="">
                 <FeatherIcon
                     icon="list"
@@ -196,20 +205,48 @@ const SidebarContent = props => {
             </li>
 
             <li>
-              <Link to="/manage-sites" className="">
+              <Link to="/manage-package" className="">
                 <FeatherIcon
-                    icon="airplay"
+                    icon="package"
                 />{" "}
-                <span>{props.t("Manage Sites")}</span>
+                <span>{props.t("Manage Package")}</span>
               </Link>
             </li>
 
+            <li>
+              <Link to="/manage-swap" className="">
+                <FeatherIcon
+                    icon="refresh-cw"
+                />{" "}
+                <span>{props.t("Manage Swap")}</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/manage-survey" className="">
+                <FeatherIcon
+                    icon="trending-up"
+                />{" "}
+                <span>{props.t("Manage Survey")}</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/manage-coupon" className="">
+                <FeatherIcon
+                    icon="gift"
+                />{" "}
+                <span>{props.t("Manage Coupon")}</span>
+              </Link>
+            </li>
+
+      
             <li>
               <Link to="/settings" className="">
                 <FeatherIcon
                     icon="settings"
                 />{" "}
-                <span>{props.t("Site Settings")}</span>
+                <span>{props.t("Settings")}</span>
               </Link>
             </li>
 
