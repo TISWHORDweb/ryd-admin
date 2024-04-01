@@ -5,126 +5,103 @@ import {
   Col,
   Card,
   Alert,
-  CardBody,
   Button,
+  CardBody,
   Label,
   Input,
   FormFeedback,
   Form,
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
 } from "reactstrap";
-
-// Formik Validation
 import * as Yup from "yup";
 import { useFormik } from "formik";
-
-import withRouter from "../../components/Common/withRouter";
-
-//redux
-import { useSelector, useDispatch } from "react-redux";
-
-//Import Breadcrumb
 import Breadcrumb from "../../components/Common/Breadcrumb";
-
 import avatar from "../../assets/images/users/avatar-1.jpg";
-// actions
-import { editProfile, resetProfileFlag } from "../../store/actions";
-import { createSelector } from "reselect";
+import axios from "axios";
 
-const UserProfile = props => {
+const UserProfile = () => {
+  document.title = "Dashboard | RYD Admin";
 
-  //meta title
-  document.title = "Profile | Minia - React Admin & Dashboard Template";
-
-  const dispatch = useDispatch()
-
-  const userprofileData = createSelector(
-    (state) => state.Profile,
-    (state) => ({
-      error: state.error,
-      success: state.success
-    })
-  );
-  // Inside your component
-  const { error, success } = useSelector(userprofileData);
-
-  const [email, setemail] = useState("")
-  const [name, setname] = useState("")
-  const [idx, setidx] = useState(1)
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [idx, setIdx] = useState(1);
+  const [displayName, setDisplayName] = useState("");
+  const [role, setRole] = useState(0); // Default role set to 0 (normal admin)
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
-    const authUser = localStorage.getItem("authUser");
-    if (authUser) {
-      const obj = JSON.parse(authUser);
-      if (process.env.REACT_APP_DEFAULTAUTH === "firebase") {
-        setname(obj.displayName);
-        setemail(obj.email);
-        setidx(obj.uid);
-      } else if (
-        process.env.REACT_APP_DEFAULTAUTH === "fake" ||
-        process.env.REACT_APP_DEFAULTAUTH === "jwt"
-      ) {
-        setname(obj.username);
-        setemail(obj.email);
-        setidx(obj.uid);
+    // Simulate fetching user data from mock API
+    const fetchData = async () => {
+      try {
+        // Mock API endpoint
+        const apiUrl = "https://jsonplaceholder.typicode.com/users/1";
+        const response = await axios.get(apiUrl);
+        const userData = response.data;
+        setName(userData.username);
+        setEmail(userData.email);
+        setIdx(userData.id);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
       }
-      setTimeout(() => {
-        dispatch(resetProfileFlag());
-      }, 3000);
-    }
-  }, [dispatch, success]);
+    };
+
+    fetchData();
+  }, []);
 
   const validation = useFormik({
-    // enableReinitialize : use this flag when initial values needs to be changed
     enableReinitialize: true,
-
     initialValues: {
-      username: name || '',
-      idx: idx || '',
+      username: name || "",
+      idx: idx || "",
     },
     validationSchema: Yup.object({
       username: Yup.string().required("Please Enter Your UserName"),
     }),
-    onSubmit: (values) => {
-      dispatch(editProfile(values));
-    }
+    onSubmit: async (values) => {
+      try {
+        // Simulate API call to update user data
+        // In a real application, replace this with your actual API endpoint
+        const apiUrl = "http://localhost:3000/admin/auth/:id";
+        await axios.put(apiUrl, values);
+        setSuccess("Username updated successfully");
+        setError("");
+      } catch (error) {
+        console.error("Error updating username:", error);
+        setError("Failed to update username");
+        setSuccess("");
+      }
+    },
   });
+
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
+  };
+
+  const handleRoleSelect = (selectedRole) => {
+    setRole(selectedRole);
+    toggleDropdown();
+  };
+
+  const handleViewDetails = () => {
+    // Show user's display name and role
+    setDisplayName(name); // Assuming display name is the same as the username
+    const roleName = role === 1 ? "Super Admin" : "Normal Admin";
+    alert(`Display Name: ${displayName}\nRole: ${roleName}`);
+  };
 
   return (
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
-          {/* Render Breadcrumb */}
-          <Breadcrumb title="Minia" breadcrumbItem="Profile" />
+          <Breadcrumb title="Dashboard" breadcrumbItem="Settings" />
 
-          <Row>
-            <Col lg="12">
-              {error && error ? <Alert color="danger">{error}</Alert> : null}
-              {success ? <Alert color="success">{success}</Alert> : null}
+         
 
-              <Card>
-                <CardBody>
-                  <div className="d-flex">
-                    <div className="ms-3">
-                      <img
-                        src={avatar}
-                        alt=""
-                        className="avatar-md rounded-circle img-thumbnail"
-                      />
-                    </div>
-                    <div className="flex-grow-1 align-self-center ms-3">
-                      <div className="text-muted">
-                        <h5>{name}</h5>
-                        <p className="mb-1">{email}</p>
-                        <p className="mb-0">Id no: #{idx}</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-
-          <h4 className="card-title mb-4">Change User Name</h4>
 
           <Card>
             <CardBody>
@@ -133,41 +110,26 @@ const UserProfile = props => {
                 onSubmit={(e) => {
                   e.preventDefault();
                   validation.handleSubmit();
-                  return false;
                 }}
               >
                 <div className="form-group">
-                  <Label className="form-label">User Name</Label>
-                  <Input
-                    name="username"
-                    className="form-control"
-                    placeholder="Enter User Name"
-                    type="text"
-                    onChange={validation.handleChange}
-                    onBlur={validation.handleBlur}
-                    value={validation.values.username || ""}
-                    invalid={
-                      validation.touched.username && validation.errors.username ? true : false
-                    }
-                  />
-                  {validation.touched.username && validation.errors.username ? (
-                    <FormFeedback type="invalid">{validation.errors.username}</FormFeedback>
-                  ) : null}
-                  <Input name="idx" value={idx} type="hidden" />
-                </div>
+                  <Label className="form-label">ADMIN SETTINGS</Label>
+                 </div>
 
                 <div className="text-center mt-4">
-                  <Button type="submit" color="danger">
-                    Update User Name
+                  <Button type="submit" color="primary">
+                    Add new Admin
                   </Button>
                 </div>
               </Form>
             </CardBody>
           </Card>
+
+        
         </Container>
       </div>
     </React.Fragment>
-  )
-}
+  );
+};
 
-export default withRouter(UserProfile);
+export default UserProfile;
