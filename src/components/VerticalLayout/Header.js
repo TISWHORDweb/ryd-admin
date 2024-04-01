@@ -116,7 +116,7 @@ const Header = props => {
             {/* light / dark mode */}
             <LightDark layoutMode={props['layoutMode']} onChangeLayoutMode={onChangeLayoutMode} />
 
-            <NotificationDropdown />
+           
 
             <ProfileMenu />
 
