@@ -1,10 +1,7 @@
-import React from 'react';
-
+import React, { useEffect, useState } from 'react';
+import withAuth from '../withAuth';
 import ReactApexChart from "react-apexcharts"
-
-//import Breadcrumbs
 import Breadcrumbs from "../../components/Common/Breadcrumb";
-
 import {
     Card,
     CardBody,
@@ -12,14 +9,7 @@ import {
     Container,
     Row
 } from "reactstrap";
-
 import CountUp from "react-countup";
-
-/** import Mini Widget data */
-import { WidgetsData } from "../../common/data/dashboard";
-
-import Transactions from './Transactions';
-
 
 const options = {
     chart: {
@@ -72,9 +62,57 @@ const options = {
 };
 
 const Dashboard = () => {
+    const [widgetsData, setWidgetsData] = useState([]);
 
-    //meta title
-    document.title = "Dashboard | RYD Admin";
+    useEffect(() => {
+        // Set widgets data from the provided data
+        setWidgetsData([
+            {
+                id: 1,
+                title: "Total Students",
+                price: 3,
+                rank: "",
+                isDoller: false,
+                postFix: "",
+                statusColor: "success",
+                series: [2, 10, 18, 22, 36, 15, 47, 75, 65, 19, 14, 2, 47, 42, 15],
+            },
+            {
+                id: 2,
+                title: "Total Teachers",
+                price: 2,
+                rank: "",
+                isDoller: false,
+                statusColor: "danger",
+                series: [15, 42, 47, 2, 14, 19, 65, 75, 47, 15, 42, 47, 2, 14, 12,]
+            },
+            {
+                id: 3,
+                title: "Total Programs",
+                price: 2,
+                rank: "",
+                isDoller: false,
+                postFix: "",
+                statusColor: "success",
+                series: [47, 15, 2, 67, 22, 20, 36, 60, 60, 30, 50, 11, 12, 3, 8,]
+            },
+            {
+                id: 5,
+                title: "Enrolled",
+                price: 3,
+                rank: "",
+                isDoller: false,
+                postFix: "",
+                statusColor: "success",
+                series: [12, 14, 2, 47, 42, 15, 47, 75, 65, 19, 14, 2, 47, 42, 15,]
+            },
+        ]);
+    }, []);
+
+    // Meta title
+    useEffect(() => {
+        document.title = "Dashboard | RYD Admin";
+    }, []);
 
     return (
         <React.Fragment>
@@ -84,7 +122,7 @@ const Dashboard = () => {
                     <Breadcrumbs title="Dashboard" breadcrumbItem="Dashboard" />
 
                     <Row>
-                        {(WidgetsData || []).map((widget, key) => (
+                        {widgetsData.map((widget, key) => (
                             <Col xl={3} md={6} key={key}>
                                 <Card className="card-h-100">
                                     <CardBody>
@@ -100,8 +138,6 @@ const Dashboard = () => {
                                                             start={0}
                                                             end={widget.price}
                                                             duration={2}
-                                                            // decimals={2}
-                                                            separator=""
                                                         />
                                                         {widget.postFix}
                                                     </span>
@@ -110,7 +146,7 @@ const Dashboard = () => {
                                             <Col xs={6}>
                                                 <ReactApexChart
                                                     options={options}
-                                                    series={[{ data: [...widget["series"]] }]}
+                                                    series={[{ data: [...widget.series] }]}
                                                     type="line"
                                                     className="apex-charts mb-2"
                                                     dir="ltr"
@@ -120,29 +156,16 @@ const Dashboard = () => {
                                         </Row>
                                         <div className="text-nowrap">
                                             <span
-                                                className={
-                                                    "badge bg-" +
-                                                    widget.statusColor +
-                                                    "-subtle text-" +
-                                                    widget.statusColor
-                                                }
+                                                className={"badge bg-" + widget.statusColor + "-subtle text-" + widget.statusColor}
                                             >
                                                 {widget.rank}
                                             </span>
-                                            <span className="ms-1 text-muted font-size-13"> Since last week
-                                            </span>
+                                            <span className="ms-1 text-muted font-size-13"> Since last week </span>
                                         </div>
                                     </CardBody>
                                 </Card>
                             </Col>
                         ))}
-
-                    </Row>
-
-                    <Row>
-                        <Transactions />
-                        <Transactions />
-                        <Transactions />
                     </Row>
                 </Container>
             </div>
@@ -150,4 +173,4 @@ const Dashboard = () => {
     );
 }
 
-export default Dashboard;
+export default withAuth(Dashboard);
