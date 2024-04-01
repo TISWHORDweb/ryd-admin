@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 
 const Authmiddleware = (props) => {
 
-  if (!localStorage.getItem("authUser")) {
+  if (!localStorage.getItem("token")) {
     return (
       <Navigate to={{ pathname: "/auth/login", state: { from: props.location } }} />
     );
