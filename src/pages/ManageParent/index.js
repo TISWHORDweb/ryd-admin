@@ -272,10 +272,155 @@ const ManageParent = () => {
                       {isEdit ? "Edit Parent" : "Add New Parent"}
                     </ModalHeader>
                     <ModalBody>
+<<<<<<< Updated upstream
                       <Form onSubmit={validation.handleSubmit}>
                         <Row>
                           <Col xs={12}>
                             <div className="row">
+=======
+                      {isEdit ? (
+                        <Form onSubmit={validation.handleSubmit}>
+                          <Row>
+                            <Col xs={12}>
+                              <div className="row">
+                                <div className="col-md-6">
+                                  <div className="mb-3">
+                                    <Label className="form-label">
+                                      First Name
+                                    </Label>
+                                    <Input
+                                      name="firstName"
+                                      type="text"
+                                      placeholder="First Name"
+                                      onChange={validation.handleChange}
+                                      onBlur={validation.handleBlur}
+                                      value={validation.values.firstName || ""}
+                                      invalid={
+                                        validation.touched.firstName &&
+                                        validation.errors.firstName
+                                      }
+                                    />
+                                    <FormFeedback type="invalid">
+                                      {validation.errors.firstName}
+                                    </FormFeedback>
+                                  </div>
+                                </div>
+                                <div className="col-md-6">
+                                  <div className="mb-3">
+                                    <Label className="form-label">
+                                      Last Name
+                                    </Label>
+                                    <Input
+                                      name="lastName"
+                                      type="text"
+                                      placeholder="Last Name"
+                                      onChange={validation.handleChange}
+                                      onBlur={validation.handleBlur}
+                                      value={validation.values.lastName || ""}
+                                      invalid={
+                                        validation.touched.lastName &&
+                                        validation.errors.lastName
+                                      }
+                                    />
+                                    <FormFeedback type="invalid">
+                                      {validation.errors.lastName}
+                                    </FormFeedback>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="mb-3">
+                                <Label className="form-label">Email</Label>
+                                <Input
+                                  name="email"
+                                  type="email"
+                                  placeholder="Email"
+                                  onChange={validation.handleChange}
+                                  onBlur={validation.handleBlur}
+                                  value={validation.values.email || ""}
+                                  invalid={
+                                    validation.touched.email &&
+                                    validation.errors.email
+                                  }
+                                />
+                                <FormFeedback type="invalid">
+                                  {validation.errors.email}
+                                </FormFeedback>
+                              </div>
+                              <div className="mb-3">
+                                <Label className="form-label">Phone</Label>
+                                <Input
+                                  name="phone"
+                                  type="text"
+                                  placeholder="Phone"
+                                  onChange={validation.handleChange}
+                                  onBlur={validation.handleBlur}
+                                  value={validation.values.phone || ""}
+                                  invalid={
+                                    validation.touched.phone &&
+                                    validation.errors.phone
+                                  }
+                                />
+                                <FormFeedback type="invalid">
+                                  {validation.errors.phone}
+                                </FormFeedback>
+                              </div>
+                              <div className="row">
+                                <div className="col-md-6">
+                                  <div className="mb-3">
+                                    <Label className="form-label">
+                                      Country
+                                    </Label>
+                                    <CountrySelectInput
+                                     
+
+                                      country={validation.values.country}
+                                      handleCountryChange={validation.handleChange}
+                                      onBlur={validation.handleBlur}
+                                      value={validation.values.country || ""}
+                                      invalid={
+                                        validation.touched.country &&
+                                        validation.errors.country
+                                      }
+                                      className="form-control"
+                                    />
+                                    {validation.touched.country &&
+                                      validation.errors.country && (
+                                        <FormFeedback type="invalid">
+                                          {validation.errors.country}
+                                        </FormFeedback>
+                                      )}
+                                  </div>
+                                </div>
+
+                                <div className="col-md-6">
+                                  <div className="mb-3">
+                                    <Label className="form-label">
+                                      State
+                                    </Label>
+                                    <StateSelectInput
+                                      state={validation.values.country}
+                                      handleStateChange={validation.handleChange}
+                                      onBlur={validation.handleBlur}
+                                      value={validation.values.state }
+                                      invalid={
+                                        validation.touched.state &&
+                                        validation.errors.state
+                                      }
+                                      className="form-control"
+                                    />
+                                    {validation.touched.state &&
+                                      validation.errors.state && (
+                                        <FormFeedback type="invalid">
+                                          {validation.errors.state}
+                                        </FormFeedback>
+                                      )}
+                                  </div>
+                                </div>
+                              </div>
+
+                             
+
+>>>>>>> Stashed changes
                               <div className="col-md-6">
                                 <div className="mb-3">
                                   <Label className="form-label">
