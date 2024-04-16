@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import withAuth from '../withAuth';
-import ReactApexChart from "react-apexcharts"
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import {
     Card,
@@ -9,108 +8,53 @@ import {
     Container,
     Row
 } from "reactstrap";
-import CountUp from "react-countup";
-
-const options = {
-    chart: {
-        height: 50,
-        type: "line",
-        toolbar: { show: false },
-        sparkline: {
-            enabled: true
-        }
-    },
-    colors: ["#5156be"],
-    stroke: {
-        curve: "smooth",
-        width: 2,
-    },
-    xaxis: {
-        labels: {
-            show: false,
-        },
-        axisTicks: {
-            show: false,
-        },
-        axisBorder: {
-            show: false,
-        },
-    },
-    yaxis: {
-        labels: {
-            show: false,
-        },
-    },
-    tooltip: {
-        fixed: {
-            enabled: false,
-        },
-        x: {
-            show: false,
-        },
-        y: {
-            title: {
-                formatter: function (seriesName) {
-                    return "";
-                },
-            },
-        },
-        marker: {
-            show: false,
-        },
-    },
-};
+import axios from 'axios';
 
 const Dashboard = () => {
-    const [widgetsData, setWidgetsData] = useState([]);
+    const [programData, setProgramData] = useState([]);
 
     useEffect(() => {
-        // Set widgets data from the provided data
-        setWidgetsData([
-            {
-                id: 1,
-                title: "Total Students",
-                price: 3,
-                rank: "",
-                isDoller: false,
-                postFix: "",
-                statusColor: "success",
-                series: [2, 10, 18, 22, 36, 15, 47, 75, 65, 19, 14, 2, 47, 42, 15],
-            },
-            {
-                id: 2,
-                title: "Total Teachers",
-                price: 2,
-                rank: "",
-                isDoller: false,
-                statusColor: "danger",
-                series: [15, 42, 47, 2, 14, 19, 65, 75, 47, 15, 42, 47, 2, 14, 12,]
-            },
-            {
-                id: 3,
-                title: "Total Programs",
-                price: 2,
-                rank: "",
-                isDoller: false,
-                postFix: "",
-                statusColor: "success",
-                series: [47, 15, 2, 67, 22, 20, 36, 60, 60, 30, 50, 11, 12, 3, 8,]
-            },
-            {
-                id: 5,
-                title: "Enrolled",
-                price: 3,
-                rank: "",
-                isDoller: false,
-                postFix: "",
-                statusColor: "success",
-                series: [12, 14, 2, 47, 42, 15, 47, 75, 65, 19, 14, 2, 47, 42, 15,]
-            },
+    const fetchData = async () => {
+    try {
+        const apiUrl = "https://api-pro.rydlearning.com/admin/program/all";
+        const response = await axios.get(apiUrl);
+        const responseData = response.data;
+
+        console.log("Response data:", responseData);
+
+        if (!Array.isArray(responseData.data)) {
+            console.error("Response data is not an array:", responseData.data);
+            return;
+        }
+
+        // Get counts
+        const childCount = responseData.data.reduce((count, item) => count + (item.child ? 1 : 0), 0);
+        const programCount = responseData.data.length;
+        const teacherCount = responseData.data.reduce((count, item) => count + (item.teacher ? 1 : 0), 0);
+        const packageCount = responseData.data.reduce((count, item) => count + (item.packageId ? 1 : 0), 0);
+
+        console.log("Child Count:", childCount);
+        console.log("Program Count:", programCount);
+        console.log("Teacher Count:", teacherCount);
+        console.log("Package Count:", packageCount);
+
+        // Update state with program data
+        setProgramData([
+            { title: "Total Programs", count: programCount, statusColor: "primary" },
+            { title: "Teacher Assigned", count: teacherCount, statusColor: "success" },
+            { title: "Child Enrolled", count: childCount, statusColor: "danger" },
+            { title: "Total Package", count: packageCount, statusColor: "secondary" }
         ]);
-    }, []);
 
-    // Meta title
-    useEffect(() => {
+    } catch (error) {
+        console.error("Error fetching data:", error);
+    }
+};
+
+
+
+        fetchData();
+
         document.title = "Dashboard | RYD Admin";
     }, []);
 
@@ -118,50 +62,18 @@ const Dashboard = () => {
         <React.Fragment>
             <div className="page-content">
                 <Container fluid>
-                    {/* Render Breadcrumbs */}
                     <Breadcrumbs title="Dashboard" breadcrumbItem="Dashboard" />
 
                     <Row>
-                        {widgetsData.map((widget, key) => (
-                            <Col xl={3} md={6} key={key}>
+                        {programData.map((card, index) => (
+                            <Col key={index} xl={3} md={6}>
                                 <Card className="card-h-100">
                                     <CardBody>
-                                        <Row className="align-items-center">
-                                            <Col xs={6}>
-                                                <span className="text-muted mb-3 lh-1 d-block text-truncate">
-                                                    {widget.title}
-                                                </span>
-                                                <h4 className="mb-3">
-                                                    {widget.isDoller === true ? "$" : ""}
-                                                    <span className="counter-value">
-                                                        <CountUp
-                                                            start={0}
-                                                            end={widget.price}
-                                                            duration={2}
-                                                        />
-                                                        {widget.postFix}
-                                                    </span>
-                                                </h4>
-                                            </Col>
-                                            <Col xs={6}>
-                                                <ReactApexChart
-                                                    options={options}
-                                                    series={[{ data: [...widget.series] }]}
-                                                    type="line"
-                                                    className="apex-charts mb-2"
-                                                    dir="ltr"
-                                                    height={50}
-                                                />
-                                            </Col>
-                                        </Row>
-                                        <div className="text-nowrap">
-                                            <span
-                                                className={"badge bg-" + widget.statusColor + "-subtle text-" + widget.statusColor}
-                                            >
-                                                {widget.rank}
-                                            </span>
-                                            <span className="ms-1 text-muted font-size-13"> Since last week </span>
-                                        </div>
+                                        <h4 className="mb-3">{card.title}</h4>
+                                        <div className={"badge bg-" + card.statusColor + "-subtle text-" + card.statusColor + " mb-3"} style={{ fontSize: "15px", padding: "10px" }}>
+    {card.count}
+</div>
+
                                     </CardBody>
                                 </Card>
                             </Col>

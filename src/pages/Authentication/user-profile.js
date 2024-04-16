@@ -39,7 +39,7 @@ const UserProfile = () => {
     const fetchData = async () => {
       try {
         // Mock API endpoint
-        const apiUrl = "https://jsonplaceholder.typicode.com/users/1";
+        const apiUrl = process.env.REACT_APP_API_URL;
         const response = await axios.get(apiUrl);
         const userData = response.data;
         setName(userData.username);
@@ -66,7 +66,7 @@ const UserProfile = () => {
       try {
         // Simulate API call to update user data
         // In a real application, replace this with your actual API endpoint
-        const apiUrl = "http://localhost:3000/admin/auth/:id";
+        const apiUrl = "https://api-pro.rydlearning.com/admin/auth/:id";
         await axios.put(apiUrl, values);
         setSuccess("Username updated successfully");
         setError("");

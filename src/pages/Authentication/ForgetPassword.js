@@ -26,7 +26,7 @@ const ForgetPasswordPage = ({ history }) => {
       try {
         // Simulate API call to reset password
         // Replace this with your actual API endpoint
-        const apiUrl = "https://jsonplaceholder.typicode.com/posts";
+        const apiUrl = process.env.REACT_APP_API_URL;
         await axios.post(apiUrl, values);
         setForgetSuccessMsg("Password reset instructions sent successfully");
         setForgetError("");

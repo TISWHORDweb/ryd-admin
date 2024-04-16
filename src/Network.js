@@ -7,31 +7,31 @@
 class Network {
   //baseUrl
   netData = null;
-  headerConfig = { "Content-Type": "application/json" };
-  baseUrl = "http://localhost:3000";
+  headerConfig = { "Content-Type": "application/json" }
+  baseUrl = "https://api-pro.rydlearning.com"
   //baseUrl = "https://api.rydlearning.com";
-  paymentBaseUrl = this.baseUrl + "/v1/stripe/ask/create-pay";
+  paymentBaseUrl = this.baseUrl + "/v1/stripe/ask/create-pay"
 
   constructor(baseUrl = null) {
     if (baseUrl) {
-      this.baseUrl = baseUrl;
+      this.baseUrl = baseUrl
     }
   }
 
   //set headers
   addHeaders(name, value) {
-    this.headerConfig[name] = value;
-    return this;
+    this.headerConfig[name] = value
+    return this
   }
 
   setBaseUrl(url) {
-    this.baseUrl = url;
-    return this;
+    this.baseUrl = url
+    return this
   }
 
   async chopJson(isAsync = false) {
-    if (!isAsync) return this.netData;
-    else return await this.netData.json();
+    if (!isAsync) return this.netData
+    else return await this.netData.json()
   }
 
   async post(path, data, isFinal = true) {
@@ -44,8 +44,8 @@ class Network {
       headers: { ...this.headerConfig },
       body: JSON.stringify(data),
       method: "post"
-    });
-    return this;
+    })
+    return this
   }
 
   async get(data, isFinal = true) {
@@ -58,4 +58,4 @@ class Network {
   }
 }
 
-export default Network;
+export default Network

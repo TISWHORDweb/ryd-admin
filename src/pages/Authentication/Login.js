@@ -1,21 +1,20 @@
-import React, { useState } from "react"
+import React, { useState } from "react";
 import { Row, Col, Container, Form, Input, FormFeedback, Label } from "reactstrap";
-import { Link, useNavigate } from "react-router-dom"
-import withRouter from "../../components/Common/withRouter"
+import { Link, useNavigate } from "react-router-dom";
+import withRouter from "../../components/Common/withRouter";
 import axios from "axios";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 
 // import images
-import logo from "../../assets/images/favicon.png"
+import logo from "../../assets/images/favicon.png";
 
 //Import config
-import CarouselPage from "./CarouselPage"
+import CarouselPage from "./CarouselPage";
 import { createSelector } from "reselect";
 
 const Login = (props) => {
   const [passwordShow, setPasswordShow] = useState(false);
-  const [loginError, setLoginError] = useState(""); // State to hold login error message
   const navigate = useNavigate(); // Use useNavigate for routing
 
   const validation = useFormik({
@@ -28,14 +27,13 @@ const Login = (props) => {
       email: Yup.string().required("Please Enter Your Email"),
       password: Yup.string().required("Please Enter Your Password"),
     }),
-    onSubmit: async (values) => {
+    onSubmit: async (values, { setFieldError }) => {
       try {
         const response = await axios.post(
-          'http://localhost:3000/admin/auth/login',
+          'https://api-pro.rydlearning.com/admin/auth/login',
           values
         );
         if (response.data.status) {
-          
           // Store token in localStorage
           localStorage.setItem('token', response.data.data.token);
 
@@ -43,14 +41,14 @@ const Login = (props) => {
           navigate('/dashboard', { state: { token: response.data.data.token } }); // Pass token in state
 
         } else {
-          setLoginError(response.data.message); // Set login error message
+          setFieldError("email", "Invalid login credentials"); // Set login error message to email field error
         }
       } catch (error) {
-        setLoginError("An error occurred while logging in."); // Set generic login error message
+        console.error("An error occurred while logging in:", error);
+        setFieldError("email", "An error occurred while logging in."); // Set generic login error message to email field error
       }
     }, 
   });
-  
 
   document.title = "Login | RYD Admin";
 
@@ -88,9 +86,8 @@ const Login = (props) => {
                           return false;
                         }}
                       >
-                        {/* {error ? <Alert color="danger">{error}</Alert> : null} */}
-                        {loginError && (
-                          <div className="mb-3 text-danger">{loginError}</div>
+                        {validation.errors.email && (
+                          <div className="mb-3 text-danger">{validation.errors.email}</div>
                         )}
                         <div className="mb-3">
                           <Label className="form-label">Email</Label>
@@ -106,9 +103,7 @@ const Login = (props) => {
                               validation.touched.email && validation.errors.email ? true : false
                             }
                           />
-                          {validation.touched.email && validation.errors.email ? (
-                            <FormFeedback type="invalid">{validation.errors.email}</FormFeedback>
-                          ) : null}
+                        
                         </div>
 
                         <div className="mb-3">
@@ -188,4 +183,4 @@ const Login = (props) => {
   )
 }
 
-export default withRouter(Login)
+export default withRouter(Login);

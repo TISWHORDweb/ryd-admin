@@ -1,163 +1,339 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Container,
   Row,
   Col,
   Card,
-  Alert,
-  CardBody,
   Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  Form,
   Label,
   Input,
   FormFeedback,
-  Form,
 } from "reactstrap";
-
-// Formik Validation
+import axios from "axios";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-
-import withRouter from "../../components/Common/withRouter";
-
-//Import Breadcrumb
+import DeleteModal from "../../components/Common/DeleteModal";
 import Breadcrumb from "../../components/Common/Breadcrumb";
-
-import avatar from "../../assets/images/users/avatar-1.jpg";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import withAuth from "../withAuth";
 
 const Settings = () => {
-  // Meta title
-  document.title = "Settings | RYD Admin";
+  document.title = "Dashboard | RYD Admin";
 
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [idx, setIdx] = useState(1);
+  const [admins, setAdmins] = useState([]);
+  const [modal, setModal] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [selectedAdmin, setSelectedAdmin] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(false);
 
   useEffect(() => {
-    const authUser = localStorage.getItem("authUser");
-    if (authUser) {
-      const obj = JSON.parse(authUser);
-      if (process.env.REACT_APP_DEFAULTAUTH === "firebase") {
-        setName(obj.displayName);
-        setEmail(obj.email);
-        setIdx(obj.uid);
-      } else if (
-        process.env.REACT_APP_DEFAULTAUTH === "fake" ||
-        process.env.REACT_APP_DEFAULTAUTH === "jwt"
-      ) {
-        setName(obj.username);
-        setEmail(obj.email);
-        setIdx(obj.uid);
-      }
-      setTimeout(() => {
-        setSuccess(null);
-        setError(null);
-      }, 3000);
-    }
+    fetchAdmins();
   }, []);
 
-  const validation = useFormik({
-    // enableReinitialize : use this flag when initial values needs to be changed
-    enableReinitialize: true,
+  useEffect(() => {
+    document.title = isEdit
+      ? "Edit Admin | RYD Admin"
+      : "Add New Admin | RYD Admin";
+  }, [isEdit]);
 
+  const fetchAdmins = async () => {
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const response = await axios.get(`${apiUrl}/admin/all`);
+      setAdmins(response.data.data);
+    } catch (error) {
+      console.error("Error fetching admins:", error);
+    }
+  };
+
+  const toggleModal = () => {
+    setModal(!modal);
+    setIsEdit(false);
+    setSelectedAdmin(null);
+  };
+
+  const validation = useFormik({
+    enableReinitialize: true,
     initialValues: {
-      username: name || "",
-      idx: idx || "",
+      fullName: selectedAdmin ? selectedAdmin.fullName : "",
+      email: selectedAdmin ? selectedAdmin.email : "",
+      password: "",
+      displayName: selectedAdmin ? selectedAdmin.displayName : "",
+      role: selectedAdmin ? selectedAdmin.role.toString() : "0",
     },
     validationSchema: Yup.object({
-      username: Yup.string().required("Please Enter Your UserName"),
+      fullName: Yup.string().required("Please Enter Full Name"),
+      email: Yup.string().email().required("Please Enter Email"),
+      password: Yup.string().required("Please Enter Password"),
+      displayName: Yup.string().required("Please Enter Display Name"),
+      role: Yup.string().required("Please Select Role"),
     }),
-    onSubmit: (values) => {
-      // Here you can perform any necessary API calls or updates using the values
-      console.log("Submitted form values: ", values);
+
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        if (isEdit) {
+          await editAdmin(values);
+        } else {
+          await createAdmin(values);
+        }
+        resetForm();
+      } catch (error) {
+        console.error("Error:", error);
+      }
     },
   });
+
+  const editAdmin = async (values) => {
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const url = `/admin/auth/${selectedAdmin.id}`;
+      const response = await axios.put(`${apiUrl}${url}`, values);
+      const responseData = response.data;
+
+      const updatedAdmins = admins.map((admin) =>
+        admin.id === selectedAdmin.id ? responseData : admin
+      );
+      setAdmins(updatedAdmins);
+      toast.success("Admin updated successfully");
+
+      toggleModal();
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const createAdmin = async (values) => {
+    try {
+      const apiUrl =
+        process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const url = "/admin/auth/create";
+      const response = await axios.post(`${apiUrl}${url}`, values);
+      const responseData = response.data;
+
+      const updatedAdminList = await axios.get(`${apiUrl}/admin/all`);
+      setAdmins(updatedAdminList.data.data);
+      toast.success("Admin created successfully");
+
+      toggleModal();
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const handleEditAdmin = (admin) => {
+    setSelectedAdmin(admin);
+    setIsEdit(true);
+    toggleModal();
+  };
+
+  const handleDeleteAdmin = async (admin) => {
+    try {
+      if (admin.role === 1) {
+        toast.error("Super Admin cannot be deleted");
+        return;
+      }
+
+      const confirmDelete = window.confirm(
+        "Are you sure you want to delete this admin?"
+      );
+      if (!confirmDelete) {
+        return;
+      }
+
+      const apiUrl =
+        process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      await axios.delete(`${apiUrl}/admin/${admin.id}`);
+      const updatedAdmins = admins.filter((a) => a.id !== admin.id);
+      setAdmins(updatedAdmins);
+      toast.success("Admin deleted successfully");
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
 
   return (
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
-          {/* Render Breadcrumbs */}
           <Breadcrumb title="Dashboard" breadcrumbItem="Settings" />
-
           <Row>
-            <Col lg="12">
-              {error && error ? <Alert color="danger">{error}</Alert> : null}
-              {success ? <Alert color="success">{success}</Alert> : null}
-
-              <Card>
-                <CardBody>
-                  <div className="d-flex">
-                    <div className="ms-3">
-                      <img
-                        src={avatar}
-                        alt=""
-                        className="avatar-md rounded-circle img-thumbnail"
-                      />
-                    </div>
-                    <div className="flex-grow-1 align-self-center ms-3">
-                      <div className="text-muted">
-                        <h5>{name}</h5>
-                        <p className="mb-1">{email}</p>
-                        <p className="mb-0">Id no: #{idx}</p>
-                      </div>
+            <Col>
+              <div className="mb-3">
+                <h5 className="card-title">
+                  Admin List
+                  <span className="text-muted fw-normal ms-2">
+                    ({admins.length})
+                  </span>
+                </h5>
+              </div>
+              <Row className="align-items-center">
+                <Col lg="12">
+                  <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
+                    <div>
+                      <Link
+                        to="#"
+                        className="btn btn-light"
+                        onClick={toggleModal}
+                      >
+                        <i className="bx bx-plus me-1"></i> Add New Admin
+                      </Link>
                     </div>
                   </div>
-                </CardBody>
-              </Card>
+                </Col>
+              </Row>
+              <table className="table align-middle">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Display Name</th>
+                    <th>Role</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {admins.length === 0 ? (
+                    
+                      <div className="text-center mt-5">
+                      <h3>No data available</h3>
+                    </div>
+                    
+                  ) : (
+                    admins.map((admin, index) => (
+                      <tr key={admin.id}>
+                        <td>{index + 1}</td>
+                        <td>{admin.fullName}</td>
+                        <td>{admin.email}</td>
+                        <td>{admin.displayName}</td>
+                        <td>
+                          {admin.role === 1 ? "Super Admin" : "Normal Admin"}
+                        </td>
+                        <td>
+                          <Button
+                            color="primary"
+                            size="sm"
+                            onClick={() => handleEditAdmin(admin)}
+                          >
+                            Edit
+                          </Button>{" "}
+                          {admin.role === 0 && (
+                            <Button
+                              color="danger"
+                              size="sm"
+                              onClick={() => handleDeleteAdmin(admin)}
+                            >
+                              Delete
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </Col>
           </Row>
-
-          <h4 className="card-title mb-4">Change User Name</h4>
-
-          <Card>
-            <CardBody>
-              <Form
-                className="form-horizontal"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  validation.handleSubmit();
-                  return false;
-                }}
-              >
-                <div className="form-group">
-                  <Label className="form-label">User Name</Label>
-                  <Input
-                    name="username"
-                    className="form-control"
-                    placeholder="Enter User Name"
-                    type="text"
-                    onChange={validation.handleChange}
-                    onBlur={validation.handleBlur}
-                    value={validation.values.username || ""}
-                    invalid={
-                      validation.touched.username &&
-                      validation.errors.username
-                        ? true
-                        : false
-                    }
-                  />
-                  {validation.touched.username && validation.errors.username ? (
-                    <FormFeedback type="invalid">
-                      {validation.errors.username}
-                    </FormFeedback>
-                  ) : null}
-                  <Input name="idx" value={idx} type="hidden" />
-                </div>
-
-                <div className="text-center mt-4">
-                  <Button type="submit" color="danger">
-                    Update User Name
-                  </Button>
-                </div>
-              </Form>
-            </CardBody>
-          </Card>
         </Container>
+
+        <Modal isOpen={modal} toggle={toggleModal}>
+          <ModalHeader toggle={toggleModal}>
+            {isEdit ? "Edit Admin" : "Add New Admin"}
+          </ModalHeader>
+          <ModalBody>
+            <Form onSubmit={validation.handleSubmit}>
+              <Label for="fullName">Full Name</Label>
+              <Input
+                type="text"
+                name="fullName"
+                id="fullName"
+                onChange={validation.handleChange}
+                onBlur={validation.handleBlur}
+                value={validation.values.fullName}
+                invalid={
+                  validation.touched.fullName && !!validation.errors.fullName
+                }
+              />
+              <FormFeedback>{validation.errors.fullName}</FormFeedback>
+              <Label for="email">Email</Label>
+              <Input
+                type="email"
+                name="email"
+                id="email"
+                onChange={validation.handleChange}
+                onBlur={validation.handleBlur}
+                value={validation.values.email}
+                invalid={validation.touched.email && !!validation.errors.email}
+              />
+              <FormFeedback>{validation.errors.email}</FormFeedback>
+              <Label for="password">Password</Label>
+              <Input
+                type="password"
+                name="password"
+                id="password"
+                onChange={validation.handleChange}
+                onBlur={validation.handleBlur}
+                value={validation.values.password || ""}
+                invalid={
+                  validation.touched.password && !!validation.errors.password
+                }
+              />
+              <FormFeedback>{validation.errors.password}</FormFeedback>
+              <Label for="displayName">Display Name</Label>
+              <Input
+                type="text"
+                name="displayName"
+                id="displayName"
+                onChange={validation.handleChange}
+                onBlur={validation.handleBlur}
+                value={validation.values.displayName}
+                invalid={
+                  validation.touched.displayName &&
+                  !!validation.errors.displayName
+                }
+              />
+              <FormFeedback>{validation.errors.displayName}</FormFeedback>
+              <Label for="role">Role</Label>
+              <Input
+                type="select"
+                name="role"
+                id="role"
+                onChange={validation.handleChange}
+                onBlur={validation.handleBlur}
+                value={validation.values.role}
+                invalid={validation.touched.role && !!validation.errors.role}
+              >
+                <option value="">Select Role</option>
+                <option value="0">Normal Admin</option>
+                <option value="1">Super Admin</option>
+              </Input>
+              <FormFeedback>{validation.errors.role}</FormFeedback>
+              <Button className="mt-3" color="primary" type="submit">
+                {isEdit ? "Update Admin" : "Add Admin"}
+              </Button>{" "}
+              <Button className="mt-3" color="secondary" onClick={toggleModal}>
+                Cancel
+              </Button>
+            </Form>
+          </ModalBody>
+        </Modal>
+
+        <DeleteModal
+          show={deleteModal}
+          onDeleteClick={() => handleDeleteAdmin(selectedAdmin)}
+          onCloseClick={() => setDeleteModal(false)}
+        />
+
+        <ToastContainer />
       </div>
     </React.Fragment>
   );
 };
 
-export default Settings;
+export default withAuth(Settings);

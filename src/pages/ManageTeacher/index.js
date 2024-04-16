@@ -1,28 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import DeleteModal from "../../components/Common/DeleteModal";
-import * as Yup from "yup";
-import { useFormik } from "formik";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import axios from "axios";
 import withAuth from "../withAuth";
-import {
-  Col,
-  Container,
-  Row,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  Form,
-  Label,
-  Input,
-  FormFeedback,
-} from "reactstrap";
+import CountrySelect from '../Custom/anibe/CountrySelect';
+import TimezoneSelect from '../Custom/anibe/TimezoneSelect';
+import InviteTeacherModal from "./InviteTeacherModal";
+import { Col, Container, Row, Modal, ModalHeader, ModalBody, Form, Label, Input, FormFeedback } from "reactstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { DaysSelect, TimeSelect } from "../DaysOfWeekSelect";
-import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
-import CustomTimezoneSelect from "../CustomTimezoneSelect"
+import { useFormik, resetForm } from "formik";
+import * as Yup from 'yup';
 
 const ManageTeacher = () => {
   document.title = "Manage Teacher | RYD Admin";
@@ -32,6 +21,56 @@ const ManageTeacher = () => {
   const [modal, setModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedTimezone, setSelectedTimezone] = useState('');
+
+  useEffect(() => {
+    fetchTeachers();
+  }, [modal]);
+
+  const fetchTeachers = async () => {
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const response = await axios.get(`${apiUrl}/admin/teacher/all`);
+      setTeachers(response.data.data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const toggle = () => {
+    setModal(!modal);
+  };
+
+
+
+const handleCountryChange = (country) => {
+  setSelectedCountry(country);
+  setSelectedTimezone("");
+};
+
+const handleTimezoneChange = (timezone) => {
+  setSelectedTimezone(timezone);
+};
+ 
+  const handleTeacherClick = (teacher) => {
+    if (teacher) {
+      setTeacherData(teacher);
+      setIsEdit(true);
+      toggle();
+    }
+  };
+  const onClickDelete = (teacher) => {
+    if (teacher) {
+      setTeacherData(teacher);
+      setDeleteModal(true);
+    } else {
+      // Handle the case when teacher is undefined
+      console.error("Teacher data is undefined.");
+    }
+  };
+  
 
   const validation = useFormik({
     enableReinitialize: true,
@@ -42,26 +81,22 @@ const ManageTeacher = () => {
       password: teacherData.password || "",
       gender: teacherData.gender || "",
       phone: teacherData.phone || "",
-      country: teacherData.country || "",
-      timezone: teacherData.timezone || "",
-      timeOffset: teacherData.timeOffset || "",
       qualification: teacherData.qualification || "",
       docUrl: teacherData.docUrl || "",
       experience: teacherData.experience || "",
+      timeOffset: 0,
     },
     validationSchema: Yup.object({
-      firstName: Yup.string().required("Please enter first name"),
-      lastName: Yup.string().required("Please enter last name"),
-      email: Yup.string().required("Please enter email"),
-      password: Yup.string().required("Please enter password"),
-      gender: Yup.string().required("Please enter gender"),
-      phone: Yup.string().required("Please enter phone number"),
-      country: Yup.string().required("Please enter country"),
-      timezone: Yup.string().required("Please enter time zone"),
-      timeOffset: Yup.number().required("Please enter time offset"),
-      qualification: Yup.string().required("Please enter qualification"),
-      docUrl: Yup.string().required("Please enter document URL"),
-      experience: Yup.string().required("Please enter work experience"),
+      firstName: Yup.string().required("First Name is required"),
+      lastName: Yup.string().required("Last Name is required"),
+      email: Yup.string().email("Invalid email").required("Email is required"),
+      password: Yup.string().required("Password is required"),
+      gender: Yup.string().required("Gender is required"),
+      phone: Yup.string().required("Phone number is required"),
+      qualification: Yup.string().required("Qualification is required"),
+      docUrl: Yup.string().required("Document URL is required"),
+      timeOffset: Yup.string().required("Document URL is required"),
+      experience: Yup.string().required("Work Experience is required"),
     }),
     onSubmit: async (values) => {
       try {
@@ -72,93 +107,58 @@ const ManageTeacher = () => {
           password: values.password,
           gender: values.gender,
           phone: values.phone,
-          country: values.country,
-          timezone: values.timezone,
-          timeOffset: values.timeOffset,
+          country: selectedCountry,
+          timezone: selectedTimezone,
           qualification: values.qualification,
           docUrl: values.docUrl,
+          timeOffset: values.timeOffset,
           experience: values.experience,
         };
-
+  
         let apiUrl;
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
           response = await axios.put(
             `${apiUrl}/admin/teacher/edit/${teacherData.id}`,
             newTeacher
           );
           toast.success("Teacher updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
           response = await axios.post(
             `${apiUrl}/admin/teacher/create`,
             newTeacher
           );
           toast.success("Teacher created successfully");
         }
-
+  
         const responseData = response.data;
-
+  
         if (isEdit) {
           const updatedTeachers = teachers.map((teacher) =>
-            teacher.id === teacherData.id
-              ? { ...teacher, ...responseData }
-              : teacher
+            teacher.id === teacherData.id ? { ...teacher, ...responseData } : teacher
           );
           setTeachers(updatedTeachers);
         } else {
           setTeachers([...teachers, responseData]);
         }
-
+  
         toggle();
       } catch (error) {
         console.error("Error:", error);
       }
     },
   });
+  
 
-  useEffect(() => {
-    fetchTeachers();
-  }, [modal]);
-
-  const fetchTeachers = async () => {
-    try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/admin/teacher/all`);
-      setTeachers(response.data.data);
-      console.log(response.data.data);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
-
-  const toggle = () => {
-    setModal(!modal);
-  };
-
-  const handleTeacherClick = (teacher) => {
-    setTeacherData(teacher);
-    setIsEdit(true);
-    toggle();
-  };
-
-  const onClickDelete = (teacher) => {
-    setTeacherData(teacher);
-    setDeleteModal(true);
-  };
-
-  const shortenUrl = (url, maxLength) => {
-    if (url.length <= maxLength) {
-      return url;
-    } else {
-      return url.substring(0, maxLength) + "...";
-    }
-  };
+  
+  
+  
 
   const handleDeleteTeacher = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
       await axios.delete(`${apiUrl}/admin/teacher/${teacherData.id}`);
       const updatedTeachers = teachers.filter(
         (teacher) => teacher.id !== teacherData.id
@@ -171,6 +171,50 @@ const ManageTeacher = () => {
       toast.error("Failed to delete teacher");
     }
   };
+
+  const inviteTeacher = async (email) => {
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const response = await axios.post(`${apiUrl}/admin/invite/teacher`, {
+        email,
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const removeInviteTeacher = async (id) => {
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+      const response = await axios.delete(
+        `${apiUrl}/admin/remove/invite/teacher/${id}`
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const toggleInviteModal = () => {
+    setInviteModalOpen(!inviteModalOpen);
+  };
+
+  const shortenUrl = (url, maxLength) => {
+    if (url.length <= maxLength) {
+      return url;
+    } else {
+      return url.substring(0, maxLength) + "...";
+    }
+  };
+
+  
+
+
+
+
+
+
 
   return (
     <React.Fragment>
@@ -209,6 +253,19 @@ const ManageTeacher = () => {
                       >
                         <i className="bx bx-plus me-1"></i> Add New Teacher
                       </Link>
+
+                      <Link
+                        to="#"
+                        className="ms-2 btn btn-primary"
+                        onClick={() => {
+                          setTeacherData({});
+                          setIsEdit(false);
+                          toggleInviteModal(); // Open invite teacher modal
+                        }}
+                      >
+                        <i className="mdi mdi-email-variant me-1"></i> Invite
+                        Teacher
+                      </Link>
                     </div>
                   </div>
                 </Col>
@@ -226,7 +283,6 @@ const ManageTeacher = () => {
                         <th>Phone</th>
                         <th>Country</th>
                         <th>Timezone</th>
-                        <th>Offset</th>
                         <th>Qualification</th>
                         <th>DocumentURL</th>
                         <th>Experience</th>
@@ -245,9 +301,11 @@ const ManageTeacher = () => {
                             <td>{teacher.phone}</td>
                             <td>{teacher.country}</td>
                             <td>{teacher.timezone}</td>
-                            <td>{teacher.timeOffset}</td>
                             <td>{teacher.qualification}</td>
-                           <td>{teacher.docUrl && shortenUrl(teacher.docUrl, 10)}</td>
+                            <td>
+                              {teacher.docUrl &&
+                                shortenUrl(teacher.docUrl, 10)}
+                            </td>
                             <td>{teacher.experience}</td>
                             <td>
                               <div className="d-flex gap-3">
@@ -283,241 +341,199 @@ const ManageTeacher = () => {
                             <Row>
                               <Col xs={12} md={6}>
                                 <div className="mb-3">
+                                  <Label className="form-label">Firstname</Label>
                                   <Input
                                     name="firstName"
                                     type="text"
                                     placeholder="First Name"
                                     onChange={validation.handleChange}
-                                    onBlur={validation.handleBlur}
-                                    value={validation.values.firstName || ""}
-                                    invalid={
-                                      validation.touched.firstName &&
-                                      validation.errors.firstName
-                                    }
+                                    value={validation.values.firstName}
+                                    invalid={validation.errors.firstName}
                                   />
-                                  <FormFeedback type="invalid">
-                                    {validation.errors.firstName}
-                                  </FormFeedback>
+                                  {validation.errors.firstName && (
+                                    <FormFeedback>{validation.errors.firstName}</FormFeedback>
+                                  )}
                                 </div>
                               </Col>
                               <Col xs={12} md={6}>
                                 <div className="mb-3">
+                                  <Label className="form-label">Lastname</Label>
                                   <Input
                                     name="lastName"
                                     type="text"
                                     placeholder="Last Name"
                                     onChange={validation.handleChange}
-                                    onBlur={validation.handleBlur}
-                                    value={validation.values.lastName || ""}
-                                    invalid={
-                                      validation.touched.lastName &&
-                                      validation.errors.lastName
-                                    }
+                                    value={validation.values.lastName}
+                                    invalid={validation.errors.lastName}
                                   />
-                                  <FormFeedback type="invalid">
-                                    {validation.errors.lastName}
-                                  </FormFeedback>
+                                  {validation.errors.lastName && (
+                                    <FormFeedback>{validation.errors.lastName}</FormFeedback>
+                                  )}
                                 </div>
                               </Col>
                             </Row>
                             <div className="mb-3">
+                              <Label className="form-label">Email</Label>
                               <Input
                                 name="email"
                                 type="email"
                                 placeholder="Email"
                                 onChange={validation.handleChange}
-                                onBlur={validation.handleBlur}
-                                value={validation.values.email || ""}
-                                invalid={
-                                  validation.touched.email &&
-                                  validation.errors.email
-                                }
+                                value={validation.values.email}
+                                invalid={validation.errors.email}
                               />
-                              <FormFeedback type="invalid">
-                                {validation.errors.email}
-                              </FormFeedback>
+                              {validation.errors.email && (
+                                <FormFeedback>{validation.errors.email}</FormFeedback>
+                              )}
                             </div>
                             {!isEdit && (
                               <div className="mb-3">
+                                <Label className="form-label">Password</Label>
                                 <Input
                                   name="password"
                                   type="password"
                                   placeholder="Password"
                                   onChange={validation.handleChange}
-                                  onBlur={validation.handleBlur}
-                                  value={validation.values.password || ""}
-                                  invalid={
-                                    validation.touched.password &&
-                                    validation.errors.password
-                                  }
+                                  value={validation.values.password}
+                                  invalid={validation.errors.password}
                                 />
-                                <FormFeedback type="invalid">
-                                  {validation.errors.password}
-                                </FormFeedback>
+                                {validation.errors.password && (
+                                  <FormFeedback>{validation.errors.password}</FormFeedback>
+                                )}
                               </div>
                             )}
                             <Row>
                               <Col xs={12} md={6}>
                                 <div className="mb-3">
-                                <Input
-              type="select"
-              name="gender"
-              onChange={validation.handleChange}
-              onBlur={validation.handleBlur}
-              value={validation.values.gender || ""}
-              invalid={
-                validation.touched.gender &&
-                validation.errors.gender
-              }
-            >
-              <option value="">Select Gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-            </Input>
-                                  <FormFeedback type="invalid">
-                                    {validation.errors.gender}
-                                  </FormFeedback>
+                                  <Label className="form-label">Gender</Label>
+                                  <Input
+                                    type="select"
+                                    name="gender"
+                                    onChange={validation.handleChange}
+                                    value={validation.values.gender}
+                                    invalid={validation.errors.gender}
+                                  >
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                  </Input>
+                                  {validation.errors.gender && (
+                                    <FormFeedback>{validation.errors.gender}</FormFeedback>
+                                  )}
                                 </div>
                               </Col>
                               <Col xs={12} md={6}>
-  <div className="mb-3">
-    <Input
-      name="phone" 
-      type="text"
-      placeholder="Phone Number"
-      onChange={validation.handleChange}
-      onBlur={validation.handleBlur}
-      value={validation.values.phone || ""} 
-      invalid={
-        validation.touched.phone && 
-        validation.errors.phone   
-      }
-    />
-    <FormFeedback type="invalid">
-      {validation.errors.phone} 
-    </FormFeedback>
-  </div>
-</Col>
-
-
-                            </Row>
-                            <div className="row">
-  <div className="col-md-6 mb-3">
-    <CountryDropdown
-      name="country"
-      value={validation.values.country}
-      onChange={(val) =>
-        validation.setFieldValue("country", val)
-      }
-      onBlur={validation.handleBlur}
-      className="form-control"
-    />
-    {validation.touched.country &&
-      validation.errors.country && (
-        <FormFeedback type="invalid">
-          {validation.errors.country}
-        </FormFeedback>
-      )}
-  </div>
-  <div className="col-md-6 mb-3">
-    <CustomTimezoneSelect
-      value={validation.values.timezone}
-      onChange={(timezone) => {
-        const offsetPattern = /GMT([+-]\d{1,2}):/;
-        const match = timezone.match(offsetPattern);
-        let offset = 0;
-        if (match && match.length > 1) {
-          offset = parseInt(match[1]); // Extract numerical offset
-        }
-        validation.setValues({
-          ...validation.values,
-          timezone,
-          timeOffset: offset,
-        });
-      }}
-      onBlur={validation.handleBlur}
-      error={validation.touched.timezone && validation.errors.timezone}
-    />
-  </div>
-</div>
-
-<div className="col-md-6">
                                 <div className="mb-3">
-                                  
+                                  <Label className="form-label">Phone</Label>
+                                  <Input
+                                    name="phone"
+                                    type="text"
+                                    placeholder="Phone Number"
+                                    onChange={validation.handleChange}
+                                    value={validation.values.phone}
+                                    invalid={validation.errors.phone}
+                                  />
+                                  {validation.errors.phone && (
+                                    <FormFeedback>{validation.errors.phone}</FormFeedback>
+                                  )}
+                                </div>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col md={6}>
+                                <div className="mb-3">
+                                  <Label className="form-label">Country</Label>
+                                  <CountrySelect 
+                                    name="country"
+                                    onChange={handleCountryChange}
+                                    value={selectedCountry}
+                                    invalid={validation.errors.country}
+                                  />
+                                  {validation.errors.country && (
+                                    <FormFeedback>{validation.errors.country}</FormFeedback>
+                                  )}
+                                </div>
+                              </Col>
+                              <Col md={6}>
+                                <div className="mb-3">
+                                  <Label className="form-label">Timezone</Label>
+                                  <TimezoneSelect 
+                                    country={selectedCountry}
+                                    onChange={handleTimezoneChange} 
+                                    value={selectedTimezone}
+                                    invalid={validation.errors.timezone}
+                                  />
+                                  {validation.errors.timezone && (
+                                    <FormFeedback>{validation.errors.timezone}</FormFeedback>
+                                  )}
+                                </div>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col md={6}>
+                                <div className="mb-3">
                                   <Input
                                     name="timeOffset"
                                     type="hidden"
                                     placeholder="Time OFFSET"
                                     onChange={validation.handleChange}
-                                    onBlur={validation.handleBlur}
-                                    value={validation.values.timeOffset || ""}
-                                    invalid={
-                                      validation.touched.timeOffset &&
-                                      validation.errors.timeOffset
-                                    }
+                                    value={validation.values.timeOffset}
+                                    invalid={validation.errors.timeOffset}
                                   />
-                                  <FormFeedback type="invalid">
-                                    {validation.errors.timeOffset}
-                                  </FormFeedback>
+                                  {validation.errors.timeOffset && (
+                                    <FormFeedback>{validation.errors.timeOffset}</FormFeedback>
+                                  )}
                                 </div>
+                              </Col>
+                              <div className="mb-3">
+                                <Label className="form-label">Qualification</Label>
+                                <Input
+                                  name="qualification"
+                                  type="text"
+                                  placeholder="Qualification"
+                                  onChange={validation.handleChange}
+                                  value={validation.values.qualification}
+                                  invalid={validation.errors.qualification}
+                                />
+                                {validation.errors.qualification && (
+                                  <FormFeedback>{validation.errors.qualification}</FormFeedback>
+                                )}
                               </div>
-
-                            <div className="mb-3">
-                             
-                              <Input
-                                name="qualification"
-                                type="text"
-                                placeholder="Qualification"
-                                onChange={validation.handleChange}
-                                onBlur={validation.handleBlur}
-                                value={validation.values.qualification || ""}
-                                invalid={
-                                  validation.touched.qualification &&
-                                  validation.errors.qualification
-                                }
-                              />
-                              <FormFeedback type="invalid">
-                                {validation.errors.qualification}
-                              </FormFeedback>
-                            </div>
-
-                            <div className="mb-3">
-                             
-                              <Input
-                                name="docUrl"
-                                type="text"
-                                placeholder="Document URL"
-                                onChange={validation.handleChange}
-                                onBlur={validation.handleBlur}
-                                value={validation.values.docUrl || ""}
-                                invalid={
-                                  validation.touched.docUrl &&
-                                  validation.errors.docUrl
-                                }
-                              />
-                              <FormFeedback type="invalid">
-                                {validation.errors.docUrl}
-                              </FormFeedback>
-                            </div>
-
-                            <div className="mb-3">
-                             
-                             <Input
-                               name="experience"
-                               type="text"
-                               placeholder="Work Experience"
-                               onChange={validation.handleChange}
-                               onBlur={validation.handleBlur}
-                               value={validation.values.experience || ""}
-                               invalid={
-                                 validation.touched.experience &&
-                                 validation.errors.experience
-                               }
-                             />
-                             <FormFeedback type="invalid">
-                               {validation.errors.experience}
-                             </FormFeedback>
-                           </div>
+                            </Row>
+                            <Row>
+                              <Col md={6}>
+                                <div className="mb-3">
+                                  <Label className="form-label">Document URL</Label>
+                                  <Input
+                                    name="docUrl"
+                                    type="text"
+                                    placeholder="Document URL"
+                                    onChange={validation.handleChange}
+                                    value={validation.values.docUrl}
+                                    invalid={validation.errors.docUrl}
+                                  />
+                                  {validation.errors.docUrl && (
+                                    <FormFeedback>{validation.errors.docUrl}</FormFeedback>
+                                  )}
+                                </div>
+                              </Col>
+                              <Col md={6}>
+                                <div className="mb-3">
+                                  <Label className="form-label">Work Experience</Label>
+                                  <Input
+                                    name="experience"
+                                    type="text"
+                                    placeholder="Work Experience (e.g 2 years)"
+                                    onChange={validation.handleChange}
+                                    value={validation.values.experience}
+                                    invalid={validation.errors.experience}
+                                  />
+                                  {validation.errors.experience && (
+                                    <FormFeedback>{validation.errors.experience}</FormFeedback>
+                                  )}
+                                </div>
+                              </Col>
+                            </Row>
                           </Col>
                         </Row>
                         <Row>
@@ -544,6 +560,12 @@ const ManageTeacher = () => {
                       </Form>
                     </ModalBody>
                   </Modal>
+
+                  <InviteTeacherModal
+                    isOpen={inviteModalOpen}
+                    toggle={toggleInviteModal}
+                    inviteTeacher={inviteTeacher}
+                  />
                 </Col>
               </Row>
             </Col>

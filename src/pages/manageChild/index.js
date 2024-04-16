@@ -4,7 +4,6 @@ import DeleteModal from "../../components/Common/DeleteModal";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
-import { DaysSelect, TimeSelect } from "../DaysOfWeekSelect";
 import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
 import CustomTimezoneSelect from "../CustomTimezoneSelect";
 import withAuth from '../withAuth';
@@ -36,6 +35,7 @@ const ManageChild = () => {
 
   useEffect(() => {
     fetchParents();
+    fetchChildren(); // Fetch children initially
   }, []); // Fetch parents once on component mount
 
   const fetchParents = async () => {
@@ -105,13 +105,9 @@ const ManageChild = () => {
     },
   });
 
-  useEffect(() => {
-    fetchChildren();
-  }, [modal]);
-
   const fetchChildren = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://api-pro.rydlearning.com';
       const response = await axios.get(`${apiUrl}/admin/child/all`);
       setUsers(response.data.data);
     } catch (error) {
@@ -171,206 +167,194 @@ const ManageChild = () => {
                     </h5>
                   </div>
                 </Col>
-                <Col md={6}>
-                  <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
-                    <div>
-                      <Link
-                        to="#"
-                        className="btn btn-light"
-                        onClick={() => {
-                          setContact({});
-                          setIsEdit(false);
-                          toggle();
-                        }}
-                      >
-                        <i className="bx bx-plus me-1"></i> Add New Child
-                      </Link>
-                    </div>
-                  </div>
-                </Col>
               </Row>
               <Row>
                 <Col xl="12">
-                  <table className="table align-middle">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Age</th>
-                        <th>Gender</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Array.isArray(users) && users.map((user, index) => (
-                        <tr key={index}>
-                          <td>{index + 1}</td>
-                          <td>{user.firstName}</td>
-                          <td>{user.lastName}</td>
-                          <td>{user.age}</td>
-                          <td>{user.gender}</td>
-                          <td>
-                            <div className="d-flex gap-3">
-                              <Link
-                                className="text-success"
-                                to="#"
-                                onClick={() => {
-                                  handleUserClick(user)
-                                  setIsEdit(true);
-                                }}
-                              >
-                                <i className="mdi mdi-pencil font-size-18"></i>
-                              </Link>
-                              <Link
-                                className="text-danger"
-                                to="#"
-                                onClick={() => onClickDelete(user)}
-                              >
-                                <i className="mdi mdi-delete font-size-18"></i>
-                              </Link>
-                            </div>
-                          </td>
+                  {users.length === 0 ? (
+                    <div className="text-center mt-5">
+                    <h3>No data available</h3>
+                  </div>
+                  ) : (
+                    <table className="table align-middle">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>First Name</th>
+                          <th>Last Name</th>
+                          <th>Age</th>
+                          <th>Gender</th>
+                          <th>Action</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  
+                      </thead>
+                      <tbody>
+                        {users.map((user, index) => (
+                          <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td>{user.firstName}</td>
+                            <td>{user.lastName}</td>
+                            <td>{user.age}</td>
+                            <td>{user.gender}</td>
+                            <td>
+                              <div className="d-flex gap-3">
+                                <Link
+                                  className="text-success"
+                                  to="#"
+                                  onClick={() => {
+                                    handleUserClick(user)
+                                    setIsEdit(true);
+                                  }}
+                                >
+                                  <i className="mdi mdi-pencil font-size-18"></i>
+                                </Link>
+                                <Link
+                                  className="text-danger"
+                                  to="#"
+                                  onClick={() => onClickDelete(user)}
+                                >
+                                  <i className="mdi mdi-delete font-size-18"></i>
+                                </Link>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                   <Modal isOpen={modal} toggle={toggle}>
-  <ModalHeader toggle={toggle}>
-    {isEdit ? "Edit Child" : "Add New Child"}
-  </ModalHeader>
-  <ModalBody>
-    <Form onSubmit={validation.handleSubmit}>
-      <Row>
-        <Col xs={12}>
-          <div className="mb-3">
-            <Label className="form-label">First Name</Label>
-            <Input
-              name="firstName"
-              type="text"
-              placeholder="First Name"
-              onChange={validation.handleChange}
-              onBlur={validation.handleBlur}
-              value={validation.values.firstName || ""}
-              invalid={
-                validation.touched.firstName &&
-                validation.errors.firstName
-              }
-            />
-            <FormFeedback type="invalid">
-              {validation.errors.firstName}
-            </FormFeedback>
-          </div>
-          <div className="mb-3">
-            <Label className="form-label">Last Name</Label>
-            <Input
-              name="lastName"
-              type="text"
-              placeholder="Last Name"
-              onChange={validation.handleChange}
-              onBlur={validation.handleBlur}
-              value={validation.values.lastName || ""}
-              invalid={
-                validation.touched.lastName &&
-                validation.errors.lastName
-              }
-            />
-            <FormFeedback type="invalid">
-              {validation.errors.lastName}
-            </FormFeedback>
-          </div>
-          <div className="mb-3">
-            <Label className="form-label">Age</Label>
-            <Input
-              name="age"
-              type="text"
-              placeholder="Age"
-              onChange={validation.handleChange}
-              onBlur={validation.handleBlur}
-              value={validation.values.age || ""}
-              invalid={
-                validation.touched.age &&
-                validation.errors.age
-              }
-            />
-            <FormFeedback type="invalid">
-              {validation.errors.age}
-            </FormFeedback>
-          </div>
-          <div className="mb-3">
-            <Label className="form-label">Gender</Label>
-            <Input
-              type="select"
-              name="gender"
-              onChange={validation.handleChange}
-              onBlur={validation.handleBlur}
-              value={validation.values.gender || ""}
-              invalid={
-                validation.touched.gender &&
-                validation.errors.gender
-              }
-            >
-              <option value="">Select Gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="other">Other</option>
-            </Input>
-            <FormFeedback type="invalid">
-              {validation.errors.gender}
-            </FormFeedback>
-          </div>
-          <div className="mb-3">
-            <Label className="form-label">Parent</Label>
-            <Input
-              type="select"
-              name="parentId"
-              onChange={validation.handleChange}
-              onBlur={validation.handleBlur}
-              value={validation.values.parentId || ""}
-              invalid={
-                validation.touched.parentId &&
-                validation.errors.parentId
-              }
-            >
-              <option value="">Select Parent</option>
-              {parentOptions.map(parent => (
-                <option key={parent.id} value={parent.id}>
-                  {parent.firstName} {parent.lastName}
-                </option>
-              ))}
-            </Input>
-            <FormFeedback type="invalid">
-              {validation.errors.parentId}
-            </FormFeedback>
-          </div>
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          <div className="text-end">
-            {!isEdit ? (
-              <button
-                type="submit"
-                className="btn btn-primary save-user"
-              >
-                Create Child
-              </button>
-            ) : (
-              <button
-                type="submit"
-                className="btn btn-primary save-user"
-              >
-                Update Child
-              </button>
-            )}
-          </div>
-        </Col>
-      </Row>
-    </Form>
-  </ModalBody>
-</Modal>
-
+                    <ModalHeader toggle={toggle}>
+                      {isEdit ? "Edit Child" : "Add New Child"}
+                    </ModalHeader>
+                    <ModalBody>
+                      <Form onSubmit={validation.handleSubmit}>
+                        <Row>
+                          <Col xs={12}>
+                            <div className="mb-3">
+                              <Label className="form-label">First Name</Label>
+                              <Input
+                                name="firstName"
+                                type="text"
+                                placeholder="First Name"
+                                onChange={validation.handleChange}
+                                onBlur={validation.handleBlur}
+                                value={validation.values.firstName || ""}
+                                invalid={
+                                  validation.touched.firstName &&
+                                  validation.errors.firstName
+                                }
+                              />
+                              <FormFeedback type="invalid">
+                                {validation.errors.firstName}
+                              </FormFeedback>
+                            </div>
+                            <div className="mb-3">
+                              <Label className="form-label">Last Name</Label>
+                              <Input
+                                name="lastName"
+                                type="text"
+                                placeholder="Last Name"
+                                onChange={validation.handleChange}
+                                onBlur={validation.handleBlur}
+                                value={validation.values.lastName || ""}
+                                invalid={
+                                  validation.touched.lastName &&
+                                  validation.errors.lastName
+                                }
+                              />
+                              <FormFeedback type="invalid">
+                                {validation.errors.lastName}
+                              </FormFeedback>
+                            </div>
+                            <div className="mb-3">
+                              <Label className="form-label">Age</Label>
+                              <Input
+                                name="age"
+                                type="text"
+                                placeholder="Age"
+                                onChange={validation.handleChange}
+                                onBlur={validation.handleBlur}
+                                value={validation.values.age || ""}
+                                invalid={
+                                  validation.touched.age &&
+                                  validation.errors.age
+                                }
+                              />
+                              <FormFeedback type="invalid">
+                                {validation.errors.age}
+                              </FormFeedback>
+                            </div>
+                            <div className="mb-3">
+                              <Label className="form-label">Gender</Label>
+                              <Input
+                                type="select"
+                                name="gender"
+                                onChange={validation.handleChange}
+                                onBlur={validation.handleBlur}
+                                value={validation.values.gender || ""}
+                                invalid={
+                                  validation.touched.gender &&
+                                  validation.errors.gender
+                                }
+                              >
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="other">Other</option>
+                              </Input>
+                              <FormFeedback type="invalid">
+                                {validation.errors.gender}
+                              </FormFeedback>
+                            </div>
+                        {/*    <div className="mb-3">
+                              <Label className="form-label">Parent</Label>
+                              <Input
+                                type="select"
+                                name="parentId"
+                                onChange={validation.handleChange}
+                                onBlur={validation.handleBlur}
+                                value={validation.values.parentId || ""}
+                                invalid={
+                                  validation.touched.parentId &&
+                                  validation.errors.parentId
+                                }
+                              >
+                                <option value="">Select Parent</option>
+                                {parentOptions.map(parent => (
+                                  <option key={parent.id} value={parent.id}>
+                                    {parent.firstName} {parent.lastName}
+                                  </option>
+                                ))}
+                              </Input>
+                              <FormFeedback type="invalid">
+                                {validation.errors.parentId}
+                              </FormFeedback>
+                            </div>
+                                */}
+                          </Col>
+                        </Row>
+                        <Row>
+                          <Col>
+                            <div className="text-end">
+                              {!isEdit ? (
+                                <button
+                                  type="submit"
+                                  className="btn btn-primary save-user"
+                                >
+                                  Create Child
+                                </button>
+                              ) : (
+                                <button
+                                  type="submit"
+                                  className="btn btn-primary save-user"
+                                >
+                                  Update Child
+                                </button>
+                              )}
+                            </div>
+                          </Col>
+                        </Row>
+                      </Form>
+                    </ModalBody>
+                  </Modal>
                 </Col>
               </Row>
             </Col>

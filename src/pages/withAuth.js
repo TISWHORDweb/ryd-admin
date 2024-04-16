@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -6,7 +6,7 @@ const withAuth = (WrappedComponent) => {
   const WithAuth = (props) => {
     const navigate = useNavigate();
 
-    useEffect(() => {
+    useMemo(() => {
       const token = localStorage.getItem('token');
       if (!token) {
         console.log('Token not found, redirecting to login...');

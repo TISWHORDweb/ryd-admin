@@ -4,9 +4,8 @@ import DeleteModal from "../../components/Common/DeleteModal";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
-import axios from "axios"; // Import Axios
 import withAuth from '../withAuth';
-import { DaysSelect, TimeSelect } from "../DaysOfWeekSelect";
+import axios from "axios";
 import {
   Col,
   Container,
@@ -22,49 +21,74 @@ import {
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const ManageTimetable = () => {
-  document.title = "Manage Timetable | RYD Admin";
 
-  const [users, setUsers] = useState([]);
-  const [contact, setContact] = useState({});
+// Define arrays for days and times
+export const Days = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
+export const Times = [
+  "00:00AM", "1:00AM", "2:00AM", "3:00AM", "4:00AM", "5:00AM", "6:00AM", "7:00AM",
+  "8:00AM", "9:00AM", "10:00AM", "11:00AM", "12:00PM", "13:00PM", "14:00PM", "15:00PM",
+  "16:00PM", "17:00PM", "18:00PM", "19:00PM", "20:00PM", "21:00PM", "22:00PM", "23:00PM"
+];
+
+
+const ManageTimeTable = () => {
+  document.title = "Manage Time Table | RYD Admin";
+
+  const [timetables, setTimetables] = useState([]);
+  const [timetable, setTimetable] = useState({});
   const [modal, setModal] = useState(false);
-  const [isEdit, setIsEdit] = useState(true);
+  const [isEdit, setIsEdit] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
-  
+
+  useEffect(() => {
+    fetchTimetables();
+  }, []); // Fetch timetables once on component mount
+
+  const fetchTimetables = async () => {
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+      const response = await axios.get(`${apiUrl}/admin/timetable/all`);
+      setTimetables(response.data.data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
 
   const validation = useFormik({
     enableReinitialize: true,
     initialValues: {
-      name: contact.name || "",
-      date: contact.date || "",
-      startTime: contact.startTime || "",
-      endTime: contact.endTime || "",
-      // Add more fields as needed
+      dayOfWeek: timetable.dayOfWeek || "",
+      startTime: timetable.startTime || "",
+      endTime: timetable.endTime || "",
+      timezone: timetable.timezone || "",
+      country: timetable.country || "",
+      region: timetable.region || "",
     },
     validationSchema: Yup.object({
-      name: Yup.string().required("Please Enter Name"),
-      date: Yup.string().required("Please Enter Date"),
-      startTime: Yup.string().required("Please Enter Start Time"),
-      endTime: Yup.string().required("Please Enter End Time"),
-      // Add more validation rules as needed
+      dayOfWeek: Yup.string().required("Please select Day of Week"),
+      startTime: Yup.string().required("Please select Start Time"),
+      endTime: Yup.string().required("Please select End Time"),
+      timezone: Yup.string().required("Please select Timezone"),
+      country: Yup.string().required("Please select Country"),
+      region: Yup.string().required("Please select Region"),
     }),
 
     onSubmit: async (values) => {
       try {
         const newTimetable = {
-          name: values.name,
-          date: values.date,
+          dayOfWeek: values.dayOfWeek,
           startTime: values.startTime,
           endTime: values.endTime,
-          // Add more fields as needed
+          timezone: values.timezone,
+          country: values.country,
+          region: values.region,
         };
 
-        // Determine the API endpoint based on whether it's an edit or a new creation
         let apiUrl;
         let response;
         if (isEdit) {
           apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-          response = await axios.put(`${apiUrl}/admin/timetable/edit/${contact.id}`, newTimetable);
+          response = await axios.put(`${apiUrl}/admin/timetable/edit/${timetable.id}`, newTimetable);
           toast.success('Timetable updated successfully');
         } else {
           apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
@@ -72,72 +96,35 @@ const ManageTimetable = () => {
           toast.success('Timetable created successfully');
         }
 
-        // Handle the response accordingly
-        const responseData = response.data;
+        fetchTimetables(); // Fetch timetables again to update the list
 
-        if (isEdit) {
-          // Update the timetable in the users state array
-          const updatedTimetables = users.map((timetable) =>
-            timetable.id === contact.id ? { ...timetable, ...responseData } : timetable
-          );
-          setUsers(updatedTimetables);
-        } else {
-          // Add the newly created timetable to the users state array
-          setUsers([...users, responseData]);
-        }
-
-        toggle(); // Close the modal after submission
+        toggle();
       } catch (error) {
         console.error("Error:", error);
       }
     },
   });
 
-  useEffect(() => {
-    fetchTimetables();
-    // setIsEdit();
-  }, [modal]);
-
-  const fetchTimetables = async () => {
-    try {
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-      const response = await axios.get(`${apiUrl}/admin/timetable/all`);
-      setUsers(response.data.data);
-      console.log(response.data.data)
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
-
   const toggle = () => {
     setModal(!modal);
   };
 
-  const handleTimetableClick = (timetableData) => {
-    setContact(timetableData);
+  const handleTimetableClick = (data) => {
+    setTimetable(data);
     setIsEdit(true);
     toggle();
   };
 
-  const onClickDelete = (timetableData) => {
-    setContact(timetableData);
+  const onClickDelete = (data) => {
+    setTimetable(data);
     setDeleteModal(true);
-  };
-
-  const shortenUrl = (url, maxLength) => {
-    if (url.length <= maxLength) {
-      return url;
-    } else {
-      return url.substring(0, maxLength) + "...";
-    }
   };
 
   const handleDeleteTimetable = async () => {
     try {
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000'; 
-      await axios.delete(`${apiUrl}/admin/timetable/${contact.id}`);
-      const updatedTimetables = users.filter((timetable) => timetable.id !== contact.id);
-      setUsers(updatedTimetables);
+      await axios.delete(`${apiUrl}/admin/timetable/${timetable.id}`);
+      fetchTimetables(); // Fetch timetables again to update the list
       setDeleteModal(false);
       toast.success('Timetable deleted successfully');
     } catch (error) {
@@ -145,9 +132,6 @@ const ManageTimetable = () => {
       toast.error('Failed to delete timetable');
     }
   };
-
-
-  
 
   return (
     <React.Fragment>
@@ -167,208 +151,160 @@ const ManageTimetable = () => {
                     <h5 className="card-title">
                       Timetable List{" "}
                       <span className="text-muted fw-normal ms-2">
-                      ({users.length})
+                        ({timetables.length})
                       </span>
                     </h5>
                   </div>
                 </Col>
-                <Col md={6}>
+               {/* <Col md={6}>
                   <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
-                 
+                    <div>
+                      <Link
+                        to="#"
+                        className="btn btn-light"
+                        onClick={() => {
+                          setTimetable({});
+                          setIsEdit(false);
+                          toggle();
+                        }}
+                      >
+                        <i className="bx bx-plus me-1"></i> Add New Time Table
+                      </Link>
+                    </div>
                   </div>
                 </Col>
+                      */}
               </Row>
               <Row>
                 <Col xl="12">
-                <table className="table align-middle">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>P.Name</th>
-                        <th>C.Name</th>
-                        <th>Age</th>
-                        <th>Gender</th>
-                        <th>T.Name</th>
-                        <th>Package Title</th>
-                        <th>Ass. Rec</th>
-                        <th>Status</th>
-                        <th>Level</th>
-                        <th>Time</th>
-                        <th>Day</th>
-                        <th>Offset</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                    {Array.isArray(users) && users.map((timetable, index) => (
-                        <tr key={index}>
-                          <td>{index + 1}</td>
-                          <td>{timetable?.child?.firstName}</td>{" "}
-                          {/* Access parent's first name from child object */}
-                          <td>{`${timetable.child.lastName}`}</td>{" "}
-                          {/* Concatenate child's first name and last name */}
-                          <td>{timetable.child.age}</td>{" "}
-                          {/* Display child's age */}
-                          <td>{timetable.child.gender}</td>{" "}
-                          {/* Display child's gender */}
-                          <td>{timetable?.teacher?.firstName}</td>{" "}
-                          {/* Display teacher's first name */}
-                          <td>{timetable?.package?.title}</td>{" "}
-                          {/* Access package title */}
-                          <td>{shortenUrl(timetable.assessmentUrl, 20)}</td>{" "}
-                          {/* Display assessment URL */}
-                          <td>
-                            {timetable?.package?.status ? "Active" : "Inactive"}
-                          </td>{" "}
-                          {/* Display package status */}
-                          <td>{timetable.level}</td> {/* Display level */}
-                          <td>{timetable.time}</td> {/* Display time */}
-                          <td>{timetable.day}</td> {/* Display day */}
-                          <td>{timetable.timeOffset}</td>{" "}
-                          {/* Display time offset */}
-                          <td>
-                            <div className="d-flex gap-3">
-                              <Link
-                                className="text-success"
-                                to="#"
-                                onClick={() => handleTimetableClick(timetable)}
-                              >
-                                <i className="mdi mdi-user font-size-18"></i>
-                              </Link>
-                            </div>
-                          </td>
+                  {timetables.length === 0 ? (
+                    <p className="text-center">No timetable yet</p>
+                  ) : (
+                    <table className="table align-middle">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Day of Week</th>
+                          <th>Start Time</th>
+                          <th>Timezone</th>
+                          <th>Country</th>
+                          <th>Region</th>
+                          <th>Action</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  
+                      </thead>
+                      <tbody>
+                        {timetables.map((data, index) => (
+                          <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td>{data.dayOfWeek}</td>
+                            <td>{data.startTime}</td>
+                            <td>{data.endTime}</td>
+                            <td>{data.timezone}</td>
+                            <td>{data.country}</td>
+                            <td>{data.region}</td>
+                            <td>
+                              <div className="d-flex gap-3">
+                                <Link
+                                  className="text-success"
+                                  to="#"
+                                  onClick={() => {
+                                    handleTimetableClick(data)
+                                    setIsEdit(true);
+                                  }}
+                                >
+                                  <i className="mdi mdi-pencil font-size-18"></i>
+                                </Link>
+                                <Link
+                                  className="text-danger"
+                                  to="#"
+                                  onClick={() => onClickDelete(data)}
+                                >
+                                  <i className="mdi mdi-delete font-size-18"></i>
+                                </Link>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                   <Modal isOpen={modal} toggle={toggle}>
                     <ModalHeader toggle={toggle}>
-                      {isEdit ? "Edit Program" : "Add New Program"}
+                      {isEdit ? "Edit Time Table" : "Add New Time Table"}
                     </ModalHeader>
                     <ModalBody>
-                    <Form onSubmit={validation.handleSubmit}>
-  <Row>
-    <Col xs={12}>
-      <div className="row">
-        <div className="col-md-6">
-          <div className="mb-3">
-            <Input
-              name="Level"
-              type="select"
-              placeholder="Level"
-              onChange={validation.handleChange}
-              onBlur={validation.handleBlur}
-              value={validation.values.Level || ""}
-              invalid={
-                validation.touched.Level &&
-                validation.errors.Level
-              }
-            />
-            <FormFeedback type="invalid">
-              {validation.errors.Level}
-            </FormFeedback>
-          </div>
-        </div>
-        <div className="col-md-6">
-          <div className="mb-3">
-            <Input
-              name="Package"
-              type="select"
-              placeholder="Package"
-              onChange={validation.handleChange}
-              onBlur={validation.handleBlur}
-              value={validation.values.Package || ""}
-              invalid={
-                validation.touched.Package &&
-                validation.errors.Package
-              }
-            />
-            <FormFeedback type="invalid">
-              {validation.errors.Package}
-            </FormFeedback>
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-3">
-        <Input
-          name="AssignedRecommendation"
-          type="select"
-          placeholder="Assigned Recommendation"
-          onChange={validation.handleChange}
-          onBlur={validation.handleBlur}
-          value={validation.values.AssignedRecommendation || ""}
-          invalid={
-            validation.touched.AssignedRecommendation &&
-            validation.errors.AssignedRecommendation
-          }
-        />
-        <FormFeedback type="invalid">
-          {validation.errors.AssignedRecommendation}
-        </FormFeedback>
-
-      </div>
-
-      <div className="row">
-        <div className="col-md-6">
-          <div className="mb-3">
-            <TimeSelect
-              onChange={validation.handleChange}
-              onBlur={validation.handleBlur}
-              value={validation.values.Time || ""}
-              invalid={
-                validation.touched.Time &&
-                validation.errors.Time
-              }
-            />
-            <FormFeedback type="invalid">
-              {validation.errors.Time}
-            </FormFeedback>
-          </div>
-        </div>
-        <div className="col-md-6">
-          <div className="mb-3">
-            <DaysSelect
-              name="Day"
-              onChange={validation.handleChange}
-              onBlur={validation.handleBlur}
-              value={validation.values.Day || ""}
-              invalid={
-                validation.touched.Day &&
-                validation.errors.Day
-              }
-            />
-            <FormFeedback type="invalid">
-              {validation.errors.Day}
-            </FormFeedback>
-          </div>
-        </div>
-      </div>
-    </Col>
-  </Row>
-  <Row>
-    <Col>
-      <div className="text-end">
-        {!isEdit ? (
-          <button
-            type="submit"
-            className="btn btn-primary save-user"
-          >
-            Create Program
-          </button>
-        ) : (
-          <button
-            type="submit"
-            className="btn btn-primary save-user"
-          >
-            Update Program
-          </button>
-        )}
-      </div>
-    </Col>
-  </Row>
-</Form>
-
+                      <Form onSubmit={validation.handleSubmit}>
+                        <Row>
+                          <Col xs={12}>
+                          <div className="mb-3">
+  <Label className="form-label">Day of Week</Label>
+  <Input
+    type="select"
+    name="dayOfWeek"
+    onChange={validation.handleChange}
+    onBlur={validation.handleBlur}
+    value={validation.values.dayOfWeek || ""}
+    invalid={
+      validation.touched.dayOfWeek &&
+      validation.errors.dayOfWeek
+    }
+  >
+    <option value="">Select Day of Week</option>
+    {Days.map((day, index) => (
+      <option key={index} value={day}>{day}</option>
+    ))}
+  </Input>
+  <FormFeedback type="invalid">
+    {validation.errors.dayOfWeek}
+  </FormFeedback>
+</div>
+<div className="mb-3">
+  <Label className="form-label">Start Time</Label>
+  <Input
+    type="select"
+    name="startTime"
+    onChange={validation.handleChange}
+    onBlur={validation.handleBlur}
+    value={validation.values.startTime || ""}
+    invalid={
+      validation.touched.startTime &&
+      validation.errors.startTime
+    }
+  >
+    <option value="">Select Start Time</option>
+    {Times.map((time, index) => (
+      <option key={index} value={time}>{time}</option>
+    ))}
+  </Input>
+  <FormFeedback type="invalid">
+    {validation.errors.startTime}
+  </FormFeedback>
+</div>
+                            {/* Add more form fields here */}
+                          </Col>
+                        </Row>
+                        <Row>
+                          <Col>
+                            <div className="text-end">
+                              {!isEdit ? (
+                                <button
+                                  type="submit"
+                                  className="btn btn-primary save-user"
+                                >
+                                  Create Time Table
+                                </button>
+                              ) : (
+                                <button
+                                  type="submit"
+                                  className="btn btn-primary save-user"
+                                >
+                                  Update Time Table
+                                </button>
+                              )}
+                            </div>
+                          </Col>
+                        </Row>
+                      </Form>
                     </ModalBody>
                   </Modal>
                 </Col>
@@ -382,4 +318,4 @@ const ManageTimetable = () => {
   );
 };
 
-export default withAuth(ManageTimetable);
+export default withAuth(ManageTimeTable);

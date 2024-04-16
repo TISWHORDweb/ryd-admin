@@ -195,14 +195,7 @@ const SidebarContent = props => {
               </Link>
             </li>
 
-            <li>
-              <Link to="/manage-timetable" className="">
-                <FeatherIcon
-                    icon="list"
-                />{" "}
-                <span>{props.t("Manage TimeTable")}</span>
-              </Link>
-            </li>
+           
 
             <li>
               <Link to="/manage-package" className="">

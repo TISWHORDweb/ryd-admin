@@ -37,8 +37,9 @@ const ManagePackage = () => {
     initialValues: {
       title: packageData.title || "",
       description: packageData.description || "",
+      level: packageData.level || "",
       imageUrl: packageData.imageUrl || "",
-      week: packageData.week || "",
+      weekDuration: packageData.weekDuration || "",
       amount: packageData.amount || "",
       minAge: packageData.minAge || "",
       maxAge: packageData.maxAge || "",
@@ -46,8 +47,9 @@ const ManagePackage = () => {
     validationSchema: Yup.object({
       title: Yup.string().required("Please enter the Title"),
       description: Yup.string().required("Please enter a description"),
+      level: Yup.string().required("Please enter a level"),
       imageUrl: Yup.string().required("Please enter an image URL"),
-      week: Yup.number().required("Please enter the program duration number of weeks"),
+      weekDuration: Yup.number().required("Please enter the program duration number of weeks"),
       amount: Yup.number().required("Please enter the amount"),
       minAge: Yup.number().required("Please enter the minimum age"),
       maxAge: Yup.number().required("Please enter the maximum age"),
@@ -57,8 +59,9 @@ const ManagePackage = () => {
         const newPackage = {
           title: values.title,
           description: values.description,
+          level: values.level,
           imageUrl: values.imageUrl,
-          week: values.week,
+          weekDuration: values.weekDuration,
           amount: values.amount,
           minAge: values.minAge,
           maxAge: values.maxAge,
@@ -67,14 +70,14 @@ const ManagePackage = () => {
         let apiUrl;
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
           response = await axios.put(
             `${apiUrl}/admin/package/edit/${packageData.id}`,
             newPackage
           );
           toast.success("Package updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
           response = await axios.post(
             `${apiUrl}/admin/package/create`,
             newPackage
@@ -106,7 +109,7 @@ const ManagePackage = () => {
 
   const fetchPackages = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
       const response = await axios.get(`${apiUrl}/admin/package/all`);
       setPackages(response.data.data);
     } catch (error) {
@@ -139,7 +142,7 @@ const ManagePackage = () => {
 
   const handleDeletePackage = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
       await axios.delete(`${apiUrl}/admin/package/${packageData.id}`);
       const updatedPackages = packages.filter(
         (pkg) => pkg.id !== packageData.id
@@ -196,59 +199,66 @@ const ManagePackage = () => {
               </Row>
               <Row>
                 <Col xl="12">
-                  <table className="table align-middle">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Title</th>
-                        <th>Description</th>
-                        <th>Image URL</th>
-                        <th>Week</th>
-                        <th>Amount</th>
-                        <th>Min Age</th>
-                        <th>Max Age</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Array.isArray(packages) &&
-                        packages.map((pkg, index) => (
-                          <tr key={index}>
-                            <td>{index + 1}</td>
-                            <td>{pkg.title}</td>
-                            <td>{pkg.description}</td>
-                            <td>
-                              {pkg.imageUrl && shortenUrl(pkg.imageUrl, 10)}
-                            </td>
-                            <td>{pkg.week}</td>
-                            <td>{pkg.amount}</td>
-                            <td>{pkg.minAge}</td>
-                            <td>{pkg.maxAge}</td>
-                            <td>
-                              <div className="d-flex gap-3">
-                                <Link
-                                  className="text-success"
-                                  to="#"
-                                  onClick={() => {
-                                    handlePackageClick(pkg);
-                                    setIsEdit(true);
-                                  }}
-                                >
-                                  <i className="mdi mdi-pencil font-size-18"></i>
-                                </Link>
-                                <Link
-                                  className="text-danger"
-                                  to="#"
-                                  onClick={() => onClickDelete(pkg)}
-                                >
-                                  <i className="mdi mdi-delete font-size-18"></i>
-                                </Link>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
+                <table className="table align-middle">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Title</th>
+      <th>Description</th>
+      <th>Level</th>
+      <th>Image URL</th>
+      <th>Week Duration</th>
+      <th>Amount</th>
+      <th>Min Age</th>
+      <th>Max Age</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {Array.isArray(packages) && packages.length === 0 ? (
+     <div className="text-center mt-5">
+     <h3>No data available</h3>
+   </div>
+    ) : (
+      packages.map((pkg, index) => (
+        <tr key={index}>
+          <td>{index + 1}</td>
+          <td>{pkg.title}</td>
+          <td>{pkg.description}</td>
+          <td>{pkg.level}</td>
+          <td>
+            {pkg.imageUrl && shortenUrl(pkg.imageUrl, 10)}
+          </td>
+          <td>{pkg.weekDuration}</td>
+          <td>{pkg.amount}</td>
+          <td>{pkg.minAge}</td>
+          <td>{pkg.maxAge}</td>
+          <td>
+            <div className="d-flex gap-3">
+              <Link
+                className="text-success"
+                to="#"
+                onClick={() => {
+                  handlePackageClick(pkg);
+                  setIsEdit(true);
+                }}
+              >
+                <i className="mdi mdi-pencil font-size-18"></i>
+              </Link>
+              <Link
+                className="text-danger"
+                to="#"
+                onClick={() => onClickDelete(pkg)}
+              >
+                <i className="mdi mdi-delete font-size-18"></i>
+              </Link>
+            </div>
+          </td>
+        </tr>
+      ))
+    )}
+  </tbody>
+</table>
 
                   <Modal isOpen={modal} toggle={toggle}>
                     <ModalHeader toggle={toggle}>
@@ -294,6 +304,35 @@ const ManagePackage = () => {
                                 {validation.errors.description}
                               </FormFeedback>
                             </div>
+                           
+
+
+                                <div className="mb-3">
+                                  <Label>Level</Label>
+                                  <Input
+                                    type="select"
+                                    name="level"
+                                    onChange={validation.handleChange}
+                                    onBlur={validation.handleBlur}
+                                    value={validation.values.level || ""}
+                                    invalid={
+                                      validation.touched.level &&
+                                      validation.errors.level
+                                    }
+                                  >
+                                    <option value="">Select Level</option>
+                                    <option value="6">6</option>
+                                    <option value="5">5</option>
+                                    <option value="4">4</option>
+                                    <option value="3">3</option>
+                                    <option value="2">2</option>
+                                    <option value="1">1</option>
+                                  </Input>
+                                  <FormFeedback type="invalid">
+                                    {validation.errors.level}
+                                  </FormFeedback>
+                                </div>
+                              
                             <div className="mb-3">
                               <Label className="form-label">Image URL</Label>
                               <Input
@@ -312,46 +351,38 @@ const ManagePackage = () => {
                                 {validation.errors.imageUrl}
                               </FormFeedback>
                             </div>
-                            <div className="mb-3">
-                              <Label className="form-label">Program Duration number of weeks</Label>
-                              <Input
-                                type="text"
-                                name="week"
-                                placeholder="Program Duration Number of Weeks"
-                                onChange={validation.handleChange}
-                                onBlur={validation.handleBlur}
-                                value={validation.values.week || ""}
-                                invalid={
-                                  validation.touched.week &&
-                                  validation.errors.week
-                                }
-                             />
-                               
+                            <div className="row">
+  <div className="col-md-6 mb-3">
+    <Label className="form-label">Week Duration </Label>
+    <Input
+      type="text"
+      name="weekDuration"
+      placeholder="Number of weeks"
+      onChange={validation.handleChange}
+      onBlur={validation.handleBlur}
+      value={validation.values.weekDuration || ""}
+      invalid={validation.touched.weekDuration && validation.errors.weekDuration}
+    />
+    <FormFeedback type="invalid">{validation.errors.weekDuration}</FormFeedback>
+  </div>
 
-                              <FormFeedback type="invalid">
-                                {validation.errors.week}
-                              </FormFeedback>
-                            </div>
+  <div className="col-md-6 mb-3">
+    <Label className="form-label">Amount</Label>
+    <Input
+      name="amount"
+      type="number"
+      placeholder="Amount"
+      onChange={validation.handleChange}
+      onBlur={validation.handleBlur}
+      value={validation.values.amount || ""}
+      invalid={validation.touched.amount && validation.errors.amount}
+    />
+    <FormFeedback type="invalid">{validation.errors.amount}</FormFeedback>
+  </div>
+</div>
+<div className="row">
 
-                            <div className="mb-3">
-                              <Label className="form-label">Amount</Label>
-                              <Input
-                                name="amount"
-                                type="number"
-                                placeholder="Program Amount"
-                                onChange={validation.handleChange}
-                                onBlur={validation.handleBlur}
-                                value={validation.values.amount || ""}
-                                invalid={
-                                  validation.touched.amount &&
-                                  validation.errors.amount
-                                }
-                              />
-                              <FormFeedback type="invalid">
-                                {validation.errors.amount}
-                              </FormFeedback>
-                            </div>
-                            <div className="mb-3">
+<div className="col-md-6 mb-3">
                               <Label className="form-label">Min Age</Label>
                               <Input
                                 name="minAge"
@@ -369,7 +400,7 @@ const ManagePackage = () => {
                                 {validation.errors.minAge}
                               </FormFeedback>
                             </div>
-                            <div className="mb-3">
+                            <div className="col-md-6 mb-3">
                               <Label className="form-label">Max Age</Label>
                               <Input
                                 name="maxAge"
@@ -387,6 +418,8 @@ const ManagePackage = () => {
                                 {validation.errors.maxAge}
                               </FormFeedback>
                             </div>
+</div>
+                          
                           </Col>
                         </Row>
                         <Row>

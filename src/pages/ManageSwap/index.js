@@ -49,14 +49,14 @@ const ManageSwap = () => {
         let apiUrl;
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
           response = await axios.put(
             `${apiUrl}/admin/swap/edit/${swap.id}`,
             values
           );
           toast.success("Swap updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
           response = await axios.post(`${apiUrl}/admin/swap/create`, values);
           toast.success("Swap created successfully");
         }
@@ -78,7 +78,7 @@ const ManageSwap = () => {
 
   const fetchSwaps = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
       const response = await axios.get(`${apiUrl}/admin/swap/all`);
       setSwaps(response.data.data);
     } catch (error) {
@@ -103,7 +103,7 @@ const ManageSwap = () => {
 
   const handleDeleteSwap = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
       await axios.delete(`${apiUrl}/admin/swap/${swap.id}`);
       const updatedSwaps = swaps.filter((s) => s.id !== swap.id);
       setSwaps(updatedSwaps);
@@ -121,7 +121,7 @@ const ManageSwap = () => {
 
   const acceptSwap = async (id) => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
       await axios.put(`${apiUrl}/admin/swap/accept/${id}`);
       const updatedSwaps = swaps.map((s) =>
         s.id === id ? { ...s, status: true } : s
@@ -136,7 +136,7 @@ const ManageSwap = () => {
 
   const rejectSwap = async (id) => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
       await axios.put(`${apiUrl}/admin/swap/reject/${id}`);
       const updatedSwaps = swaps.map((s) =>
         s.id === id ? { ...s, status: false } : s
@@ -244,11 +244,9 @@ const ManageSwap = () => {
                           </tr>
                         ))
                       ) : (
-                        <tr>
-                          <td colSpan="4" className="text-center">
-                            No swap requests yet
-                          </td>
-                        </tr>
+                        <div className="text-center mt-5">
+                      <h3>No data available</h3>
+                    </div>
                       )}
                     </tbody>
                   </table>

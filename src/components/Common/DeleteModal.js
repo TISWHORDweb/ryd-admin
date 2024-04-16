@@ -27,7 +27,7 @@ const DeleteModal = ({ show, onDeleteClick, onCloseClick }) => {
                 className="btn btn-success btn-lg ms-2"
                 onClick={onDeleteClick}
               >
-                Yes, delete it!
+                Yes
               </button>
               <button
                 type="button"

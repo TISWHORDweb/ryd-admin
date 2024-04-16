@@ -6,6 +6,7 @@ import { useFormik } from "formik";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import axios from "axios";
 import withAuth from "../withAuth";
+
 import {
   Col,
   Container,
@@ -13,6 +14,7 @@ import {
   Modal,
   ModalHeader,
   ModalBody,
+  Button,
   Form,
   Label,
   Input,
@@ -20,6 +22,8 @@ import {
 } from "reactstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import * as XLSX from "xlsx";
+import { data } from "autoprefixer";
 
 const ManageSurvey = () => {
   document.title = "Manage Survey | RYD Admin";
@@ -36,9 +40,13 @@ const ManageSurvey = () => {
     initialValues: {
       title: survey.title || "",
       body: survey.description || "",
+      pText: survey.pText || "",
+      nText: survey.nText || "",
     },
     validationSchema: Yup.object({
       title: Yup.string().required("Please Enter Survey Title"),
+      pText: Yup.string().required("Please Enter Positive Text"),
+      nText: Yup.string().required("Please Enter Negative Text"),
       body: Yup.string().required("Please Enter Survey Description"),
     }),
 
@@ -47,20 +55,25 @@ const ManageSurvey = () => {
         const newSurvey = {
           title: values.title,
           body: values.body,
+          pText: values.pText,
+          nText: values.nText,
         };
 
         let apiUrl;
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
           response = await axios.put(
             `${apiUrl}/admin/survey/edit/${survey.id}`,
             newSurvey
           );
           toast.success("Survey updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-          response = await axios.post(`${apiUrl}/admin/survey/create`, newSurvey);
+          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+          response = await axios.post(
+            `${apiUrl}/admin/survey/create`,
+            newSurvey
+          );
           toast.success("Survey created successfully");
         }
 
@@ -83,14 +96,17 @@ const ManageSurvey = () => {
   });
 
   useEffect(() => {
-    fetchSurveys();
+    fetchSurveysAndExportResponses();
   }, [modal]);
 
-  const fetchSurveys = async () => {
+  const fetchSurveysAndExportResponses = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/admin/survey/all`);
-      setSurveys(response.data.data);
+      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const surveysResponse = await axios.get(`${apiUrl}/admin/survey/all`);
+      const surveys = surveysResponse.data.data;
+
+      setSurveys(surveys);
+      console.log(surveysResponse.data.data)
     } catch (error) {
       console.error("Error:", error);
     }
@@ -113,7 +129,7 @@ const ManageSurvey = () => {
 
   const handleDeleteSurvey = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
       await axios.delete(`${apiUrl}/admin/survey/${survey.id}`);
       const updatedSurveys = surveys.filter((s) => s.id !== survey.id);
       setSurveys(updatedSurveys);
@@ -127,6 +143,92 @@ const ManageSurvey = () => {
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
+  };
+
+  const csvHeader1 = [
+    "Fullname",
+    "Country",
+    "Parent Email",
+    "Total Negative Count",
+  ];
+  const csvHeader2 = [
+    "Fullname",
+    "Email",
+    "Country",
+    "Total Positive Count",
+  ];
+
+  const exportSurveyResponses = () => {
+    const data = surveys.flatMap((survey, index) => {
+      return survey.positiveResponses.map(pos => {
+        return {
+          "Fullname": pos.parent.firstName + " " + pos.parent.lastName,
+          "Email": pos.parent.email,
+          "Country": pos.parent.country,
+          "Phone Number": pos.parent.phone,
+          "Total Negative Count": survey.negativeResponses.length,
+          "Total Positive Count": survey.positiveResponses.length,
+        };
+      });
+    });
+  
+    const workbook1 = XLSX.utils.book_new();
+    const worksheet1 = XLSX.utils.json_to_sheet(data, { header: csvHeader1 });
+    XLSX.utils.book_append_sheet(workbook1, worksheet1, "Negative Count");
+  
+    const workbook2 = XLSX.utils.book_new();
+    const worksheet2 = XLSX.utils.json_to_sheet(data, { header: csvHeader2 });
+    XLSX.utils.book_append_sheet(workbook2, worksheet2, "Positive Count");
+  
+    const excelBlob1 = new Blob(
+      [XLSX.write(workbook1, { bookType: "xlsx", type: "buffer" })],
+      { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+    );
+    const excelBlob2 = new Blob(
+      [XLSX.write(workbook2, { bookType: "xlsx", type: "buffer" })],
+      { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+    );
+  
+    const excelUrl1 = URL.createObjectURL(excelBlob1);
+    const excelUrl2 = URL.createObjectURL(excelBlob2);
+  
+    const link1 = document.createElement("a");
+    link1.href = excelUrl1;
+    link1.download = "Survey_Responses_Negative_Count.xlsx";
+    document.body.appendChild(link1);
+    link1.click();
+  
+    const link2 = document.createElement("a");
+    link2.href = excelUrl2;
+    link2.download = "Survey_Responses_Positive_Count.xlsx";
+    document.body.appendChild(link2);
+    link2.click();
+  
+    // Cleanup
+    setTimeout(() => {
+      URL.revokeObjectURL(excelUrl1);
+      URL.revokeObjectURL(excelUrl2);
+    }, 100);
+  };
+  
+
+  const changeSurveyStatus = async (surveyId) => {
+    try {
+      console.log("Survey ID:", surveyId);
+      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const response = await axios.get(
+        `${apiUrl}/admin/survey/toggle/${surveyId}`
+      );
+      const updatedSurvey = response.data.data;
+      const updatedSurveys = surveys.map((s) =>
+        s.id === surveyId ? { ...s, status: updatedSurvey.status } : s
+      );
+      setSurveys(updatedSurveys);
+      toast.success("Survey status updated successfully");
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to update survey status");
+    }
   };
 
   return (
@@ -186,6 +288,11 @@ const ManageSurvey = () => {
                         <th>#</th>
                         <th>Title</th>
                         <th>Description</th>
+                        <th>Positive</th>
+                        <th>Negative</th>
+                        <th>Positive Total Count</th>
+                        <th>Negative Total Count</th>
+                        <th>Status</th>
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -196,8 +303,30 @@ const ManageSurvey = () => {
                             <td>{index + 1}</td>
                             <td>{s.title}</td>
                             <td>{s.body}</td>
+                            <td>{s.pText}</td>
+                            <td>{s.nText}</td>
+                            <td>{s.positiveResponses.length}</td>
+                            <td>{s.negativeResponses.length}</td>
+                            <td>{s.status ? "Active" : "Inactive"}</td>
                             <td>
                               <div className="d-flex gap-3">
+                                <Link
+                                  className="text-secondary"
+                                  onClick={() => changeSurveyStatus(s.id)}
+                                >
+                                  {s.status ? (
+                                    <i className="mdi mdi-lock-open-variant-outline font-size-18"></i>
+                                  ) : (
+                                    <i className="mdi mdi-lock-outline font-size-18"></i>
+                                  )}
+                                </Link>
+
+                                <Link
+                                  className="text-primary"
+                                  onClick={() => exportSurveyResponses(s.id)}
+                                >
+                                  <i className="mdi mdi-export-variant font-size-18"></i>
+                                </Link>
                                 <Link
                                   className="text-success"
                                   to="#"
@@ -220,13 +349,12 @@ const ManageSurvey = () => {
                           </tr>
                         ))
                       ) : (
-                        <tr>
-                          <td colSpan="4">No surveys yet</td>
-                        </tr>
+                        <div className="text-center mt-5">
+                        <h3>No data available</h3>
+                      </div>
                       )}
                     </tbody>
                   </table>
-
                   <Modal isOpen={modal} toggle={toggle}>
                     <ModalHeader toggle={toggle}>
                       {isEdit ? "Edit Survey" : "Add New Survey"}
@@ -251,6 +379,46 @@ const ManageSurvey = () => {
                               />
                               <FormFeedback type="invalid">
                                 {validation.errors.title}
+                              </FormFeedback>
+                            </div>
+                            <div className="mb-3">
+                              <Label className="form-label">
+                                Positive Text
+                              </Label>
+                              <Input
+                                name="pText"
+                                type="text"
+                                placeholder="Positive"
+                                onChange={validation.handleChange}
+                                onBlur={validation.handleBlur}
+                                value={validation.values.pText || ""}
+                                invalid={
+                                  validation.touched.pText &&
+                                  validation.errors.pText
+                                }
+                              />
+                              <FormFeedback type="invalid">
+                                {validation.errors.pText}
+                              </FormFeedback>
+                            </div>
+                            <div className="mb-3">
+                              <Label className="form-label">
+                                Negative Text
+                              </Label>
+                              <Input
+                                name="nText"
+                                type="text"
+                                placeholder="Negative"
+                                onChange={validation.handleChange}
+                                onBlur={validation.handleBlur}
+                                value={validation.values.nText || ""}
+                                invalid={
+                                  validation.touched.nText &&
+                                  validation.errors.nText
+                                }
+                              />
+                              <FormFeedback type="invalid">
+                                {validation.errors.nText}
                               </FormFeedback>
                             </div>
                             <div className="mb-3">
