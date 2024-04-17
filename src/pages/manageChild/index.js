@@ -6,7 +6,7 @@ import { useFormik } from "formik";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
 import CustomTimezoneSelect from "../CustomTimezoneSelect";
-import withAuth from '../withAuth';
+import withAuth from "../withAuth";
 import axios from "axios";
 import {
   Col,
@@ -20,8 +20,8 @@ import {
   Input,
   FormFeedback,
 } from "reactstrap";
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ManageChild = () => {
   document.title = "Manage Child | RYD Admin";
@@ -32,19 +32,21 @@ const ManageChild = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [parentOptions, setParentOptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchParents();
-    fetchChildren(); // Fetch children initially
-  }, []); // Fetch parents once on component mount
+    fetchChildren();
+  }, []);
 
   const fetchParents = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.get(`${apiUrl}/admin/parent/all`);
       setParentOptions(response.data.data);
     } catch (error) {
-      console.error("Error:", error);
+      console.error(error);
     }
   };
 
@@ -55,14 +57,14 @@ const ManageChild = () => {
       lastName: contact.lastName || "",
       age: contact.age || "",
       gender: contact.gender || "",
-      parentId: contact.parentId || "", // New field for parent ID
+      parentId: contact.parentId || "",
     },
     validationSchema: Yup.object({
       firstName: Yup.string().required("Please Enter Child's First Name"),
       lastName: Yup.string().required("Please Enter Child's Last Name"),
       age: Yup.string().required("Please Enter Child's Age"),
       gender: Yup.string().required("Please Enter Child's Gender"),
-      parentId: Yup.string().required("Please Select a Parent"), // Validation for parent ID
+      parentId: Yup.string().required("Please Select a Parent"),
     }),
 
     onSubmit: async (values) => {
@@ -72,19 +74,25 @@ const ManageChild = () => {
           lastName: values.lastName,
           age: values.age,
           gender: values.gender,
-          parentId: values.parentId, // Include parent ID in the new child object
+          parentId: values.parentId,
         };
 
         let apiUrl;
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-          response = await axios.put(`${apiUrl}/admin/child/edit/${contact.id}`, newChild);
-          toast.success('Child updated successfully');
+          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+          response = await axios.put(
+            `${apiUrl}/admin/child/edit/${contact.id}`,
+            newChild
+          );
+          toast.success("Child updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-          response = await axios.post(`${apiUrl}/admin/child/create`, newChild);
-          toast.success('Child created successfully');
+          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+          response = await axios.post(
+            `${apiUrl}/admin/child/create`,
+            newChild
+          );
+          toast.success("Child created successfully");
         }
 
         const responseData = response.data;
@@ -100,18 +108,20 @@ const ManageChild = () => {
 
         toggle();
       } catch (error) {
-        console.error("Error:", error);
+        console.error(error);
       }
     },
   });
 
   const fetchChildren = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || 'https://api-pro.rydlearning.com';
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.get(`${apiUrl}/admin/child/all`);
       setUsers(response.data.data);
+      setLoading(false);
     } catch (error) {
-      console.error("Error:", error);
+      setLoading(false);
+      console.error(error);
     }
   };
 
@@ -132,17 +142,22 @@ const ManageChild = () => {
 
   const handleDeleteUser = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000'; 
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       await axios.delete(`${apiUrl}/admin/child/${contact.id}`);
       const updatedUsers = users.filter((user) => user.id !== contact.id);
       setUsers(updatedUsers);
       setDeleteModal(false);
-      toast.success('Child deleted successfully');
+      toast.success("Child deleted successfully");
     } catch (error) {
-      console.error("Error:", error);
-      toast.error('Failed to delete child');
+      console.error(error);
+      toast.error("Failed to delete child");
     }
   };
+
+  // Function to filter child list based on search query
+  const filteredUsers = users.filter((user) =>
+    `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <React.Fragment>
@@ -154,26 +169,44 @@ const ManageChild = () => {
       <div className="page-content">
         <Container fluid>
           <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Child" />
+          <Row className="align-items-center">
+            <Col md={6}>
+              <div className="mb-3">
+                <h5 className="card-title">
+                  Child List{" "}
+                  <span className="text-muted fw-normal ms-2">
+                    ({users.length})
+                  </span>
+                </h5>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
+                <div>
+                  <Input
+                    type="text"
+                    placeholder="Search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+            </Col>
+          </Row>
           <Row>
             <Col lg="12">
-              <Row className="align-items-center">
-                <Col md={6}>
-                  <div className="mb-3">
-                    <h5 className="card-title">
-                      Child List{" "}
-                      <span className="text-muted fw-normal ms-2">
-                        ({users.length})
-                      </span>
-                    </h5>
-                  </div>
-                </Col>
-              </Row>
               <Row>
                 <Col xl="12">
-                  {users.length === 0 ? (
+                  {loading ? (
                     <div className="text-center mt-5">
-                    <h3>No data available</h3>
-                  </div>
+                      <div className="spinner-border text-primary" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                  ) : filteredUsers.length === 0 ? (
+                    <div className="text-center mt-5">
+                      <h3>No data available</h3>
+                    </div>
                   ) : (
                     <table className="table align-middle">
                       <thead>
@@ -187,7 +220,7 @@ const ManageChild = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {users.map((user, index) => (
+                        {filteredUsers.map((user, index) => (
                           <tr key={index}>
                             <td>{index + 1}</td>
                             <td>{user.firstName}</td>
@@ -200,7 +233,7 @@ const ManageChild = () => {
                                   className="text-success"
                                   to="#"
                                   onClick={() => {
-                                    handleUserClick(user)
+                                    handleUserClick(user);
                                     setIsEdit(true);
                                   }}
                                 >
@@ -304,31 +337,6 @@ const ManageChild = () => {
                                 {validation.errors.gender}
                               </FormFeedback>
                             </div>
-                        {/*    <div className="mb-3">
-                              <Label className="form-label">Parent</Label>
-                              <Input
-                                type="select"
-                                name="parentId"
-                                onChange={validation.handleChange}
-                                onBlur={validation.handleBlur}
-                                value={validation.values.parentId || ""}
-                                invalid={
-                                  validation.touched.parentId &&
-                                  validation.errors.parentId
-                                }
-                              >
-                                <option value="">Select Parent</option>
-                                {parentOptions.map(parent => (
-                                  <option key={parent.id} value={parent.id}>
-                                    {parent.firstName} {parent.lastName}
-                                  </option>
-                                ))}
-                              </Input>
-                              <FormFeedback type="invalid">
-                                {validation.errors.parentId}
-                              </FormFeedback>
-                            </div>
-                                */}
                           </Col>
                         </Row>
                         <Row>

@@ -8,9 +8,7 @@ const Logout = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Remove token from local storage
     localStorage.removeItem("token");
-    // Redirect user to login page
     navigate("/auth/login");
   }, [navigate]);
 

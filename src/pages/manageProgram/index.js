@@ -17,11 +17,9 @@ import {
   Form,
   Input,
   FormFeedback,
-  Button,
 } from "reactstrap";
 import withAuth from "../withAuth";
 import { ToastContainer, toast } from "react-toastify";
-
 import "react-toastify/dist/ReactToastify.css";
 
 export const times = [
@@ -83,17 +81,21 @@ const ManageProgram = () => {
   const [assignTooltipOpen, setAssignTooltipOpen] = useState(false);
   const [editTooltipOpen, setEditTooltipOpen] = useState(false);
   const [deleteTooltipOpen, setDeleteTooltipOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const handleProgramClick = (programData) => {
-    toggle(programData); // Pass program data to toggle for editing
+  useEffect(() => {
+    fetchPrograms();
+  }, [modal]);
+
+  
+
+ 
+  const handleSearchInputChange = (e) => {
+    setSearchQuery(e.target.value);
   };
 
-  const showSuccessNotification = (message) => {
-    toast.success(message);
-  };
-  const showErrorNotification = (message) => {
-    toast.error(message);
-  };
+ 
 
   const handleAssignClick = (programData) => {
     assignToggle(programData); // Pass program data to toggle for editing
@@ -113,21 +115,21 @@ const ManageProgram = () => {
   }, []);
   const fetchPrograms = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.get(`${apiUrl}/admin/program/all`);
       setPrograms(response.data.data);
-      console.log(response.data.data);
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
       console.error("Error:", error);
     }
   };
 
   const fetchTeachers = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.get(`${apiUrl}/admin/teacher/all`);
       setTeachers(response.data.data);
-      console.log("teachers", response.data.data);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -154,7 +156,7 @@ const ManageProgram = () => {
     }
     setAssignError(false);
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.post(`${apiUrl}/admin/program/assign/teacher`, {
         programIds: selectedProgram.map((program) => program.id),
         teacherId: selectedTeacher
@@ -194,7 +196,7 @@ const ManageProgram = () => {
           isPaid: values.isPaid,
         };
 
-        const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
 
         let response;
         if (isEdit) {
@@ -225,7 +227,7 @@ const ManageProgram = () => {
 
   const handleDeleteProgram = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       await axios.delete(`${apiUrl}/admin/program/${contact.id}`);
       const updatedPrograms = programs.filter(
         (program) => program.id !== contact.id
@@ -263,7 +265,7 @@ const ManageProgram = () => {
         return;
       }
 
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const updatedProgram = { ...programData, isPaid: true };
       await axios.put(
         `${apiUrl}/admin/program/edit/${programData.id}`,
@@ -292,6 +294,13 @@ const ManageProgram = () => {
     console.log(selectedProgram);
   };
 
+
+   // Function to filter package list based on search query
+   const filteredPrograms = programs.filter((program) =>
+   program?.child?.firstName.toLowerCase().includes(searchQuery.toLowerCase())
+ );
+
+
   return (
     <React.Fragment>
       <ToastContainer />
@@ -317,175 +326,190 @@ const ManageProgram = () => {
                   </div>
                 </Col>
                 <Col md={6}>
-                  <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3"></div>
-                </Col>
+              <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
+                <div>
+                  <Input
+                    type="text"
+                    placeholder="Search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+            </Col>
               </Row>
               <Row>
                 <Col xl="12">
-                  {programs.length === 0 ? (
+                  {loading ? (
+                    <div className="text-center mt-5">
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
+                  ) : filteredPrograms.length === 0 ? (
                     <div className="text-center mt-5">
                       <h3>No data available</h3>
                     </div>
                   ) : (
                     <table className="table align-middle">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>P.Name</th>
-                          <th>C.Name</th>
-                          <th>Age</th>
-                          <th>Gender</th>
-                          <th>T.Name</th>
-                          <th>P.Title</th>
-                          <th>Ass. Rec</th>
-                          <th>Status</th>
-                          <th>Level</th>
-                          <th>Time</th>
-                          <th>Day</th>
-                          <th>Offset</th>
-                          <th>Action</th>
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>P.Name</th>
+                        <th>C.Name</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>T.Name</th>
+                        <th>P.Title</th>
+                        <th>Ass. Rec</th>
+                        <th>Status</th>
+                        <th>Level</th>
+                        <th>Time</th>
+                        <th>Day</th>
+                        <th>Offset</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {programs.map((program, index) => (
+                        <tr key={index}>
+                          <td>{index + 1}</td>
+                          <td>{program?.child?.firstName}</td>
+                          <td>{`${program.child.lastName}`}</td>
+                          <td>{program.child.age}</td>
+                          <td>{program.child.gender}</td>
+                          <td>{program?.teacher?.firstName}</td>
+                          <td>{program?.package?.title}</td>
+                          <td>{program.assessmentUrl}</td>
+                          <td>
+                            {program?.package?.status ? "Active" : "Inactive"}
+                          </td>
+                          <td>{program.level}</td>
+                          <td>{formatTime(program.time)}</td>
+                          <td>{formatDay(program.day)}</td>
+
+                          <td>{program.timeOffset}</td>
+                          <td>
+                            <div className="d-flex gap-3">
+                              <span>
+                                {program.isPaid ? (
+                                  "Paid"
+                                ) : (
+                                  <button
+                                    className="btn btn-link ms-1 text-primary"
+                                    onClick={() =>
+                                      handleToggleIsPaid(program)
+                                    }
+                                    disabled={program.isPaid}
+                                  >
+                                    Unpaid
+                                  </button>
+                                )}
+                                {!program.isPaid && (
+                                  <Link
+                                    className="ms-1 text-primary"
+                                    to="#"
+                                    onClick={(e) => e.preventDefault()}
+                                  ></Link>
+                                )}
+                              </span>
+                              <span>
+                                <Tooltip
+                                  isOpen={editTooltipOpen}
+                                  target="edit"
+                                  toggle={() =>
+                                    setEditTooltipOpen(!editTooltipOpen)
+                                  }
+                                  placement="top"
+                                  delay={{ show: 100, hide: 100 }}
+                                >
+                                  Edit
+                                </Tooltip>
+                                <Link
+                                  className="text-success"
+                                  to="#"
+                                  id="edit"
+                                  onMouseEnter={() =>
+                                    setEditTooltipOpen(true)
+                                  }
+                                  onMouseLeave={() =>
+                                    setEditTooltipOpen(false)
+                                  }
+                                  onClick={() => handleProgramClick(program)}
+                                >
+                                  <i className="mdi mdi-pencil font-size-20"></i>
+                                </Link>
+                              </span>
+                              <span>
+                                <Tooltip
+                                  isOpen={deleteTooltipOpen}
+                                  target="delete"
+                                  toggle={() =>
+                                    setDeleteTooltipOpen(!deleteTooltipOpen)
+                                  }
+                                  placement="top"
+                                  delay={{ show: 100, hide: 100 }}
+                                >
+                                  Delete
+                                </Tooltip>
+                                <Link
+                                  className="text-danger"
+                                  to="#"
+                                  id="delete"
+                                  onMouseEnter={() =>
+                                    setDeleteTooltipOpen(true)
+                                  }
+                                  onMouseLeave={() =>
+                                    setDeleteTooltipOpen(false)
+                                  }
+                                  onClick={() => onClickDelete(program)}
+                                >
+                                  <i className="mdi mdi-delete font-size-20"></i>
+                                </Link>
+                              </span>
+                              <span>
+                                <Tooltip
+                                  isOpen={assignTooltipOpen}
+                                  target="assign"
+                                  toggle={() =>
+                                    setAssignTooltipOpen(!assignTooltipOpen)
+                                  }
+                                  placement="top"
+                                  delay={{ show: 100, hide: 100 }}
+                                >
+                                  Assign Teacher
+                                </Tooltip>
+                                <Link
+                                  className="text-primary"
+                                  to="#"
+                                  id="assign"
+                                  onMouseEnter={() =>
+                                    setAssignTooltipOpen(true)
+                                  }
+                                  onMouseLeave={() =>
+                                    setAssignTooltipOpen(false)
+                                  }
+                                  onClick={() => handleAssignClick(program)}
+                                >
+                                  <i className="mdi mdi-clipboard-account font-size-20"></i>
+                                </Link>
+                              </span>
+
+                              <span>
+                                <Link
+                                  className="text-secondary"
+                                  to="#"
+                                  onClick={() => addProgramToBulk(program)}
+                                >
+                                  <i className="mdi mdi-plus-box-multiple font-size-20"></i>
+                                </Link>
+                              </span>
+                            </div>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {programs.map((program, index) => (
-                          <tr key={index}>
-                            <td>{index + 1}</td>
-                            <td>{program?.child?.firstName}</td>
-                            <td>{`${program.child.lastName}`}</td>
-                            <td>{program.child.age}</td>
-                            <td>{program.child.gender}</td>
-                            <td>{program?.teacher?.firstName}</td>
-                            <td>{program?.package?.title}</td>
-                            <td>{program.assessmentUrl}</td>
-                            <td>
-                              {program?.package?.status ? "Active" : "Inactive"}
-                            </td>
-                            <td>{program.level}</td>
-                            <td>{formatTime(program.time)}</td>
-                            <td>{formatDay(program.day)}</td>
-
-                            <td>{program.timeOffset}</td>
-                            <td>
-                              <div className="d-flex gap-3">
-                                <span>
-                                  {program.isPaid ? (
-                                    "Paid"
-                                  ) : (
-                                    <button
-                                      className="btn btn-link ms-1 text-primary"
-                                      onClick={() =>
-                                        handleToggleIsPaid(program)
-                                      }
-                                      disabled={program.isPaid}
-                                    >
-                                      Unpaid
-                                    </button>
-                                  )}
-                                  {!program.isPaid && (
-                                    <Link
-                                      className="ms-1 text-primary"
-                                      to="#"
-                                      onClick={(e) => e.preventDefault()}
-                                    ></Link>
-                                  )}
-                                </span>
-                                <span>
-                                  <Tooltip
-                                    isOpen={editTooltipOpen}
-                                    target="edit"
-                                    toggle={() =>
-                                      setEditTooltipOpen(!editTooltipOpen)
-                                    }
-                                    placement="top"
-                                    delay={{ show: 100, hide: 100 }}
-                                  >
-                                    Edit
-                                  </Tooltip>
-                                  <Link
-                                    className="text-success"
-                                    to="#"
-                                    id="edit"
-                                    onMouseEnter={() =>
-                                      setEditTooltipOpen(true)
-                                    }
-                                    onMouseLeave={() =>
-                                      setEditTooltipOpen(false)
-                                    }
-                                    onClick={() => handleProgramClick(program)}
-                                  >
-                                    <i className="mdi mdi-pencil font-size-20"></i>
-                                  </Link>
-                                </span>
-                                <span>
-                                  <Tooltip
-                                    isOpen={deleteTooltipOpen}
-                                    target="delete"
-                                    toggle={() =>
-                                      setDeleteTooltipOpen(!deleteTooltipOpen)
-                                    }
-                                    placement="top"
-                                    delay={{ show: 100, hide: 100 }}
-                                  >
-                                    Delete
-                                  </Tooltip>
-                                  <Link
-                                    className="text-danger"
-                                    to="#"
-                                    id="delete"
-                                    onMouseEnter={() =>
-                                      setDeleteTooltipOpen(true)
-                                    }
-                                    onMouseLeave={() =>
-                                      setDeleteTooltipOpen(false)
-                                    }
-                                    onClick={() => onClickDelete(program)}
-                                  >
-                                    <i className="mdi mdi-delete font-size-20"></i>
-                                  </Link>
-                                </span>
-                                <span>
-                                  <Tooltip
-                                    isOpen={assignTooltipOpen}
-                                    target="assign"
-                                    toggle={() =>
-                                      setAssignTooltipOpen(!assignTooltipOpen)
-                                    }
-                                    placement="top"
-                                    delay={{ show: 100, hide: 100 }}
-                                  >
-                                    Assign Teacher
-                                  </Tooltip>
-                                  <Link
-                                    className="text-primary"
-                                    to="#"
-                                    id="assign"
-                                    onMouseEnter={() =>
-                                      setAssignTooltipOpen(true)
-                                    }
-                                    onMouseLeave={() =>
-                                      setAssignTooltipOpen(false)
-                                    }
-                                    onClick={() => handleAssignClick(program)}
-                                  >
-                                    <i className="mdi mdi-clipboard-account font-size-20"></i>
-                                  </Link>
-                                </span>
-
-                                <span>
-                                  <Link
-                                    className="text-secondary"
-                                    to="#"
-                                    onClick={() => addProgramToBulk(program)}
-                                  >
-                                    <i className="mdi mdi-plus-box-multiple font-size-20"></i>
-                                  </Link>
-                                </span>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                      ))}
+                    </tbody>
+                  </table>
                   )}
                   <Modal isOpen={modal} toggle={() => toggle()}>
                     <ModalHeader toggle={() => toggle()}>
@@ -656,7 +680,6 @@ const ManageProgram = () => {
     </Form>
   </ModalBody>
 </Modal>
-
                 </Col>
               </Row>
             </Col>

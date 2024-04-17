@@ -5,6 +5,7 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import axios from "axios";
+
 import {
   Col,
   Container,
@@ -19,9 +20,6 @@ import {
 } from "reactstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import withAuth from "../withAuth";
-import { DaysSelect } from "../DaysOfWeekSelect";
-import { t } from "i18next";
 
 const ManagePackage = () => {
   document.title = "Manage Package | RYD Admin";
@@ -31,6 +29,29 @@ const ManagePackage = () => {
   const [modal, setModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    fetchPackages();
+  }, [modal]);
+
+  const fetchPackages = async () => {
+    try {
+      setLoading(true);
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+      const response = await axios.get(`${apiUrl}/admin/package/all`);
+      setPackages(response.data.data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error:", error);
+      setLoading(false);
+    }
+  };
+
+  const toggle = () => {
+    setModal(!modal);
+  };
 
   const validation = useFormik({
     enableReinitialize: true,
@@ -70,14 +91,14 @@ const ManagePackage = () => {
         let apiUrl;
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.put(
             `${apiUrl}/admin/package/edit/${packageData.id}`,
             newPackage
           );
           toast.success("Package updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.post(
             `${apiUrl}/admin/package/create`,
             newPackage
@@ -103,24 +124,6 @@ const ManagePackage = () => {
     },
   });
 
-  useEffect(() => {
-    fetchPackages();
-  }, [modal]);
-
-  const fetchPackages = async () => {
-    try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
-      const response = await axios.get(`${apiUrl}/admin/package/all`);
-      setPackages(response.data.data);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
-
-  const toggle = () => {
-    setModal(!modal);
-  };
-
   const handlePackageClick = (pkg) => {
     setPackageData(pkg);
     setIsEdit(true);
@@ -132,17 +135,9 @@ const ManagePackage = () => {
     setDeleteModal(true);
   };
 
-  const shortenUrl = (url, maxLength) => {
-    if (url.length <= maxLength) {
-      return url;
-    } else {
-      return url.substring(0, maxLength) + "...";
-    }
-  };
-
   const handleDeletePackage = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       await axios.delete(`${apiUrl}/admin/package/${packageData.id}`);
       const updatedPackages = packages.filter(
         (pkg) => pkg.id !== packageData.id
@@ -156,6 +151,12 @@ const ManagePackage = () => {
     }
   };
 
+ // Function to filter package list based on search query
+const filteredPackages = packages.filter((pkg) =>
+pkg.title?.toLowerCase().includes(searchQuery.toLowerCase())
+);
+
+
   return (
     <React.Fragment>
       <DeleteModal
@@ -167,100 +168,94 @@ const ManagePackage = () => {
         <Container fluid>
           <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Package" />
           <Row>
-            <Col lg="12">
-              <Row className="align-items-center">
-                <Col md={6}>
-                  <div className="mb-3">
-                    <h5 className="card-title">
-                      Package List{" "}
-                      <span className="text-muted fw-normal ms-2">
-                        ({packages.length})
-                      </span>
-                    </h5>
+            <Col md={6}>
+              <div className="mb-3">
+                <h5 className="card-title">
+                  Package List{" "}
+                  <span className="text-muted fw-normal ms-2">
+                    ({packages.length})
+                  </span>
+                </h5>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
+                <div>
+                  <Link
+                    to="#"
+                    className="btn btn-light"
+                    onClick={() => {
+                      setPackageData({});
+                      setIsEdit(false);
+                      toggle();
+                    }}
+                  >
+                    <i className="bx bx-plus me-1"></i> Add New Package
+                  </Link>
+                </div>
+              </div>
+            </Col>
+          </Row>
+          <Row>
+            <Col xl="12">
+              {loading ? (
+                <div className="text-center mt-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
                   </div>
-                </Col>
-                <Col md={6}>
-                  <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
-                    <div>
-                      <Link
-                        to="#"
-                        className="btn btn-light"
-                        onClick={() => {
-                          setPackageData({});
-                          setIsEdit(false);
-                          toggle();
-                        }}
-                      >
-                        <i className="bx bx-plus me-1"></i> Add New Package
-                      </Link>
-                    </div>
-                  </div>
-                </Col>
-              </Row>
-              <Row>
-                <Col xl="12">
+                </div>
+              ) : filteredPackages.length === 0 ? (
+                <div className="text-center mt-5">
+                  <h3>No data available</h3>
+                </div>
+              ) : (
                 <table className="table align-middle">
-  <thead>
-    <tr>
-      <th>#</th>
-      <th>Title</th>
-      <th>Description</th>
-      <th>Level</th>
-      <th>Image URL</th>
-      <th>Week Duration</th>
-      <th>Amount</th>
-      <th>Min Age</th>
-      <th>Max Age</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody>
-    {Array.isArray(packages) && packages.length === 0 ? (
-     <div className="text-center mt-5">
-     <h3>No data available</h3>
-   </div>
-    ) : (
-      packages.map((pkg, index) => (
-        <tr key={index}>
-          <td>{index + 1}</td>
-          <td>{pkg.title}</td>
-          <td>{pkg.description}</td>
-          <td>{pkg.level}</td>
-          <td>
-            {pkg.imageUrl && shortenUrl(pkg.imageUrl, 10)}
-          </td>
-          <td>{pkg.weekDuration}</td>
-          <td>{pkg.amount}</td>
-          <td>{pkg.minAge}</td>
-          <td>{pkg.maxAge}</td>
-          <td>
-            <div className="d-flex gap-3">
-              <Link
-                className="text-success"
-                to="#"
-                onClick={() => {
-                  handlePackageClick(pkg);
-                  setIsEdit(true);
-                }}
-              >
-                <i className="mdi mdi-pencil font-size-18"></i>
-              </Link>
-              <Link
-                className="text-danger"
-                to="#"
-                onClick={() => onClickDelete(pkg)}
-              >
-                <i className="mdi mdi-delete font-size-18"></i>
-              </Link>
-            </div>
-          </td>
-        </tr>
-      ))
-    )}
-  </tbody>
-</table>
-
-                  <Modal isOpen={modal} toggle={toggle}>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Title</th>
+                      <th>Description</th>
+                      <th>Level</th>
+                      <th>Weeks</th>
+                      <th>Amount</th>
+                      <th>Age Range</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredPackages.map((pkg, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{pkg.title}</td>
+                        <td>{pkg.description}</td>
+                        <td>{pkg.level}</td>
+                        <td>{pkg.weekDuration}</td>
+                        <td>{pkg.amount}</td>
+                        <td>{pkg.minAge} - {pkg.maxAge}</td>
+                        <td>
+                          <div className="d-flex gap-3">
+                            <Link
+                              className="text-success"
+                              to="#"
+                              onClick={() => handlePackageClick(pkg)}
+                            >
+                              <i className="bx bx-edit font-size-18"></i>
+                            </Link>
+                            <Link
+                              className="text-danger"
+                              to="#"
+                              onClick={() => onClickDelete(pkg)}
+                            >
+                              <i className="bx bx-trash font-size-18"></i>
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+               <Modal isOpen={modal} toggle={toggle}>
                     <ModalHeader toggle={toggle}>
                       {isEdit ? "Edit Package" : "Add New Package"}
                     </ModalHeader>
@@ -437,8 +432,6 @@ const ManagePackage = () => {
                       </Form>
                     </ModalBody>
                   </Modal>
-                </Col>
-              </Row>
             </Col>
           </Row>
         </Container>
@@ -448,4 +441,6 @@ const ManagePackage = () => {
   );
 };
 
-export default withAuth(ManagePackage);
+
+
+export default ManagePackage;

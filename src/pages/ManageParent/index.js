@@ -32,10 +32,11 @@ const ManageParent = () => {
   const [modal, setModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const  [ country, setCountry ] = useState({});
   const  [ state, setState ] = useState({});
   const  [ timezone, setTimezone ] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const validation = useFormik({
     enableReinitialize: true,
@@ -79,14 +80,14 @@ const ManageParent = () => {
         let apiUrl;
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.put(
             `${apiUrl}/admin/parent/edit/${contact.id}`,
             newUser
           );
           toast.success("Parent updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.post(`${apiUrl}/admin/parent/create`, newUser);
           toast.success("Parent created successfully");
         }
@@ -115,10 +116,12 @@ const ManageParent = () => {
 
   const fetchUsers = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.get(`${apiUrl}/admin/parent/all`);
       setUsers(response.data.data);
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
       console.error("Error:", error);
     }
   };
@@ -135,17 +138,14 @@ const ManageParent = () => {
 
   const handleCountryChange = (data) => {
     setCountry(data)
-    console.log(data)
   }
 
   const handleStateChange = (data) => {
     setState(data)
-    console.log(data)
   }
 
   const handleTimezoneChange = (data) => {
     setTimezone(data)
-    console.log(data)
   }
 
   const onClickDelete = (userData) => {
@@ -155,7 +155,7 @@ const ManageParent = () => {
 
   const handleDeleteUser = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       await axios.delete(`${apiUrl}/admin/parent/${contact.id}`);
       const updatedUsers = users.filter((user) => user.id !== contact.id);
       setUsers(updatedUsers);
@@ -172,9 +172,9 @@ const ManageParent = () => {
   };
 
   const handleSendEmail = async (event) => {
-    event.preventDefault(); // Prevent default form submission behavior
+    event.preventDefault();
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       await axios.post(`${apiUrl}/admin/parent/send/all`, {
         body: "Your email body",
         subject: "Your email subject",
@@ -239,10 +239,16 @@ const ManageParent = () => {
               </Row>
               <Row>
                 <Col xl="12">
-                  {users.length === 0 ? (
+                  {loading ? ( 
+                     <div className="text-center mt-5">
+                     <div className="spinner-border text-primary" role="status">
+                       <span className="visually-hidden">Loading...</span>
+                     </div>
+                   </div>
+                  ) : users.length === 0 ? (
                     <div className="text-center mt-5">
-                        <h3>No data available</h3>
-                      </div>
+                      <h3>No data available</h3>
+                    </div>
                   ) : (
                     <table className="table align-middle">
                       <thead>
@@ -261,48 +267,55 @@ const ManageParent = () => {
                       </thead>
                       <tbody>
                         {Array.isArray(users) &&
-                          users.map((user, index) => (
-                            <tr key={index}>
-                              <td>{index + 1}</td>
-                              <td>{user.firstName}</td>
-                              <td>{user.lastName}</td>
-                              <td>{user.email}</td>
-                              <td>{user.phone}</td>
-                              <td>{user.state}</td>
-                              <td>{user.country}</td>
-                              <td>{user.timezone}</td>
-                              <td>{user?.children?.length}</td>
-                              <td>
-                                <div className="d-flex gap-3">
-                                  <Link className="text-primary" to="#">
-                                    <i className="mdi mdi-email-variant font-size-18"></i>
-                                  </Link>
-                                  <Link
-                                    className="text-success"
-                                    to="#"
-                                    onClick={() => {
-                                      handleUserClick(user);
-                                      setIsEdit(true);
-                                    }}
-                                  >
-                                    <i className="mdi mdi-pencil font-size-18"></i>
-                                  </Link>
-                                  <Link
-                                    className="text-danger"
-                                    to="#"
-                                    onClick={() => onClickDelete(user)}
-                                  >
-                                    <i className="mdi mdi-delete font-size-18"></i>
-                                  </Link>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
+                          users
+                            .filter((user) =>
+                              `${user.firstName} ${user.lastName}`
+                                .toLowerCase()
+                                .includes(searchQuery.toLowerCase())
+                            )
+                            .map((user, index) => (
+                              <tr key={index}>
+                                <td>{index + 1}</td>
+                                <td>{user.firstName}</td>
+                                <td>{user.lastName}</td>
+                                <td>{user.email}</td>
+                                <td>{user.phone}</td>
+                                <td>{user.state}</td>
+                                <td>{user.country}</td>
+                                <td>{user.timezone}</td>
+                                <td>{user?.children?.length}</td>
+                                <td>
+                                  <div className="d-flex gap-3">
+                                    <Link className="text-primary" to="#">
+                                      <i className="mdi mdi-email-variant font-size-18"></i>
+                                    </Link>
+                                    <Link
+                                      className="text-success"
+                                      to="#"
+                                      onClick={() => {
+                                        handleUserClick(user);
+                                        setIsEdit(true);
+                                      }}
+                                    >
+                                      <i className="mdi mdi-pencil font-size-18"></i>
+                                    </Link>
+                                    <Link
+                                      className="text-danger"
+                                      to="#"
+                                      onClick={() => onClickDelete(user)}
+                                    >
+                                      <i className="mdi mdi-delete font-size-18"></i>
+                                    </Link>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
                       </tbody>
                     </table>
                   )}
 
-                  <Modal isOpen={modal} toggle={toggle}>
+                 
+<Modal isOpen={modal} toggle={toggle}>
                     <ModalHeader toggle={toggle}>
                       {isEdit ? "Edit Parent" : "Message All Parents"}
                     </ModalHeader>
@@ -547,6 +560,7 @@ const ManageParent = () => {
               </Row>
             </Col>
           </Row>
+            
         </Container>
       </div>
       <ToastContainer />

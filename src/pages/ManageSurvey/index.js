@@ -6,7 +6,6 @@ import { useFormik } from "formik";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import axios from "axios";
 import withAuth from "../withAuth";
-
 import {
   Col,
   Container,
@@ -23,11 +22,11 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import * as XLSX from "xlsx";
-import { data } from "autoprefixer";
 
 const ManageSurvey = () => {
   document.title = "Manage Survey | RYD Admin";
 
+  const [loading, setLoading] = useState(true);
   const [surveys, setSurveys] = useState([]);
   const [survey, setSurvey] = useState({});
   const [modal, setModal] = useState(false);
@@ -62,14 +61,14 @@ const ManageSurvey = () => {
         let apiUrl;
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.put(
             `${apiUrl}/admin/survey/edit/${survey.id}`,
             newSurvey
           );
           toast.success("Survey updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.post(
             `${apiUrl}/admin/survey/create`,
             newSurvey
@@ -101,12 +100,12 @@ const ManageSurvey = () => {
 
   const fetchSurveysAndExportResponses = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const surveysResponse = await axios.get(`${apiUrl}/admin/survey/all`);
       const surveys = surveysResponse.data.data;
 
       setSurveys(surveys);
-      console.log(surveysResponse.data.data)
+      setLoading(false); // Set loading to false after fetching data
     } catch (error) {
       console.error("Error:", error);
     }
@@ -129,7 +128,7 @@ const ManageSurvey = () => {
 
   const handleDeleteSurvey = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       await axios.delete(`${apiUrl}/admin/survey/${survey.id}`);
       const updatedSurveys = surveys.filter((s) => s.id !== survey.id);
       setSurveys(updatedSurveys);
@@ -140,6 +139,16 @@ const ManageSurvey = () => {
       toast.error("Failed to delete survey");
     }
   };
+
+
+  useEffect(() => {
+    fetchSurveysAndExportResponses();
+  }, [modal]);
+
+  
+
+
+  
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
@@ -215,7 +224,7 @@ const ManageSurvey = () => {
   const changeSurveyStatus = async (surveyId) => {
     try {
       console.log("Survey ID:", surveyId);
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.get(
         `${apiUrl}/admin/survey/toggle/${surveyId}`
       );
@@ -230,6 +239,10 @@ const ManageSurvey = () => {
       toast.error("Failed to update survey status");
     }
   };
+   // Function to filter survey list based on search query
+const filteredSurveys = surveys.filter((survey) =>
+survey.title?.toLowerCase().includes(searchQuery.toLowerCase())
+);
 
   return (
     <React.Fragment>
@@ -282,23 +295,29 @@ const ManageSurvey = () => {
               </Row>
               <Row>
                 <Col xl="12">
-                  <table className="table align-middle">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Title</th>
-                        <th>Description</th>
-                        <th>Positive</th>
-                        <th>Negative</th>
-                        <th>Positive Total Count</th>
-                        <th>Negative Total Count</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Array.isArray(surveys) && surveys.length > 0 ? (
-                        surveys.map((s, index) => (
+                  {loading ? (
+                    <div className="text-center mt-5">
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
+                  ) : Array.isArray(surveys) && filteredSurveys.length > 0 ? (
+                    <table className="table align-middle">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Title</th>
+                          <th>Description</th>
+                          <th>Positive</th>
+                          <th>Negative</th>
+                          <th>Positive Total Count</th>
+                          <th>Negative Total Count</th>
+                          <th>Status</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {surveys.map((s, index) => (
                           <tr key={index}>
                             <td>{index + 1}</td>
                             <td>{s.title}</td>
@@ -320,7 +339,6 @@ const ManageSurvey = () => {
                                     <i className="mdi mdi-lock-outline font-size-18"></i>
                                   )}
                                 </Link>
-
                                 <Link
                                   className="text-primary"
                                   onClick={() => exportSurveyResponses(s.id)}
@@ -347,14 +365,14 @@ const ManageSurvey = () => {
                               </div>
                             </td>
                           </tr>
-                        ))
-                      ) : (
-                        <div className="text-center mt-5">
-                        <h3>No data available</h3>
-                      </div>
-                      )}
-                    </tbody>
-                  </table>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="text-center mt-5">
+                      <h3>No data available</h3>
+                    </div>
+                  )}
                   <Modal isOpen={modal} toggle={toggle}>
                     <ModalHeader toggle={toggle}>
                       {isEdit ? "Edit Survey" : "Add New Survey"}

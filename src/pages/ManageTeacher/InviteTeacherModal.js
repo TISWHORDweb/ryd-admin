@@ -16,7 +16,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const InviteTeacherModal = ({ isOpen, toggle }) => {
   const [email, setEmail] = useState("");
-  const [invitedTeachers, setInvitedTeachers] = useState(null);
+  const [invitedTeachers, setInvitedTeachers] = useState([]);
 
   useEffect(() => {
     fetchInvitedTeachers();
@@ -24,10 +24,10 @@ const InviteTeacherModal = ({ isOpen, toggle }) => {
 
   const fetchInvitedTeachers = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl =
+        process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.get(`${apiUrl}/admin/teacher/invites`);
-      console.log("Fetched invited teachers:", response.data); // Log fetched data
-      setInvitedTeachers(response.data.data); // Update state with invited teachers
+      setInvitedTeachers(response.data.data);
     } catch (error) {
       console.error("Failed to fetch invited teachers", error);
     }
@@ -35,15 +35,18 @@ const InviteTeacherModal = ({ isOpen, toggle }) => {
 
   const inviteTeacher = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl =
+        process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.post(`${apiUrl}/admin/teacher/invite`, {
         email,
       });
       if (response.data.status) {
         toast.success("Teacher invited successfully");
-        fetchInvitedTeachers(); // Refresh the list of invited teachers
+        fetchInvitedTeachers();
       } else {
-        toast.error(response.data.message || "Failed to invite teacher");
+        toast.error(
+          response.data.message || "Failed to invite teacher"
+        );
       }
     } catch (error) {
       toast.error("Failed to invite teacher");
@@ -53,15 +56,18 @@ const InviteTeacherModal = ({ isOpen, toggle }) => {
 
   const removeInviteTeacher = async (id) => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl =
+        process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.delete(
         `${apiUrl}/admin/teacher/invite/remove/${id}`
       );
       if (response.data.status) {
         toast.success("Teacher invite removed successfully");
-        fetchInvitedTeachers(); // Refresh the list of invited teachers
+        fetchInvitedTeachers();
       } else {
-        toast.error(response.data.message || "Failed to remove teacher invite");
+        toast.error(
+          response.data.message || "Failed to remove teacher invite"
+        );
       }
     } catch (error) {
       toast.error("Failed to remove teacher invite");
@@ -103,7 +109,7 @@ const InviteTeacherModal = ({ isOpen, toggle }) => {
               </tr>
             </thead>
             <tbody>
-              {invitedTeachers !== null && invitedTeachers.length > 0 ? (
+              {invitedTeachers && invitedTeachers.length > 0 ? (
                 invitedTeachers.map((teacher) => (
                   <tr key={teacher.id}>
                     <td>{teacher.email}</td>

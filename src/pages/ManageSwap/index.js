@@ -4,8 +4,7 @@ import DeleteModal from "../../components/Common/DeleteModal";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
-import axios from "axios"; // Import Axios
-
+import axios from "axios";
 import withAuth from "../withAuth";
 import {
   Col,
@@ -18,7 +17,7 @@ import {
   Label,
   Input,
   FormFeedback,
-  Button, // Import Button component
+  Button,
 } from "reactstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -26,6 +25,7 @@ import "react-toastify/dist/ReactToastify.css";
 const ManageSwap = () => {
   document.title = "Manage Swap | RYD Admin";
 
+  const [loading, setLoading] = useState(false);
   const [swaps, setSwaps] = useState([]);
   const [swap, setSwap] = useState({});
   const [modal, setModal] = useState(false);
@@ -46,17 +46,18 @@ const ManageSwap = () => {
 
     onSubmit: async (values) => {
       try {
+        setLoading(true);
         let apiUrl;
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.put(
             `${apiUrl}/admin/swap/edit/${swap.id}`,
             values
           );
           toast.success("Swap updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.post(`${apiUrl}/admin/swap/create`, values);
           toast.success("Swap created successfully");
         }
@@ -68,6 +69,8 @@ const ManageSwap = () => {
         toggle();
       } catch (error) {
         console.error("Error:", error);
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -78,11 +81,14 @@ const ManageSwap = () => {
 
   const fetchSwaps = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      setLoading(true);
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.get(`${apiUrl}/admin/swap/all`);
       setSwaps(response.data.data);
     } catch (error) {
       console.error("Error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -103,7 +109,8 @@ const ManageSwap = () => {
 
   const handleDeleteSwap = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      setLoading(true);
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       await axios.delete(`${apiUrl}/admin/swap/${swap.id}`);
       const updatedSwaps = swaps.filter((s) => s.id !== swap.id);
       setSwaps(updatedSwaps);
@@ -112,6 +119,8 @@ const ManageSwap = () => {
     } catch (error) {
       console.error("Error:", error);
       toast.error("Failed to delete swap");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -121,7 +130,8 @@ const ManageSwap = () => {
 
   const acceptSwap = async (id) => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      setLoading(true);
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       await axios.put(`${apiUrl}/admin/swap/accept/${id}`);
       const updatedSwaps = swaps.map((s) =>
         s.id === id ? { ...s, status: true } : s
@@ -131,12 +141,15 @@ const ManageSwap = () => {
     } catch (error) {
       console.error("Error:", error);
       toast.error("Failed to accept swap");
+    } finally {
+      setLoading(false);
     }
   };
 
   const rejectSwap = async (id) => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      setLoading(true);
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       await axios.put(`${apiUrl}/admin/swap/reject/${id}`);
       const updatedSwaps = swaps.map((s) =>
         s.id === id ? { ...s, status: false } : s
@@ -146,6 +159,8 @@ const ManageSwap = () => {
     } catch (error) {
       console.error("Error:", error);
       toast.error("Failed to reject swap");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -182,147 +197,158 @@ const ManageSwap = () => {
                         onChange={handleSearch}
                       />
                     </div>
-                   
                   </div>
                 </Col>
               </Row>
               <Row>
-                <Col xl="12">
-                  <table className="table align-middle">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Title</th>
-                        <th>Description</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Array.isArray(swaps) && swaps.length > 0 ? (
-                        swaps.map((swap, index) => (
-                          <tr key={index}>
-                            <td>{index + 1}</td>
-                            <td>{swap.title}</td>
-                            <td>{swap.description}</td>
-                            <td>
-                              <div className="d-flex gap-3">
-                                <Link
-                                  className="text-success"
-                                  to="#"
-                                  onClick={() => {
-                                    handleSwapClick(swap);
-                                    setIsEdit(true);
-                                  }}
-                                >
-                                  <i className="mdi mdi-pencil font-size-18"></i>
-                                </Link>
-                                <Link
-                                  className="text-danger"
-                                  to="#"
-                                  onClick={() => onClickDelete(swap)}
-                                >
-                                  <i className="mdi mdi-delete font-size-18"></i>
-                                </Link>
-                                {!swap.status && (
-                                  <>
-                                    <Button
-                                      color="success"
-                                      onClick={() => acceptSwap(swap.id)}
-                                    >
-                                      Accept
-                                    </Button>
-                                    <Button
-                                      color="danger"
-                                      onClick={() => rejectSwap(swap.id)}
-                                    >
-                                      Reject
-                                    </Button>
-                                  </>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <div className="text-center mt-5">
-                      <h3>No data available</h3>
-                    </div>
+  <Col xl="12">
+    {loading ? (
+      <div className="text-center mt-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    ) : (
+      <div>
+        <table className="table align-middle">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Array.isArray(swaps) && swaps.length > 0 ? (
+              swaps.map((swap, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{swap.title}</td>
+                  <td>{swap.description}</td>
+                  <td>
+                    <div className="d-flex gap-3">
+                      <Link
+                        className="text-success"
+                        to="#"
+                        onClick={() => {
+                          handleSwapClick(swap);
+                          setIsEdit(true);
+                        }}
+                      >
+                        <i className="mdi mdi-pencil font-size-18"></i>
+                      </Link>
+                      <Link
+                        className="text-danger"
+                        to="#"
+                        onClick={() => onClickDelete(swap)}
+                      >
+                        <i className="mdi mdi-delete font-size-18"></i>
+                      </Link>
+                      {!swap.status && (
+                        <>
+                          <Button
+                            color="success"
+                            onClick={() => acceptSwap(swap.id)}
+                          >
+                            Accept
+                          </Button>
+                          <Button
+                            color="danger"
+                            onClick={() => rejectSwap(swap.id)}
+                          >
+                            Reject
+                          </Button>
+                        </>
                       )}
-                    </tbody>
-                  </table>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : null}
+          </tbody>
+        </table>
+        {!Array.isArray(swaps) || swaps.length === 0 && (
+          <div className="text-center mt-5">
+            <h3>No data available</h3>
+          </div>
+        )}
+      </div>
+    )}
 
-                  <Modal isOpen={modal} toggle={toggle}>
-                    <ModalHeader toggle={toggle}>
-                      {isEdit ? "Edit Swap" : "Add New Swap"}
-                    </ModalHeader>
-                    <ModalBody>
-                      <Form onSubmit={validation.handleSubmit}>
-                        <Row>
-                          <Col xs={12}>
-                            <div className="mb-3">
-                              <Label className="form-label">Title</Label>
-                              <Input
-                                name="title"
-                                type="text"
-                                placeholder="Title"
-                                onChange={validation.handleChange}
-                                onBlur={validation.handleBlur}
-                                value={validation.values.title || ""}
-                                invalid={
-                                  validation.touched.title &&
-                                  validation.errors.title
-                                }
-                              />
-                              <FormFeedback type="invalid">
-                                {validation.errors.title}
-                              </FormFeedback>
-                            </div>
-                            <div className="mb-3">
-                              <Label className="form-label">Description</Label>
-                              <Input
-                                name="description"
-                                type="textarea"
-                                placeholder="Description"
-                                onChange={validation.handleChange}
-                                onBlur={validation.handleBlur}
-                                value={validation.values.description || ""}
-                                invalid={
-                                  validation.touched.description &&
-                                  validation.errors.description
-                                }
-                              />
-                              <FormFeedback type="invalid">
-                                {validation.errors.description}
-                              </FormFeedback>
-                            </div>
-                          </Col>
-                        </Row>
-                        <Row>
-                          <Col>
-                            <div className="text-end">
-                              {!isEdit ? (
-                                <button
-                                  type="submit"
-                                  className="btn btn-primary save-user"
-                                >
-                                  Create Swap
-                                </button>
-                              ) : (
-                                <button
-                                  type="submit"
-                                  className="btn btn-primary save-user"
-                                >
-                                  Update Swap
-                                </button>
-                              )}
-                            </div>
-                          </Col>
-                        </Row>
-                      </Form>
-                    </ModalBody>
-                  </Modal>
-                </Col>
-              </Row>
+    <Modal isOpen={modal} toggle={toggle}>
+      <ModalHeader toggle={toggle}>
+        {isEdit ? "Edit Swap" : "Add New Swap"}
+      </ModalHeader>
+      <ModalBody>
+        <Form onSubmit={validation.handleSubmit}>
+          <Row>
+            <Col xs={12}>
+              <div className="mb-3">
+                <Label className="form-label">Title</Label>
+                <Input
+                  name="title"
+                  type="text"
+                  placeholder="Title"
+                  onChange={validation.handleChange}
+                  onBlur={validation.handleBlur}
+                  value={validation.values.title || ""}
+                  invalid={
+                    validation.touched.title &&
+                    validation.errors.title
+                  }
+                />
+                <FormFeedback type="invalid">
+                  {validation.errors.title}
+                </FormFeedback>
+              </div>
+              <div className="mb-3">
+                <Label className="form-label">Description</Label>
+                <Input
+                  name="description"
+                  type="textarea"
+                  placeholder="Description"
+                  onChange={validation.handleChange}
+                  onBlur={validation.handleBlur}
+                  value={validation.values.description || ""}
+                  invalid={
+                    validation.touched.description &&
+                    validation.errors.description
+                  }
+                />
+                <FormFeedback type="invalid">
+                  {validation.errors.description}
+                </FormFeedback>
+              </div>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <div className="text-end">
+                {!isEdit ? (
+                  <button
+                    type="submit"
+                    className="btn btn-primary save-user"
+                  >
+                    Create Swap
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    className="btn btn-primary save-user"
+                  >
+                    Update Swap
+                  </button>
+                )}
+              </div>
+            </Col>
+          </Row>
+        </Form>
+      </ModalBody>
+    </Modal>
+  </Col>
+</Row>
+
             </Col>
           </Row>
         </Container>

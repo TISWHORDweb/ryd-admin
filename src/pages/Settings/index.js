@@ -27,10 +27,12 @@ const Settings = () => {
   document.title = "Dashboard | RYD Admin";
 
   const [admins, setAdmins] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [selectedAdmin, setSelectedAdmin] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchAdmins();
@@ -43,12 +45,15 @@ const Settings = () => {
   }, [isEdit]);
 
   const fetchAdmins = async () => {
+    setLoading(true);
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.get(`${apiUrl}/admin/all`);
       setAdmins(response.data.data);
     } catch (error) {
       console.error("Error fetching admins:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,7 +96,7 @@ const Settings = () => {
 
   const editAdmin = async (values) => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const url = `/admin/auth/${selectedAdmin.id}`;
       const response = await axios.put(`${apiUrl}${url}`, values);
       const responseData = response.data;
@@ -111,7 +116,7 @@ const Settings = () => {
   const createAdmin = async (values) => {
     try {
       const apiUrl =
-        process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+        process.env.REACT_APP_API_URL || "http://localhost:3000";
       const url = "/admin/auth/create";
       const response = await axios.post(`${apiUrl}${url}`, values);
       const responseData = response.data;
@@ -147,7 +152,7 @@ const Settings = () => {
       }
 
       const apiUrl =
-        process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+        process.env.REACT_APP_API_URL || "http://localhost:3000";
       await axios.delete(`${apiUrl}/admin/${admin.id}`);
       const updatedAdmins = admins.filter((a) => a.id !== admin.id);
       setAdmins(updatedAdmins);
@@ -156,6 +161,14 @@ const Settings = () => {
       console.error("Error:", error);
     }
   };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const filteredAdmins = admins.filter((admin) =>
+    admin.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <React.Fragment>
@@ -174,7 +187,7 @@ const Settings = () => {
               </div>
               <Row className="align-items-center">
                 <Col lg="12">
-                  <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
+                  <div className="d-flex flex-wrap align-items-center justify-content-between mb-3">
                     <div>
                       <Link
                         to="#"
@@ -184,29 +197,41 @@ const Settings = () => {
                         <i className="bx bx-plus me-1"></i> Add New Admin
                       </Link>
                     </div>
+                    <div>
+                      <Input
+                        type="text"
+                        placeholder="Search by Name"
+                        onChange={handleSearchChange}
+                        value={searchTerm}
+                      />
+                    </div>
                   </div>
                 </Col>
               </Row>
-              <table className="table align-middle">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Full Name</th>
-                    <th>Email</th>
-                    <th>Display Name</th>
-                    <th>Role</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {admins.length === 0 ? (
-                    
-                      <div className="text-center mt-5">
-                      <h3>No data available</h3>
-                    </div>
-                    
-                  ) : (
-                    admins.map((admin, index) => (
+              {loading ? (
+                <div className="text-center mt-5">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              ) : filteredAdmins.length === 0 ? (
+                <div className="text-center mt-5">
+                  <h3>No data available</h3>
+                </div>
+              ) : (
+                <table className="table align-middle">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Full Name</th>
+                      <th>Email</th>
+                      <th>Display Name</th>
+                      <th>Role</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAdmins.map((admin, index) => (
                       <tr key={admin.id}>
                         <td>{index + 1}</td>
                         <td>{admin.fullName}</td>
@@ -234,10 +259,10 @@ const Settings = () => {
                           )}
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </Col>
           </Row>
         </Container>

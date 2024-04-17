@@ -10,12 +10,13 @@ import InviteTeacherModal from "./InviteTeacherModal";
 import { Col, Container, Row, Modal, ModalHeader, ModalBody, Form, Label, Input, FormFeedback } from "reactstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useFormik, resetForm } from "formik";
+import { useFormik } from "formik";
 import * as Yup from 'yup';
 
 const ManageTeacher = () => {
   document.title = "Manage Teacher | RYD Admin";
 
+  const [loading, setLoading] = useState(true);
   const [teachers, setTeachers] = useState([]);
   const [teacherData, setTeacherData] = useState({});
   const [modal, setModal] = useState(false);
@@ -24,6 +25,7 @@ const ManageTeacher = () => {
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedTimezone, setSelectedTimezone] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchTeachers();
@@ -31,11 +33,14 @@ const ManageTeacher = () => {
 
   const fetchTeachers = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      setLoading(true);
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.get(`${apiUrl}/admin/teacher/all`);
       setTeachers(response.data.data);
+      setLoading(false);
     } catch (error) {
       console.error("Error:", error);
+      setLoading(false);
     }
   };
 
@@ -43,16 +48,14 @@ const ManageTeacher = () => {
     setModal(!modal);
   };
 
+  const handleCountryChange = (country) => {
+    setSelectedCountry(country);
+    setSelectedTimezone("");
+  };
 
-
-const handleCountryChange = (country) => {
-  setSelectedCountry(country);
-  setSelectedTimezone("");
-};
-
-const handleTimezoneChange = (timezone) => {
-  setSelectedTimezone(timezone);
-};
+  const handleTimezoneChange = (timezone) => {
+    setSelectedTimezone(timezone);
+  };
  
   const handleTeacherClick = (teacher) => {
     if (teacher) {
@@ -61,16 +64,15 @@ const handleTimezoneChange = (timezone) => {
       toggle();
     }
   };
+
   const onClickDelete = (teacher) => {
     if (teacher) {
       setTeacherData(teacher);
       setDeleteModal(true);
     } else {
-      // Handle the case when teacher is undefined
       console.error("Teacher data is undefined.");
     }
   };
-  
 
   const validation = useFormik({
     enableReinitialize: true,
@@ -118,14 +120,14 @@ const handleTimezoneChange = (timezone) => {
         let apiUrl;
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.put(
             `${apiUrl}/admin/teacher/edit/${teacherData.id}`,
             newTeacher
           );
           toast.success("Teacher updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.post(
             `${apiUrl}/admin/teacher/create`,
             newTeacher
@@ -150,15 +152,10 @@ const handleTimezoneChange = (timezone) => {
       }
     },
   });
-  
-
-  
-  
-  
 
   const handleDeleteTeacher = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       await axios.delete(`${apiUrl}/admin/teacher/${teacherData.id}`);
       const updatedTeachers = teachers.filter(
         (teacher) => teacher.id !== teacherData.id
@@ -174,7 +171,7 @@ const handleTimezoneChange = (timezone) => {
 
   const inviteTeacher = async (email) => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.post(`${apiUrl}/admin/invite/teacher`, {
         email,
       });
@@ -196,6 +193,10 @@ const handleTimezoneChange = (timezone) => {
     }
   };
 
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
   const toggleInviteModal = () => {
     setInviteModalOpen(!inviteModalOpen);
   };
@@ -207,14 +208,6 @@ const handleTimezoneChange = (timezone) => {
       return url.substring(0, maxLength) + "...";
     }
   };
-
-  
-
-
-
-
-
-
 
   return (
     <React.Fragment>
@@ -241,6 +234,14 @@ const handleTimezoneChange = (timezone) => {
                 </Col>
                 <Col md={6}>
                   <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
+                  <div>
+                      <Input
+                        type="text"
+                        placeholder="Search"
+                        value={searchQuery}
+                        onChange={handleSearch}
+                      />
+                    </div>
                     <div>
                       <Link
                         to="#"
@@ -272,63 +273,76 @@ const handleTimezoneChange = (timezone) => {
               </Row>
               <Row>
                 <Col xl="12">
-                  <table className="table align-middle">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Firstname</th>
-                        <th>Lastname</th>
-                        <th>Email</th>
-                        <th>Gender</th>
-                        <th>Phone</th>
-                        <th>Country</th>
-                        <th>Timezone</th>
-                        <th>Qualification</th>
-                        <th>DocumentURL</th>
-                        <th>Experience</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Array.isArray(teachers) &&
-                        teachers.map((teacher, index) => (
-                          <tr key={index}>
-                            <td>{index + 1}</td>
-                            <td>{teacher.firstName}</td>
-                            <td>{teacher.lastName}</td>
-                            <td>{teacher.email}</td>
-                            <td>{teacher.gender}</td>
-                            <td>{teacher.phone}</td>
-                            <td>{teacher.country}</td>
-                            <td>{teacher.timezone}</td>
-                            <td>{teacher.qualification}</td>
-                            <td>
-                              {teacher.docUrl &&
-                                shortenUrl(teacher.docUrl, 10)}
-                            </td>
-                            <td>{teacher.experience}</td>
-                            <td>
-                              <div className="d-flex gap-3">
-                                <Link
-                                  className="text-success"
-                                  to="#"
-                                  onClick={() => handleTeacherClick(teacher)}
-                                >
-                                  <i className="mdi mdi-pencil font-size-18"></i>
-                                </Link>
-                                <Link
-                                  className="text-danger"
-                                  to="#"
-                                  onClick={() => onClickDelete(teacher)}
-                                >
-                                  <i className="mdi mdi-delete font-size-18"></i>
-                                </Link>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
+            
+                    {loading ? ( 
+                      <div className="text-center mt-5">
+                      <div className="spinner-border text-primary" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                   ) : teachers.length === 0 ? (
+                     <div className="text-center mt-5">
+                       <h3>No data available</h3>
+                     </div>
+                   ) : (
+                    <table className="table align-middle">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Firstname</th>
+                          <th>Lastname</th>
+                          <th>Email</th>
+                          <th>Gender</th>
+                          <th>Phone</th>
+                          <th>Country</th>
+                          <th>Timezone</th>
+                          <th>Qualification</th>
+                          <th>DocumentURL</th>
+                          <th>Experience</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.isArray(teachers) &&
+                          teachers.map((teacher, index) => (
+                            <tr key={index}>
+                              <td>{index + 1}</td>
+                              <td>{teacher.firstName}</td>
+                              <td>{teacher.lastName}</td>
+                              <td>{teacher.email}</td>
+                              <td>{teacher.gender}</td>
+                              <td>{teacher.phone}</td>
+                              <td>{teacher.country}</td>
+                              <td>{teacher.timezone}</td>
+                              <td>{teacher.qualification}</td>
+                              <td>
+                                {teacher.docUrl &&
+                                  shortenUrl(teacher.docUrl, 10)}
+                              </td>
+                              <td>{teacher.experience}</td>
+                              <td>
+                                <div className="d-flex gap-3">
+                                  <Link
+                                    className="text-success"
+                                    to="#"
+                                    onClick={() => handleTeacherClick(teacher)}
+                                  >
+                                    <i className="mdi mdi-pencil font-size-18"></i>
+                                  </Link>
+                                  <Link
+                                    className="text-danger"
+                                    to="#"
+                                    onClick={() => onClickDelete(teacher)}
+                                  >
+                                    <i className="mdi mdi-delete font-size-18"></i>
+                                  </Link>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  )}
 
                   <Modal isOpen={modal} toggle={toggle}>
                     <ModalHeader toggle={toggle}>
@@ -503,7 +517,7 @@ const handleTimezoneChange = (timezone) => {
                             <Row>
                               <Col md={6}>
                                 <div className="mb-3">
-                                  <Label className="form-label">Document URL</Label>
+                                  <Label className="form-label">CV Document URL</Label>
                                   <Input
                                     name="docUrl"
                                     type="text"

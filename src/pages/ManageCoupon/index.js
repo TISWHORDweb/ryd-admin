@@ -25,9 +25,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Your ManageCoupon component
 const ManageCoupon = () => {
-  // State variables
   const [coupons, setCoupons] = useState([]);
   const [coupon, setCoupon] = useState({});
   const [modal, setModal] = useState(false);
@@ -37,8 +35,9 @@ const ManageCoupon = () => {
   const [editTooltipOpen, setEditTooltipOpen] = useState(false);
   const [deleteTooltipOpen, setDeleteTooltipOpen] = useState(false);
   const [statusTooltipOpen, setStatusTooltipOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Form validation
+
   const validation = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -66,20 +65,20 @@ const ManageCoupon = () => {
           isPercentage: values.isPercentage,
           byLevel: values.byLevel,
           byCountry: values.byCountry,
-          isActive: true, // Default to active
+          isActive: true,
         };
 
         let apiUrl;
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.put(
             `${apiUrl}/admin/coupon/edit/${coupon.id}`,
             newCoupon
           );
           toast.success("Coupon updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.post(
             `${apiUrl}/admin/coupon/create`,
             newCoupon
@@ -105,44 +104,40 @@ const ManageCoupon = () => {
     },
   });
 
-  // Fetch coupons on initial render and whenever modal is toggled
+ 
   useEffect(() => {
     fetchCoupons();
   }, [modal]);
 
-  // Function to fetch coupons
   const fetchCoupons = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.get(`${apiUrl}/admin/coupon/all`);
       setCoupons(response.data.data);
+      setLoading(false); // Update loading state after data fetch
     } catch (error) {
       console.error("Error:", error);
     }
   };
 
-  // Function to toggle modal
   const toggle = () => {
     setModal(!modal);
   };
 
-  // Function to handle coupon click for editing
   const handleCouponClick = (couponData) => {
     setCoupon(couponData);
     setIsEdit(true);
     toggle();
   };
 
-  // Function to handle delete coupon click
   const onClickDelete = (couponData) => {
     setCoupon(couponData);
     setDeleteModal(true);
   };
 
-  // Function to handle deleting coupon
   const handleDeleteCoupon = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       await axios.delete(`${apiUrl}/admin/coupon/${coupon.id}`);
       const updatedCoupons = coupons.filter((c) => c.id !== coupon.id);
       setCoupons(updatedCoupons);
@@ -154,15 +149,13 @@ const ManageCoupon = () => {
     }
   };
 
-  // Function to handle search query change
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
   };
 
-  // Function to toggle coupon status (activate/deactivate)
   const toggleCouponStatus = async (couponId, isActive) => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "https://api-pro.rydlearning.com";
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       await axios.put(`${apiUrl}/admin/coupon/edit/${couponId}`, { isActive: !isActive });
       const updatedCoupons = coupons.map((c) =>
         c.id === couponId ? { ...c, isActive: !isActive } : c
@@ -174,10 +167,12 @@ const ManageCoupon = () => {
       toast.error("Failed to toggle coupon status");
     }
   };
-  
+  const filteredCoupons = coupons.filter(coupon =>
+    coupon.code.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <React.Fragment>
-      {/* Your DeleteModal component */}
       <DeleteModal
         show={deleteModal}
         onDeleteClick={handleDeleteCoupon}
@@ -210,8 +205,7 @@ const ManageCoupon = () => {
                       />
                     </div>
                     <div>
-                      <Link
-                        to="#"
+                      <button
                         className="btn btn-light"
                         onClick={() => {
                           setCoupon({});
@@ -220,28 +214,38 @@ const ManageCoupon = () => {
                         }}
                       >
                         <i className="bx bx-plus me-1"></i> Add New Coupon
-                      </Link>
+                      </button>
                     </div>
                   </div>
                 </Col>
               </Row>
               <Row>
                 <Col xl="12">
-                  <table className="table align-middle">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Code</th>
-                        <th>Discount</th>
-                        <th>Country</th>
-                        <th>Level</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Array.isArray(coupons) && coupons.length > 0 ? (
-                        coupons.map((c, index) => (
+                  {loading ? (
+                    <div className="text-center mt-5">
+                      <div className="spinner-border text-primary" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                  ) : filteredCoupons.length === 0 ? (
+                    <div className="text-center mt-5">
+                      <h3>No data available</h3>
+                    </div>
+                  ) : (
+                    <table className="table align-middle">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Code</th>
+                          <th>Discount</th>
+                          <th>Country</th>
+                          <th>Level</th>
+                          <th>Status</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredCoupons.map((c, index) => (
                           <tr key={index}>
                             <td>{index + 1}</td>
                             <td>{c.code}</td>
@@ -259,7 +263,13 @@ const ManageCoupon = () => {
                             <td>{c.isActive ? "Active" : "Inactive"}</td>
                             <td>
                               <div className="d-flex gap-3">
-                                <Tooltip isOpen={editTooltipOpen} target="edit" toggle={() => setEditTooltipOpen(!editTooltipOpen)} placement="top" delay={{ show: 100, hide: 100 }}>
+                                <Tooltip
+                                  isOpen={editTooltipOpen}
+                                  target="edit"
+                                  toggle={() => setEditTooltipOpen(!editTooltipOpen)}
+                                  placement="top"
+                                  delay={{ show: 100, hide: 100 }}
+                                >
                                   Edit
                                 </Tooltip>
                                 <Link
@@ -276,7 +286,13 @@ const ManageCoupon = () => {
                                   <i className="mdi mdi-pencil font-size-18"></i>
                                 </Link>
 
-                                <Tooltip isOpen={deleteTooltipOpen} target="delete" toggle={() => setDeleteTooltipOpen(!deleteTooltipOpen)} placement="top" delay={{ show: 100, hide: 100 }}>
+                                <Tooltip
+                                  isOpen={deleteTooltipOpen}
+                                  target="delete"
+                                  toggle={() => setDeleteTooltipOpen(!deleteTooltipOpen)}
+                                  placement="top"
+                                  delay={{ show: 100, hide: 100 }}
+                                >
                                   Delete
                                 </Tooltip>
                                 <Link
@@ -290,7 +306,13 @@ const ManageCoupon = () => {
                                   <i className="mdi mdi-delete font-size-18"></i>
                                 </Link>
 
-                                <Tooltip isOpen={statusTooltipOpen} target="status" toggle={() => setStatusTooltipOpen(!statusTooltipOpen)} placement="top" delay={{ show: 100, hide: 100 }}>
+                                <Tooltip
+                                  isOpen={statusTooltipOpen}
+                                  target="status"
+                                  toggle={() => setStatusTooltipOpen(!statusTooltipOpen)}
+                                  placement="top"
+                                  delay={{ show: 100, hide: 100 }}
+                                >
                                   {c.isActive ? 'Deactivate' : 'Activate'}
                                 </Tooltip>
                                 <Link
@@ -309,151 +331,147 @@ const ManageCoupon = () => {
                               </div>
                             </td>
                           </tr>
-                        ))
-                      ) : (
-                        <div className="text-center mt-5">
-                        <h3>No data available</h3>
-                      </div>
-                      )}
-                    </tbody>
-                  </table>
+                        ))}
+                      </tbody>
+                    </table>
 
-                  {/* Your modal for adding/editing coupons */}
-                  <Modal isOpen={modal} toggle={toggle}>
-                    <ModalHeader toggle={toggle}>
-                      {isEdit ? "Edit Coupon" : "Add New Coupon"}
-                    </ModalHeader>
-                    <ModalBody>
-                      <Form onSubmit={validation.handleSubmit}>
-                        <Row>
-                          <Col xs={12}>
-                            <div className="mb-3">
-                              <Label className="form-label">Code</Label>
-                              <Input
-                                name="code"
-                                type="text"
-                                placeholder="Code"
-                                onChange={validation.handleChange}
-                                onBlur={validation.handleBlur}
-                                value={validation.values.code || ""}
-                                invalid={
-                                  validation.touched.code &&
-                                  validation.errors.code
-                                }
-                              />
-                              <FormFeedback type="invalid">
-                                {validation.errors.code}
-                              </FormFeedback>
-                            </div>
-                            <div className="mb-3">
-                              <Label className="form-label">Discount</Label>
-                              <Input
-                                name="discount"
-                                type="number"
-                                placeholder="Discount"
-                                onChange={validation.handleChange}
-                                onBlur={validation.handleBlur}
-                                value={validation.values.discount || ""}
-                                invalid={
-                                  validation.touched.discount &&
-                                  validation.errors.discount
-                                }
-                              />
-                              <FormFeedback type="invalid">
-                                {validation.errors.discount}
-                              </FormFeedback>
-                            </div>
-                            <div className="mb-3">
-                              <Label className="form-label">Discount Type</Label>
-                              <Input
-                                type="select"
-                                name="isPercentage"
-                                onChange={validation.handleChange}
-                                onBlur={validation.handleBlur}
-                                value={validation.values.isPercentage || ""}
-                                invalid={
-                                  validation.touched.isPercentage &&
-                                  validation.errors.isPercentage
-                                }
-                              >
-                                <option value="">Select Discount Type</option>
-                                <option value={false}>Direct Discount</option>
-                                <option value={true}>Percentage</option>
-                              </Input>
-                              <FormFeedback type="invalid">
-                                {validation.errors.isPercentage}
-                              </FormFeedback>
-                            </div>
-                            <div className="mb-3">
-                              <Label className="form-label">Country</Label>
-                              {/* Render your CountrySelect component here */}
-                              <CountrySelect
-                                type="text"
-                                name="byCountry"
-                                onChange={validation.handleChange}
-                                onBlur={validation.handleBlur}
-                                value={validation.values.byCountry || ""}
-                                invalid={
-                                  validation.touched.byCountry &&
-                                  validation.errors.byCountry
-                                }
-                               
-                              />
+                    
+                  )}
+                       <Modal isOpen={modal} toggle={toggle}>
+                  <ModalHeader toggle={toggle}>
+                    {isEdit ? "Edit Coupon" : "Add New Coupon"}
+                  </ModalHeader>
+                  <ModalBody>
+                    <Form onSubmit={validation.handleSubmit}>
+                      <Row>
+                        <Col xs={12}>
+                          <div className="mb-3">
+                            <Label className="form-label">Code</Label>
+                            <Input
+                              name="code"
+                              type="text"
+                              placeholder="Code"
+                              onChange={validation.handleChange}
+                              onBlur={validation.handleBlur}
+                              value={validation.values.code || ""}
+                              invalid={
+                                validation.touched.code &&
+                                validation.errors.code
+                              }
+                            />
+                            <FormFeedback type="invalid">
+                              {validation.errors.code}
+                            </FormFeedback>
+                          </div>
+                          <div className="mb-3">
+                            <Label className="form-label">Discount</Label>
+                            <Input
+                              name="discount"
+                              type="number"
+                              placeholder="Discount"
+                              onChange={validation.handleChange}
+                              onBlur={validation.handleBlur}
+                              value={validation.values.discount || ""}
+                              invalid={
+                                validation.touched.discount &&
+                                validation.errors.discount
+                              }
+                            />
+                            <FormFeedback type="invalid">
+                              {validation.errors.discount}
+                            </FormFeedback>
+                          </div>
+                          <div className="mb-3">
+                            <Label className="form-label">Discount Type</Label>
+                            <Input
+                              type="select"
+                              name="isPercentage"
+                              onChange={validation.handleChange}
+                              onBlur={validation.handleBlur}
+                              value={validation.values.isPercentage || ""}
+                              invalid={
+                                validation.touched.isPercentage &&
+                                validation.errors.isPercentage
+                              }
+                            >
+                              <option value="">Select Discount Type</option>
+                              <option value={false}>Direct Discount</option>
+                              <option value={true}>Percentage</option>
+                            </Input>
+                            <FormFeedback type="invalid">
+                              {validation.errors.isPercentage}
+                            </FormFeedback>
+                          </div>
+                          <div className="mb-3">
+                            <Label className="form-label">Country</Label>
+                            {/* Render your CountrySelect component here */}
+                            <CountrySelect
+                              type="text"
+                              name="byCountry"
+                              onChange={validation.handleChange}
+                              onBlur={validation.handleBlur}
+                              value={validation.values.byCountry || ""}
+                              invalid={
+                                validation.touched.byCountry &&
+                                validation.errors.byCountry
+                              }
+                             
+                            />
 
-                   <FormFeedback type="invalid">
-                                {validation.errors.byCountry}
-                              </FormFeedback>
-                            </div>
-                            <div className="mb-3">
-                              <Label className="form-label">Level</Label>
-                              <Input
-                                type="select"
-                                name="byLevel"
-                                onChange={validation.handleChange}
-                                onBlur={validation.handleBlur}
-                                value={validation.values.byLevel || ""}
-                                invalid={
-                                  validation.touched.byLevel &&
-                                  validation.errors.byLevel
-                                }
+                 <FormFeedback type="invalid">
+                              {validation.errors.byCountry}
+                            </FormFeedback>
+                          </div>
+                          <div className="mb-3">
+                            <Label className="form-label">Level</Label>
+                            <Input
+                              type="select"
+                              name="byLevel"
+                              onChange={validation.handleChange}
+                              onBlur={validation.handleBlur}
+                              value={validation.values.byLevel || ""}
+                              invalid={
+                                validation.touched.byLevel &&
+                                validation.errors.byLevel
+                              }
+                            >
+                              <option value="">Select Level</option>
+                              <option value="0">All Level</option>
+                              <option value="1">1</option>
+                              <option value="2">2</option>
+                              <option value="3">3</option>
+                              <option value="4">4</option>
+                            </Input>
+                            <FormFeedback type="invalid">
+                              {validation.errors.byLevel}
+                            </FormFeedback>
+                          </div>
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col>
+                          <div className="text-end">
+                            {!isEdit ? (
+                              <button
+                                type="submit"
+                                className="btn btn-primary save-user"
                               >
-                                <option value="">Select Level</option>
-                                <option value="0">All Level</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                              </Input>
-                              <FormFeedback type="invalid">
-                                {validation.errors.byLevel}
-                              </FormFeedback>
-                            </div>
-                          </Col>
-                        </Row>
-                        <Row>
-                          <Col>
-                            <div className="text-end">
-                              {!isEdit ? (
-                                <button
-                                  type="submit"
-                                  className="btn btn-primary save-user"
-                                >
-                                  Create Coupon
-                                </button>
-                              ) : (
-                                <button
-                                  type="submit"
-                                  className="btn btn-primary save-user"
-                                >
-                                  Update Coupon
-                                </button>
-                              )}
-                            </div>
-                          </Col>
-                        </Row>
-                      </Form>
-                    </ModalBody>
-                  </Modal>
+                                Create Coupon
+                              </button>
+                            ) : (
+                              <button
+                                type="submit"
+                                className="btn btn-primary save-user"
+                              >
+                                Update Coupon
+                              </button>
+                            )}
+                          </div>
+                        </Col>
+                      </Row>
+                    </Form>
+                  </ModalBody>
+                </Modal>
                 </Col>
               </Row>
             </Col>

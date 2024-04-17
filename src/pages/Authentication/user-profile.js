@@ -31,14 +31,12 @@ const UserProfile = () => {
   const [name, setName] = useState("");
   const [idx, setIdx] = useState(1);
   const [displayName, setDisplayName] = useState("");
-  const [role, setRole] = useState(0); // Default role set to 0 (normal admin)
+  const [role, setRole] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
-    // Simulate fetching user data from mock API
     const fetchData = async () => {
       try {
-        // Mock API endpoint
         const apiUrl = process.env.REACT_APP_API_URL;
         const response = await axios.get(apiUrl);
         const userData = response.data;
@@ -46,7 +44,7 @@ const UserProfile = () => {
         setEmail(userData.email);
         setIdx(userData.id);
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        error;
       }
     };
 
@@ -64,9 +62,7 @@ const UserProfile = () => {
     }),
     onSubmit: async (values) => {
       try {
-        // Simulate API call to update user data
-        // In a real application, replace this with your actual API endpoint
-        const apiUrl = "https://api-pro.rydlearning.com/admin/auth/:id";
+        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
         await axios.put(apiUrl, values);
         setSuccess("Username updated successfully");
         setError("");
@@ -88,8 +84,7 @@ const UserProfile = () => {
   };
 
   const handleViewDetails = () => {
-    // Show user's display name and role
-    setDisplayName(name); // Assuming display name is the same as the username
+    setDisplayName(name);
     const roleName = role === 1 ? "Super Admin" : "Normal Admin";
     alert(`Display Name: ${displayName}\nRole: ${roleName}`);
   };
@@ -99,9 +94,6 @@ const UserProfile = () => {
       <div className="page-content">
         <Container fluid>
           <Breadcrumb title="Dashboard" breadcrumbItem="Settings" />
-
-         
-
 
           <Card>
             <CardBody>
@@ -114,7 +106,7 @@ const UserProfile = () => {
               >
                 <div className="form-group">
                   <Label className="form-label">ADMIN SETTINGS</Label>
-                 </div>
+                </div>
 
                 <div className="text-center mt-4">
                   <Button type="submit" color="primary">
@@ -124,8 +116,6 @@ const UserProfile = () => {
               </Form>
             </CardBody>
           </Card>
-
-        
         </Container>
       </div>
     </React.Fragment>

@@ -12,46 +12,41 @@ import axios from 'axios';
 
 const Dashboard = () => {
     const [programData, setProgramData] = useState([]);
+    const [parentCount, setParentCount] = useState(0);
+    const [childCount, setChildCount] = useState(0);
 
     useEffect(() => {
-    const fetchData = async () => {
-    try {
-        const apiUrl = "https://api-pro.rydlearning.com/admin/program/all";
-        const response = await axios.get(apiUrl);
-        const responseData = response.data;
+        const fetchData = async () => {
+            try {
+                const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
-        console.log("Response data:", responseData);
+                // Fetch parent count
+                const parentResponse = await axios.get(`${apiUrl}/admin/parent/all`);
+                setParentCount(parentResponse.data.data.length);
 
-        if (!Array.isArray(responseData.data)) {
-            console.error("Response data is not an array:", responseData.data);
-            return;
-        }
+                // Fetch child count
+                const childResponse = await axios.get(`${apiUrl}/admin/child/all`);
+                setChildCount(childResponse.data.data.length);
 
-        // Get counts
-        const childCount = responseData.data.reduce((count, item) => count + (item.child ? 1 : 0), 0);
-        const programCount = responseData.data.length;
-        const teacherCount = responseData.data.reduce((count, item) => count + (item.teacher ? 1 : 0), 0);
-        const packageCount = responseData.data.reduce((count, item) => count + (item.packageId ? 1 : 0), 0);
+                // Fetch program data
+                const programResponse = await axios.get(`${apiUrl}/admin/program/all`);
+                const responseData = programResponse.data;
 
-        console.log("Child Count:", childCount);
-        console.log("Program Count:", programCount);
-        console.log("Teacher Count:", teacherCount);
-        console.log("Package Count:", packageCount);
+                const teacherAssignedCount = responseData.data.reduce((count, item) => count + (item.teacher ? 1 : 0), 0);
+                const enrolledCount = responseData.data.reduce((count, item) => count + (item.child ? 1 : 0), 0);
+                const programCount = responseData.data.length;
+                const packageCount = responseData.data.reduce((count, item) => count + (item.packageId ? 1 : 0), 0);
 
-        // Update state with program data
-        setProgramData([
-            { title: "Total Programs", count: programCount, statusColor: "primary" },
-            { title: "Teacher Assigned", count: teacherCount, statusColor: "success" },
-            { title: "Child Enrolled", count: childCount, statusColor: "danger" },
-            { title: "Total Package", count: packageCount, statusColor: "secondary" }
-        ]);
-
-    } catch (error) {
-        console.error("Error fetching data:", error);
-    }
-};
-
-
+                setProgramData([
+                    { title: "Total Programs", count: programCount, statusColor: "primary" },
+                    { title: "Teacher Assigned", count: teacherAssignedCount, statusColor: "success" },
+                    { title: "Enrolled", count: enrolledCount, statusColor: "danger" },
+                    { title: "Total Package", count: packageCount, statusColor: "secondary" }
+                ]);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
 
         fetchData();
 
@@ -65,15 +60,34 @@ const Dashboard = () => {
                     <Breadcrumbs title="Dashboard" breadcrumbItem="Dashboard" />
 
                     <Row>
+                        <Col xl={3} md={6}>
+                            <Card className="card-h-100">
+                                <CardBody>
+                                    <h4 className="mb-3">Total Parents</h4>
+                                    <div className="badge bg-info-subtle text-info mb-3" style={{ fontSize: "15px", padding: "10px" }}>
+                                        {parentCount}
+                                    </div>
+                                </CardBody>
+                            </Card>
+                        </Col>
+                        <Col xl={3} md={6}>
+                            <Card className="card-h-100">
+                                <CardBody>
+                                    <h4 className="mb-3">Total Child</h4>
+                                    <div className="badge bg-warning-subtle text-warning mb-3" style={{ fontSize: "15px", padding: "10px" }}>
+                                        {childCount}
+                                    </div>
+                                </CardBody>
+                            </Card>
+                        </Col>
                         {programData.map((card, index) => (
                             <Col key={index} xl={3} md={6}>
                                 <Card className="card-h-100">
                                     <CardBody>
                                         <h4 className="mb-3">{card.title}</h4>
                                         <div className={"badge bg-" + card.statusColor + "-subtle text-" + card.statusColor + " mb-3"} style={{ fontSize: "15px", padding: "10px" }}>
-    {card.count}
-</div>
-
+                                            {card.count}
+                                        </div>
                                     </CardBody>
                                 </Card>
                             </Col>
