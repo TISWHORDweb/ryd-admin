@@ -26,8 +26,6 @@ const InviteTeacherModal = ({ isOpen, toggle }) => {
 
   const fetchInvitedTeachers = async () => {
     try {
-  
-       
       const response = await axios.get(`${baseUrl}/admin/teacher/invites`);
       setInvitedTeachers(response.data.data);
     } catch (error) {
@@ -36,6 +34,7 @@ const InviteTeacherModal = ({ isOpen, toggle }) => {
   };
 
   const inviteTeacher = async () => {
+    try {
       const response = await axios.post(`${baseUrl}/admin/teacher/invite`, {
         email,
       });
@@ -43,9 +42,7 @@ const InviteTeacherModal = ({ isOpen, toggle }) => {
         toast.success("Teacher invited successfully");
         fetchInvitedTeachers();
       } else {
-        toast.error(
-          response.data.message || "Failed to invite teacher"
-        );
+        toast.error(response.data.message || "Failed to invite teacher");
       }
     } catch (error) {
       toast.error("Failed to invite teacher");
@@ -55,7 +52,6 @@ const InviteTeacherModal = ({ isOpen, toggle }) => {
 
   const removeInviteTeacher = async (id) => {
     try {
-    
       const response = await axios.delete(
         `${baseUrl}/admin/teacher/invite/remove/${id}`
       );
@@ -63,9 +59,7 @@ const InviteTeacherModal = ({ isOpen, toggle }) => {
         toast.success("Teacher invite removed successfully");
         fetchInvitedTeachers();
       } else {
-        toast.error(
-          response.data.message || "Failed to remove teacher invite"
-        );
+        toast.error(response.data.message || "Failed to remove teacher invite");
       }
     } catch (error) {
       toast.error("Failed to remove teacher invite");
