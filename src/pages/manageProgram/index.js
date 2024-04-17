@@ -21,6 +21,7 @@ import {
 import withAuth from "../withAuth";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { baseUrl } from '../../Network';
 
 export const times = [
   { label: "1:00AM", value: 1 },
@@ -115,8 +116,7 @@ const ManageProgram = () => {
   }, []);
   const fetchPrograms = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/admin/program/all`);
+      const response = await axios.get(`${baseUrl}/admin/program/all`);
       setPrograms(response.data.data);
       setLoading(false);
     } catch (error) {
@@ -127,8 +127,7 @@ const ManageProgram = () => {
 
   const fetchTeachers = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/admin/teacher/all`);
+      const response = await axios.get(`${baseUrl}/admin/teacher/all`);
       setTeachers(response.data.data);
     } catch (error) {
       console.error("Error:", error);
@@ -156,8 +155,7 @@ const ManageProgram = () => {
     }
     setAssignError(false);
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.post(`${apiUrl}/admin/program/assign/teacher`, {
+      const response = await axios.post(`${baseUrl}/admin/program/assign/teacher`, {
         programIds: selectedProgram.map((program) => program.id),
         teacherId: selectedTeacher
       });
@@ -196,12 +194,12 @@ const ManageProgram = () => {
           isPaid: values.isPaid,
         };
 
-        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+       
 
         let response;
         if (isEdit) {
           response = await axios.put(
-            `${apiUrl}/admin/program/edit/${contact.id}`,
+            `${baseUrl}/admin/program/edit/${contact.id}`,
             newProgram
           );
           const responseData = response.data;
@@ -227,8 +225,8 @@ const ManageProgram = () => {
 
   const handleDeleteProgram = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      await axios.delete(`${apiUrl}/admin/program/${contact.id}`);
+     
+      await axios.delete(`${baseUrl}/admin/program/${contact.id}`);
       const updatedPrograms = programs.filter(
         (program) => program.id !== contact.id
       );
@@ -264,11 +262,9 @@ const ManageProgram = () => {
         console.error("Invalid program data.");
         return;
       }
-
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const updatedProgram = { ...programData, isPaid: true };
       await axios.put(
-        `${apiUrl}/admin/program/edit/${programData.id}`,
+        `${baseUrl}/admin/program/edit/${programData.id}`,
         updatedProgram
       );
 

@@ -6,6 +6,12 @@ import axios from "axios";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 
+import { baseUrl } from '../../Network';
+
+// Use baseUrl in combination with other endpoints
+const parentEndpoint = `${baseUrl}/admin/parent/all`;
+const childEndpoint = `${baseUrl}/admin/child/all`;
+
 // import images
 import logo from "../../assets/images/favicon.png";
 
@@ -29,9 +35,8 @@ const Login = (props) => {
     }),
     onSubmit: async (values, { setFieldError }) => {
       try {
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
         const response = await axios.post(
-          `${apiUrl}/admin/auth/login`,  values)
+          `${{baseUrl}}/admin/auth/login`,  values)
         if (response.data.status) {
           // Store token in localStorage
           localStorage.setItem('token', response.data.data.token);

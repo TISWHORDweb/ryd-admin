@@ -21,6 +21,7 @@ import { useFormik } from "formik";
 import Breadcrumb from "../../components/Common/Breadcrumb";
 import avatar from "../../assets/images/users/avatar-1.jpg";
 import axios from "axios";
+import { baseUrl } from "../../Network";
 
 const UserProfile = () => {
   document.title = "Dashboard | RYD Admin";
@@ -37,8 +38,8 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiUrl = process.env.REACT_APP_API_URL;
-        const response = await axios.get(apiUrl);
+        
+        const response = await axios.get(baseUrl);
         const userData = response.data;
         setName(userData.username);
         setEmail(userData.email);
@@ -62,8 +63,7 @@ const UserProfile = () => {
     }),
     onSubmit: async (values) => {
       try {
-        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-        await axios.put(apiUrl, values);
+        await axios.put(baseUrl, values);
         setSuccess("Username updated successfully");
         setError("");
       } catch (error) {

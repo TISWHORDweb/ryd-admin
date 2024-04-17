@@ -22,6 +22,7 @@ import Breadcrumb from "../../components/Common/Breadcrumb";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import withAuth from "../withAuth";
+import { baseUrl } from '../../Network';
 
 const Settings = () => {
   document.title = "Dashboard | RYD Admin";
@@ -47,8 +48,7 @@ const Settings = () => {
   const fetchAdmins = async () => {
     setLoading(true);
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/admin/all`);
+      const response = await axios.get(`${baseUrl}/admin/all`);
       setAdmins(response.data.data);
     } catch (error) {
       console.error("Error fetching admins:", error);
@@ -96,9 +96,9 @@ const Settings = () => {
 
   const editAdmin = async (values) => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const url = `/admin/auth/${selectedAdmin.id}`;
-      const response = await axios.put(`${apiUrl}${url}`, values);
+      
+      const url = `${baseUrl}/admin/auth/${selectedAdmin.id}`;
+      const response = await axios.put(`${baseUrl}${url}`, values);
       const responseData = response.data;
 
       const updatedAdmins = admins.map((admin) =>
@@ -115,13 +115,12 @@ const Settings = () => {
 
   const createAdmin = async (values) => {
     try {
-      const apiUrl =
-        process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const url = "/admin/auth/create";
-      const response = await axios.post(`${apiUrl}${url}`, values);
+     
+      const url = `${baseUrl}/admin/auth/create`;
+      const response = await axios.post(`${baseUrl}${url}`, values);
       const responseData = response.data;
 
-      const updatedAdminList = await axios.get(`${apiUrl}/admin/all`);
+      const updatedAdminList = await axios.get(`${baseUrl}/admin/all`);
       setAdmins(updatedAdminList.data.data);
       toast.success("Admin created successfully");
 
@@ -151,9 +150,9 @@ const Settings = () => {
         return;
       }
 
-      const apiUrl =
-        process.env.REACT_APP_API_URL || "http://localhost:3000";
-      await axios.delete(`${apiUrl}/admin/${admin.id}`);
+     
+       
+      await axios.delete(`${baseUrl}/admin/${admin.id}`);
       const updatedAdmins = admins.filter((a) => a.id !== admin.id);
       setAdmins(updatedAdmins);
       toast.success("Admin deleted successfully");

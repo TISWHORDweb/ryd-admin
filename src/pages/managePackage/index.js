@@ -5,7 +5,7 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import axios from "axios";
-
+import { baseUrl } from '../../Network';
 import {
   Col,
   Container,
@@ -39,8 +39,8 @@ const ManagePackage = () => {
   const fetchPackages = async () => {
     try {
       setLoading(true);
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/admin/package/all`);
+    
+      const response = await axios.get(`${baseUrl}/admin/package/all`);
       setPackages(response.data.data);
       setLoading(false);
     } catch (error) {
@@ -88,12 +88,11 @@ const ManagePackage = () => {
           maxAge: values.maxAge,
         };
 
-        let apiUrl;
+   
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.put(
-            `${apiUrl}/admin/package/edit/${packageData.id}`,
+            `${baseUrl}/admin/package/edit/${packageData.id}`,
             newPackage
           );
           toast.success("Package updated successfully");
@@ -137,8 +136,7 @@ const ManagePackage = () => {
 
   const handleDeletePackage = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      await axios.delete(`${apiUrl}/admin/package/${packageData.id}`);
+      await axios.delete(`${baseUrl}/admin/package/${packageData.id}`);
       const updatedPackages = packages.filter(
         (pkg) => pkg.id !== packageData.id
       );

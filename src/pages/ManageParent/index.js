@@ -9,6 +9,7 @@ import withAuth from "../withAuth";
 import CountrySelectInput from "../Custom/CountrySelect";
 import StateSelectInput from "../Custom/StateSelect";
 import TimezoneSelect from "../Custom/TimezoneSelect";
+import { baseUrl } from '../../Network';
 import {
   Col,
   Container,
@@ -77,18 +78,18 @@ const ManageParent = () => {
           timeOffset: values.timeOffset,
         };
 
-        let apiUrl;
+   
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+         
           response = await axios.put(
-            `${apiUrl}/admin/parent/edit/${contact.id}`,
+            `${baseUrl}/admin/parent/edit/${contact.id}`,
             newUser
           );
           toast.success("Parent updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-          response = await axios.post(`${apiUrl}/admin/parent/create`, newUser);
+         
+          response = await axios.post(`${baseUrl}/admin/parent/create`, newUser);
           toast.success("Parent created successfully");
         }
 
@@ -116,8 +117,7 @@ const ManageParent = () => {
 
   const fetchUsers = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/admin/parent/all`);
+      const response = await axios.get(`${baseUrl}/admin/parent/all`);
       setUsers(response.data.data);
       setLoading(false);
     } catch (error) {
@@ -155,8 +155,7 @@ const ManageParent = () => {
 
   const handleDeleteUser = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      await axios.delete(`${apiUrl}/admin/parent/${contact.id}`);
+      await axios.delete(`${baseUrl}/admin/parent/${contact.id}`);
       const updatedUsers = users.filter((user) => user.id !== contact.id);
       setUsers(updatedUsers);
       setDeleteModal(false);
@@ -174,8 +173,8 @@ const ManageParent = () => {
   const handleSendEmail = async (event) => {
     event.preventDefault();
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      await axios.post(`${apiUrl}/admin/parent/send/all`, {
+     
+      await axios.post(`${baseUrl}/admin/parent/send/all`, {
         body: "Your email body",
         subject: "Your email subject",
       });

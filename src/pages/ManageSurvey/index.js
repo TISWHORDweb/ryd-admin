@@ -6,6 +6,7 @@ import { useFormik } from "formik";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import axios from "axios";
 import withAuth from "../withAuth";
+import { baseUrl } from '../../Network';
 import {
   Col,
   Container,
@@ -58,19 +59,17 @@ const ManageSurvey = () => {
           nText: values.nText,
         };
 
-        let apiUrl;
+       
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.put(
-            `${apiUrl}/admin/survey/edit/${survey.id}`,
+            `${baseUrl}/admin/survey/edit/${survey.id}`,
             newSurvey
           );
           toast.success("Survey updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.post(
-            `${apiUrl}/admin/survey/create`,
+            `${baseUrl}/admin/survey/create`,
             newSurvey
           );
           toast.success("Survey created successfully");
@@ -100,8 +99,7 @@ const ManageSurvey = () => {
 
   const fetchSurveysAndExportResponses = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const surveysResponse = await axios.get(`${apiUrl}/admin/survey/all`);
+      const surveysResponse = await axios.get(`${baseUrl}/admin/survey/all`);
       const surveys = surveysResponse.data.data;
 
       setSurveys(surveys);
@@ -128,8 +126,7 @@ const ManageSurvey = () => {
 
   const handleDeleteSurvey = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      await axios.delete(`${apiUrl}/admin/survey/${survey.id}`);
+      await axios.delete(`${baseUrl}/admin/survey/${survey.id}`);
       const updatedSurveys = surveys.filter((s) => s.id !== survey.id);
       setSurveys(updatedSurveys);
       setDeleteModal(false);
@@ -223,10 +220,8 @@ const ManageSurvey = () => {
 
   const changeSurveyStatus = async (surveyId) => {
     try {
-      console.log("Survey ID:", surveyId);
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
       const response = await axios.get(
-        `${apiUrl}/admin/survey/toggle/${surveyId}`
+        `${baseUrl}/admin/survey/toggle/${surveyId}`
       );
       const updatedSurvey = response.data.data;
       const updatedSurveys = surveys.map((s) =>

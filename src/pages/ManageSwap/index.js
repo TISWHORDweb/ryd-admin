@@ -6,6 +6,7 @@ import { useFormik } from "formik";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import axios from "axios";
 import withAuth from "../withAuth";
+import { baseUrl } from '../../Network';
 import {
   Col,
   Container,
@@ -50,15 +51,15 @@ const ManageSwap = () => {
         let apiUrl;
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+        
           response = await axios.put(
-            `${apiUrl}/admin/swap/edit/${swap.id}`,
+            `${baseUrl}/admin/swap/edit/${swap.id}`,
             values
           );
           toast.success("Swap updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-          response = await axios.post(`${apiUrl}/admin/swap/create`, values);
+          
+          response = await axios.post(`${baseUrl}/admin/swap/create`, values);
           toast.success("Swap created successfully");
         }
 
@@ -82,8 +83,7 @@ const ManageSwap = () => {
   const fetchSwaps = async () => {
     try {
       setLoading(true);
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/admin/swap/all`);
+      const response = await axios.get(`${baseUrl}/admin/swap/all`);
       setSwaps(response.data.data);
     } catch (error) {
       console.error("Error:", error);
@@ -110,8 +110,8 @@ const ManageSwap = () => {
   const handleDeleteSwap = async () => {
     try {
       setLoading(true);
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      await axios.delete(`${apiUrl}/admin/swap/${swap.id}`);
+     
+      await axios.delete(`${baseUrl}/admin/swap/${swap.id}`);
       const updatedSwaps = swaps.filter((s) => s.id !== swap.id);
       setSwaps(updatedSwaps);
       setDeleteModal(false);
@@ -131,8 +131,7 @@ const ManageSwap = () => {
   const acceptSwap = async (id) => {
     try {
       setLoading(true);
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      await axios.put(`${apiUrl}/admin/swap/accept/${id}`);
+      await axios.put(`${baseUrl}/admin/swap/accept/${id}`);
       const updatedSwaps = swaps.map((s) =>
         s.id === id ? { ...s, status: true } : s
       );
@@ -149,8 +148,8 @@ const ManageSwap = () => {
   const rejectSwap = async (id) => {
     try {
       setLoading(true);
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      await axios.put(`${apiUrl}/admin/swap/reject/${id}`);
+      
+      await axios.put(`${baseUrl}/admin/swap/reject/${id}`);
       const updatedSwaps = swaps.map((s) =>
         s.id === id ? { ...s, status: false } : s
       );

@@ -12,6 +12,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useFormik } from "formik";
 import * as Yup from 'yup';
+import { baseUrl } from '../../Network';
 
 const ManageTeacher = () => {
   document.title = "Manage Teacher | RYD Admin";
@@ -34,8 +35,7 @@ const ManageTeacher = () => {
   const fetchTeachers = async () => {
     try {
       setLoading(true);
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/admin/teacher/all`);
+      const response = await axios.get(`${baseUrl}/admin/teacher/all`);
       setTeachers(response.data.data);
       setLoading(false);
     } catch (error) {
@@ -117,19 +117,19 @@ const ManageTeacher = () => {
           experience: values.experience,
         };
   
-        let apiUrl;
+       
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+          
           response = await axios.put(
-            `${apiUrl}/admin/teacher/edit/${teacherData.id}`,
+            `${baseUrl}/admin/teacher/edit/${teacherData.id}`,
             newTeacher
           );
           toast.success("Teacher updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+          
           response = await axios.post(
-            `${apiUrl}/admin/teacher/create`,
+            `${baseUrl}/admin/teacher/create`,
             newTeacher
           );
           toast.success("Teacher created successfully");
@@ -155,8 +155,8 @@ const ManageTeacher = () => {
 
   const handleDeleteTeacher = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      await axios.delete(`${apiUrl}/admin/teacher/${teacherData.id}`);
+      
+      await axios.delete(`${baseUrl}/admin/teacher/${teacherData.id}`);
       const updatedTeachers = teachers.filter(
         (teacher) => teacher.id !== teacherData.id
       );
@@ -171,8 +171,7 @@ const ManageTeacher = () => {
 
   const inviteTeacher = async (email) => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.post(`${apiUrl}/admin/invite/teacher`, {
+      const response = await axios.post(`${baseUrl}/admin/invite/teacher`, {
         email,
       });
       return response.data;
@@ -183,9 +182,9 @@ const ManageTeacher = () => {
 
   const removeInviteTeacher = async (id) => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+    
       const response = await axios.delete(
-        `${apiUrl}/admin/remove/invite/teacher/${id}`
+        `${baseUrl}/admin/remove/invite/teacher/${id}`
       );
       return response.data;
     } catch (error) {

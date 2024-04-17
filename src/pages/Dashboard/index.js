@@ -9,6 +9,7 @@ import {
     Row
 } from "reactstrap";
 import axios from 'axios';
+import { baseUrl } from '../../Network';
 
 const Dashboard = () => {
     const [programData, setProgramData] = useState([]);
@@ -18,18 +19,16 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-
                 // Fetch parent count
-                const parentResponse = await axios.get(`${apiUrl}/admin/parent/all`);
+                const parentResponse = await axios.get(`${baseUrl}/admin/parent/all`);
                 setParentCount(parentResponse.data.data.length);
 
                 // Fetch child count
-                const childResponse = await axios.get(`${apiUrl}/admin/child/all`);
+                const childResponse = await axios.get(`${baseUrl}/admin/child/all`);
                 setChildCount(childResponse.data.data.length);
 
                 // Fetch program data
-                const programResponse = await axios.get(`${apiUrl}/admin/program/all`);
+                const programResponse = await axios.get(`${baseUrl}/admin/program/all`);
                 const responseData = programResponse.data;
 
                 const teacherAssignedCount = responseData.data.reduce((count, item) => count + (item.teacher ? 1 : 0), 0);

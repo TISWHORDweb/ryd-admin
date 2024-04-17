@@ -14,6 +14,8 @@ import { Link } from "react-router-dom";
 
 import "react-toastify/dist/ReactToastify.css";
 
+import { baseUrl } from '../../Network';
+
 const InviteTeacherModal = ({ isOpen, toggle }) => {
   const [email, setEmail] = useState("");
   const [invitedTeachers, setInvitedTeachers] = useState([]);
@@ -24,9 +26,9 @@ const InviteTeacherModal = ({ isOpen, toggle }) => {
 
   const fetchInvitedTeachers = async () => {
     try {
-      const apiUrl =
-        process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/admin/teacher/invites`);
+  
+       
+      const response = await axios.get(`${baseUrl}/admin/teacher/invites`);
       setInvitedTeachers(response.data.data);
     } catch (error) {
       console.error("Failed to fetch invited teachers", error);
@@ -34,10 +36,7 @@ const InviteTeacherModal = ({ isOpen, toggle }) => {
   };
 
   const inviteTeacher = async () => {
-    try {
-      const apiUrl =
-        process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.post(`${apiUrl}/admin/teacher/invite`, {
+      const response = await axios.post(`${baseUrl}/admin/teacher/invite`, {
         email,
       });
       if (response.data.status) {
@@ -56,10 +55,9 @@ const InviteTeacherModal = ({ isOpen, toggle }) => {
 
   const removeInviteTeacher = async (id) => {
     try {
-      const apiUrl =
-        process.env.REACT_APP_API_URL || "http://localhost:3000";
+    
       const response = await axios.delete(
-        `${apiUrl}/admin/teacher/invite/remove/${id}`
+        `${baseUrl}/admin/teacher/invite/remove/${id}`
       );
       if (response.data.status) {
         toast.success("Teacher invite removed successfully");

@@ -58,4 +58,6 @@ class Network {
   }
 }
 
+export const baseUrl = "https://api-pro.rydlearning.com";
+
 export default Network

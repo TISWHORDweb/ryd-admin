@@ -8,6 +8,7 @@ import Breadcrumbs from "../../components/Common/Breadcrumb";
 import axios from "axios";
 import withAuth from "../withAuth";
 import CountrySelect from "../CountrySelect";
+import { baseUrl } from '../../Network';
 
 import {
   Col,
@@ -68,19 +69,18 @@ const ManageCoupon = () => {
           isActive: true,
         };
 
-        let apiUrl;
+     
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.put(
-            `${apiUrl}/admin/coupon/edit/${coupon.id}`,
+            `${baseUrl}/admin/coupon/edit/${coupon.id}`,
             newCoupon
           );
           toast.success("Coupon updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+        
           response = await axios.post(
-            `${apiUrl}/admin/coupon/create`,
+            `${baseUrl}/admin/coupon/create`,
             newCoupon
           );
           toast.success("Coupon created successfully");
@@ -111,8 +111,7 @@ const ManageCoupon = () => {
 
   const fetchCoupons = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/admin/coupon/all`);
+      const response = await axios.get(`${baseUrl}/admin/coupon/all`);
       setCoupons(response.data.data);
       setLoading(false); // Update loading state after data fetch
     } catch (error) {
@@ -137,8 +136,7 @@ const ManageCoupon = () => {
 
   const handleDeleteCoupon = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      await axios.delete(`${apiUrl}/admin/coupon/${coupon.id}`);
+      await axios.delete(`${baseUrl}/admin/coupon/${coupon.id}`);
       const updatedCoupons = coupons.filter((c) => c.id !== coupon.id);
       setCoupons(updatedCoupons);
       setDeleteModal(false);
@@ -155,8 +153,8 @@ const ManageCoupon = () => {
 
   const toggleCouponStatus = async (couponId, isActive) => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      await axios.put(`${apiUrl}/admin/coupon/edit/${couponId}`, { isActive: !isActive });
+      
+      await axios.put(`${baseUrl}/admin/coupon/edit/${couponId}`, { isActive: !isActive });
       const updatedCoupons = coupons.map((c) =>
         c.id === couponId ? { ...c, isActive: !isActive } : c
       );

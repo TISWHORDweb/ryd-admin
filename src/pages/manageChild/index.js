@@ -22,6 +22,7 @@ import {
 } from "reactstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { baseUrl } from '../../Network';
 
 const ManageChild = () => {
   document.title = "Manage Child | RYD Admin";
@@ -42,8 +43,7 @@ const ManageChild = () => {
 
   const fetchParents = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/admin/parent/all`);
+      const response = await axios.get(`${baseUrl}/admin/parent/all`);
       setParentOptions(response.data.data);
     } catch (error) {
       console.error(error);
@@ -77,19 +77,18 @@ const ManageChild = () => {
           parentId: values.parentId,
         };
 
-        let apiUrl;
+      
         let response;
         if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+          
           response = await axios.put(
-            `${apiUrl}/admin/child/edit/${contact.id}`,
+            `${baseUrl}/admin/child/edit/${contact.id}`,
             newChild
           );
           toast.success("Child updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.post(
-            `${apiUrl}/admin/child/create`,
+            `${baseUrl}/admin/child/create`,
             newChild
           );
           toast.success("Child created successfully");
@@ -115,8 +114,7 @@ const ManageChild = () => {
 
   const fetchChildren = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/admin/child/all`);
+      const response = await axios.get(`${baseUrl}/admin/child/all`);
       setUsers(response.data.data);
       setLoading(false);
     } catch (error) {
@@ -142,8 +140,7 @@ const ManageChild = () => {
 
   const handleDeleteUser = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
-      await axios.delete(`${apiUrl}/admin/child/${contact.id}`);
+      await axios.delete(`${baseUrl}/admin/child/${contact.id}`);
       const updatedUsers = users.filter((user) => user.id !== contact.id);
       setUsers(updatedUsers);
       setDeleteModal(false);
