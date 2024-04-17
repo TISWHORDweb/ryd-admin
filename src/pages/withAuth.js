@@ -9,7 +9,6 @@ const withAuth = (WrappedComponent) => {
     useMemo(() => {
       const token = localStorage.getItem('token');
       if (!token) {
-        console.log('Token not found, redirecting to login...');
         navigate('/login', { replace: true });
       } else {
         token
