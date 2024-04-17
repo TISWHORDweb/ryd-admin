@@ -9,11 +9,9 @@ const withAuth = (WrappedComponent) => {
     useMemo(() => {
       const token = localStorage.getItem('token');
       if (!token) {
-        console.log('Token not found, redirecting to login...');
         navigate('/login', { replace: true });
       } else {
         token
-
         // Set the token in the headers for authorization
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       }
