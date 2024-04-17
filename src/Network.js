@@ -47,7 +47,6 @@ class Network {
     })
     return this
   }
-
   async get(data, isFinal = true) {
     if (isFinal) this.netData = await (await fetch(this.baseUrl + data, {
       headers: { ...this.headerConfig },
