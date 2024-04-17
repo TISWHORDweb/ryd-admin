@@ -12,45 +12,49 @@ import axios from 'axios';
 import { baseUrl } from '../../Network';
 
 const Dashboard = () => {
-    const [programData, setProgramData] = useState([]);
+    const [programData, setProgramData] = useState([
+        { title: "Total Programs", count: 0, statusColor: "primary" },
+        { title: "Teacher Assigned", count: 0, statusColor: "success" },
+        { title: "Enrolled", count: 0, statusColor: "danger" },
+        { title: "Total Package", count: 0, statusColor: "secondary" }
+    ]);
     const [parentCount, setParentCount] = useState(0);
     const [childCount, setChildCount] = useState(0);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Fetch parent count
-                const parentResponse = await axios.get(`${baseUrl}/admin/parent/all`);
-                setParentCount(parentResponse.data.data.length);
-
-                // Fetch child count
-                const childResponse = await axios.get(`${baseUrl}/admin/child/all`);
-                setChildCount(childResponse.data.data.length);
-
-                // Fetch program data
-                const programResponse = await axios.get(`${baseUrl}/admin/program/all`);
-                const responseData = programResponse.data;
-
-                const teacherAssignedCount = responseData.data.reduce((count, item) => count + (item.teacher ? 1 : 0), 0);
-                const enrolledCount = responseData.data.reduce((count, item) => count + (item.child ? 1 : 0), 0);
-                const programCount = responseData.data.length;
-                const packageCount = responseData.data.reduce((count, item) => count + (item.packageId ? 1 : 0), 0);
-
-                setProgramData([
-                    { title: "Total Programs", count: programCount, statusColor: "primary" },
-                    { title: "Teacher Assigned", count: teacherAssignedCount, statusColor: "success" },
-                    { title: "Enrolled", count: enrolledCount, statusColor: "danger" },
-                    { title: "Total Package", count: packageCount, statusColor: "secondary" }
-                ]);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
-        };
-
-        fetchData();
-
         document.title = "Dashboard | RYD Admin";
+        fetchData();
     }, []);
+
+    const fetchData = async () => {
+        try {
+            // Fetch parent count
+            const parentResponse = await axios.get(`${baseUrl}/admin/parent/all`);
+            setParentCount(parentResponse.data.data.length);
+
+            // Fetch child count
+            const childResponse = await axios.get(`${baseUrl}/admin/child/all`);
+            setChildCount(childResponse.data.data.length);
+
+            // Fetch program data
+            const programResponse = await axios.get(`${baseUrl}/admin/program/all`);
+            const responseData = programResponse.data;
+
+            const teacherAssignedCount = responseData.data.reduce((count, item) => count + (item.teacher ? 1 : 0), 0);
+            const enrolledCount = responseData.data.reduce((count, item) => count + (item.child ? 1 : 0), 0);
+            const programCount = responseData.data.length;
+            const packageCount = responseData.data.reduce((count, item) => count + (item.packageId ? 1 : 0), 0);
+
+            setProgramData([
+                { title: "Total Programs", count: programCount, statusColor: "primary" },
+                { title: "Teacher Assigned", count: teacherAssignedCount, statusColor: "success" },
+                { title: "Enrolled", count: enrolledCount, statusColor: "danger" },
+                { title: "Total Package", count: packageCount, statusColor: "secondary" }
+            ]);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
 
     return (
         <React.Fragment>
