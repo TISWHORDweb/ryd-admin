@@ -29,22 +29,18 @@ const Login = (props) => {
     }),
     onSubmit: async (values, { setFieldError }) => {
       try {
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
         const response = await axios.post(
-          'https://api-pro.rydlearning.com/admin/auth/login',
-          values
-        );
+          `${apiUrl}/admin/auth/login`,  values)
         if (response.data.status) {
           // Store token in localStorage
           localStorage.setItem('token', response.data.data.token);
-
           // Pass token to the dashboard
           navigate('/dashboard', { state: { token: response.data.data.token } }); // Pass token in state
-
         } else {
           setFieldError("email", "Invalid login credentials"); // Set login error message to email field error
         }
       } catch (error) {
-        console.error("An error occurred while logging in:", error);
         setFieldError("email", "An error occurred while logging in."); // Set generic login error message to email field error
       }
     }, 
