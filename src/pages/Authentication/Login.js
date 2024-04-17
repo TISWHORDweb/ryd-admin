@@ -36,7 +36,7 @@ const Login = (props) => {
     onSubmit: async (values, { setFieldError }) => {
       try {
         const response = await axios.post(
-          `${{baseUrl}}/admin/auth/login`,  values)
+          `${baseUrl}/admin/auth/login`,  values)
         if (response.data.status) {
           // Store token in localStorage
           localStorage.setItem('token', response.data.data.token);
