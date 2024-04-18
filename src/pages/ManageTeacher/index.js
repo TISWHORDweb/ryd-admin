@@ -84,10 +84,9 @@ const ManageTeacher = () => {
       gender: teacherData.gender || "",
       phone: teacherData.phone || "",
       qualification: teacherData.qualification || "",
-
       docUrl: teacherData.docUrl || "",
       experience: teacherData.experience || "",
-      timeOffset: 0,
+
     },
     validationSchema: Yup.object({
       firstName: Yup.string().required("First Name is required"),
@@ -98,7 +97,6 @@ const ManageTeacher = () => {
       phone: Yup.string().required("Phone number is required"),
       qualification: Yup.string().required("Qualification is required"),
       docUrl: Yup.string().required("Document URL is required"),
-      timeOffset: Yup.string().required("Document URL is required"),
       experience: Yup.string().required("Work Experience is required"),
     }),
     onSubmit: async (values) => {
@@ -110,11 +108,8 @@ const ManageTeacher = () => {
           password: values.password,
           gender: values.gender,
           phone: values.phone,
-          country: selectedCountry,
-          timezone: selectedTimezone,
           qualification: values.qualification,
           docUrl: values.docUrl,
-          timeOffset: values.timeOffset,
           classLink: values.classLink,
           experience: values.experience,
         };
@@ -244,7 +239,7 @@ const ManageTeacher = () => {
                       />
                     </div>
                     <div>
-                      <Link
+                      {/*  <Link
                         to="#"
                         className="btn btn-light"
                         onClick={() => {
@@ -255,6 +250,9 @@ const ManageTeacher = () => {
                       >
                         <i className="bx bx-plus me-1"></i> Add New Teacher
                       </Link>
+
+                      */}
+
 
                       <Link
                         to="#"
@@ -460,52 +458,10 @@ const ManageTeacher = () => {
                                 </div>
                               </Col>
                             </Row>
+
+
+
                             <Row>
-                              <Col md={6}>
-                                <div className="mb-3">
-                                  <Label className="form-label">Country</Label>
-                                  <CountrySelect 
-                                    name="country"
-                                    onChange={handleCountryChange}
-                                    value={selectedCountry}
-                                    invalid={validation.errors.country}
-                                  />
-                                  {validation.errors.country && (
-                                    <FormFeedback>{validation.errors.country}</FormFeedback>
-                                  )}
-                                </div>
-                              </Col>
-                              <Col md={6}>
-                                <div className="mb-3">
-                                  <Label className="form-label">Timezone</Label>
-                                  <TimezoneSelect 
-                                    country={selectedCountry}
-                                    onChange={handleTimezoneChange} 
-                                    value={selectedTimezone}
-                                    invalid={validation.errors.timezone}
-                                  />
-                                  {validation.errors.timezone && (
-                                    <FormFeedback>{validation.errors.timezone}</FormFeedback>
-                                  )}
-                                </div>
-                              </Col>
-                            </Row>
-                            <Row>
-                              <Col md={6}>
-                                <div className="mb-3">
-                                  <Input
-                                    name="timeOffset"
-                                    type="hidden"
-                                    placeholder="Time OFFSET"
-                                    onChange={validation.handleChange}
-                                    value={validation.values.timeOffset}
-                                    invalid={validation.errors.timeOffset}
-                                  />
-                                  {validation.errors.timeOffset && (
-                                    <FormFeedback>{validation.errors.timeOffset}</FormFeedback>
-                                  )}
-                                </div>
-                              </Col>
 
                               {!isEdit && (
                                   <>
