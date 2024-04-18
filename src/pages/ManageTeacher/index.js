@@ -84,6 +84,7 @@ const ManageTeacher = () => {
       gender: teacherData.gender || "",
       phone: teacherData.phone || "",
       qualification: teacherData.qualification || "",
+      classLink: teacherData.classLink || "",
       docUrl: teacherData.docUrl || "",
       experience: teacherData.experience || "",
 
@@ -315,11 +316,11 @@ const ManageTeacher = () => {
                                 <td>{teacher.timezone}</td>
                                 <td>{teacher.qualification}</td>
                                 <td>
-                                  <a target={'_blank'} href={teacher.docUrl}>Docs</a>
+                                  <a target={'_blank'} rel="noopener noreferrer" href={teacher.docUrl}>Docs</a>
                                 </td>
                                 <td>{teacher.experience}</td>
                                 <td>
-                                  <a target={'_blank'} href={teacher.classLink}><i className="mdi mdi-link font-size-18"></i></a>
+                                  <a target={'_blank'} rel="noopener noreferrer" href={teacher.classLink}><i className="mdi mdi-link font-size-18"></i></a>
                                 </td>
                                 <td>
                                   <div className="d-flex gap-3">

@@ -168,6 +168,7 @@
   "devDependencies": {
     "eslint-config-standard-react": "^13.0.0",
     "eslint-plugin-react": "^7.33.1",
-    "prettier": "^3.0.1"
+    "prettier": "^3.0.1",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   }
 }
