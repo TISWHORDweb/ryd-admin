@@ -84,6 +84,7 @@ const ManageTeacher = () => {
       gender: teacherData.gender || "",
       phone: teacherData.phone || "",
       qualification: teacherData.qualification || "",
+
       docUrl: teacherData.docUrl || "",
       experience: teacherData.experience || "",
       timeOffset: 0,
@@ -114,6 +115,7 @@ const ManageTeacher = () => {
           qualification: values.qualification,
           docUrl: values.docUrl,
           timeOffset: values.timeOffset,
+          classLink: values.classLink,
           experience: values.experience,
         };
   
@@ -400,20 +402,26 @@ const ManageTeacher = () => {
                               )}
                             </div>
                             {!isEdit && (
-                              <div className="mb-3">
-                                <Label className="form-label">Password</Label>
-                                <Input
-                                  name="password"
-                                  type="password"
-                                  placeholder="Password"
-                                  onChange={validation.handleChange}
-                                  value={validation.values.password}
-                                  invalid={validation.errors.password}
-                                />
-                                {validation.errors.password && (
-                                  <FormFeedback>{validation.errors.password}</FormFeedback>
-                                )}
-                              </div>
+                                <>
+                                  <div className="mb-3">
+                                    <Label className="form-label">Password</Label>
+                                    <Input
+                                        name="password"
+                                        type="password"
+                                        placeholder="Password"
+                                        onChange={validation.handleChange}
+                                        value={validation.values.password}
+                                        invalid={validation.errors.password}
+                                    />
+                                    {validation.errors.password && (
+                                        <FormFeedback>{validation.errors.password}</FormFeedback>
+                                    )}
+
+                                  </div>
+
+
+                                </>
+
                             )}
                             <Row>
                               <Col xs={12} md={6}>
@@ -498,20 +506,52 @@ const ManageTeacher = () => {
                                   )}
                                 </div>
                               </Col>
-                              <div className="mb-3">
-                                <Label className="form-label">Qualification</Label>
-                                <Input
-                                  name="qualification"
-                                  type="text"
-                                  placeholder="Qualification"
-                                  onChange={validation.handleChange}
-                                  value={validation.values.qualification}
-                                  invalid={validation.errors.qualification}
-                                />
-                                {validation.errors.qualification && (
-                                  <FormFeedback>{validation.errors.qualification}</FormFeedback>
-                                )}
-                              </div>
+
+                              {!isEdit && (
+                                  <>
+
+                                    <div className="mb-3">
+                                      <Label className="form-label">Qualification</Label>
+                                      <Input
+                                          name="qualification"
+                                          type="text"
+                                          placeholder="Qualification"
+                                          onChange={validation.handleChange}
+                                          value={validation.values.qualification}
+                                          invalid={validation.errors.qualification}
+                                      />
+                                      {validation.errors.qualification && (
+                                          <FormFeedback>{validation.errors.qualification}</FormFeedback>
+                                      )}
+                                    </div>
+
+                                  </>
+
+
+
+
+                              )}
+                              {isEdit && (
+                                  <>
+
+                                      <div className="mb-3">
+                                        <Label className="form-label">Class Link</Label>
+                                        <Input
+                                            name="classLink"
+                                            type="text"
+                                            placeholder="Class Link"
+                                            onChange={validation.handleChange}
+                                            value={validation.values.classLink}
+                                            invalid={validation.errors.classLink}
+                                        />
+                                        {validation.errors.classLink && (
+                                            <FormFeedback>{validation.errors.classLink}</FormFeedback>
+                                        )}
+                                      </div>
+
+                                  </>
+
+                              )}
                             </Row>
                             <Row>
                               <Col md={6}>

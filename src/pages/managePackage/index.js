@@ -39,7 +39,7 @@ const ManagePackage = () => {
   const fetchPackages = async () => {
     try {
       setLoading(true);
-    
+
       const response = await axios.get(`${baseUrl}/admin/package/all`);
       setPackages(response.data.data);
       setLoading(false);
@@ -62,6 +62,7 @@ const ManagePackage = () => {
       imageUrl: packageData.imageUrl || "",
       weekDuration: packageData.weekDuration || "",
       amount: packageData.amount || "",
+      altAmount: packageData.altAmount || "",
       minAge: packageData.minAge || "",
       maxAge: packageData.maxAge || "",
     },
@@ -72,6 +73,7 @@ const ManagePackage = () => {
       imageUrl: Yup.string().required("Please enter an image URL"),
       weekDuration: Yup.number().required("Please enter the program duration number of weeks"),
       amount: Yup.number().required("Please enter the amount"),
+      altAmount: Yup.number().required("Please enter the alternative amount"),
       minAge: Yup.number().required("Please enter the minimum age"),
       maxAge: Yup.number().required("Please enter the maximum age"),
     }),
@@ -84,23 +86,23 @@ const ManagePackage = () => {
           imageUrl: values.imageUrl,
           weekDuration: values.weekDuration,
           amount: values.amount,
+          altAmount: values.altAmount,
           minAge: values.minAge,
           maxAge: values.maxAge,
         };
 
-   
+
         let response;
         if (isEdit) {
           response = await axios.put(
-            `${baseUrl}/admin/package/edit/${packageData.id}`,
-            newPackage
+              `${baseUrl}/admin/package/edit/${packageData.id}`,
+              newPackage
           );
           toast.success("Package updated successfully");
         } else {
-          apiUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
           response = await axios.post(
-            `${apiUrl}/admin/package/create`,
-            newPackage
+              `${baseUrl}/admin/package/create`,
+              newPackage
           );
           toast.success("Package created successfully");
         }
@@ -109,7 +111,7 @@ const ManagePackage = () => {
 
         if (isEdit) {
           const updatedPackages = packages.map((pkg) =>
-            pkg.id === packageData.id ? { ...pkg, ...responseData } : pkg
+              pkg.id === packageData.id ? { ...pkg, ...responseData } : pkg
           );
           setPackages(updatedPackages);
         } else {
@@ -138,7 +140,7 @@ const ManagePackage = () => {
     try {
       await axios.delete(`${baseUrl}/admin/package/${packageData.id}`);
       const updatedPackages = packages.filter(
-        (pkg) => pkg.id !== packageData.id
+          (pkg) => pkg.id !== packageData.id
       );
       setPackages(updatedPackages);
       setDeleteModal(false);
@@ -149,121 +151,123 @@ const ManagePackage = () => {
     }
   };
 
- // Function to filter package list based on search query
-const filteredPackages = packages.filter((pkg) =>
-pkg.title?.toLowerCase().includes(searchQuery.toLowerCase())
-);
+  // Function to filter package list based on search query
+  const filteredPackages = packages.filter((pkg) =>
+      pkg.title?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
 
   return (
-    <React.Fragment>
-      <DeleteModal
-        show={deleteModal}
-        onDeleteClick={handleDeletePackage}
-        onCloseClick={() => setDeleteModal(false)}
-      />
-      <div className="page-content">
-        <Container fluid>
-          <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Package" />
-          <Row>
-            <Col md={6}>
-              <div className="mb-3">
-                <h5 className="card-title">
-                  Package List{" "}
-                  <span className="text-muted fw-normal ms-2">
+      <React.Fragment>
+        <DeleteModal
+            show={deleteModal}
+            onDeleteClick={handleDeletePackage}
+            onCloseClick={() => setDeleteModal(false)}
+        />
+        <div className="page-content">
+          <Container fluid>
+            <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Package" />
+            <Row>
+              <Col md={6}>
+                <div className="mb-3">
+                  <h5 className="card-title">
+                    Package List{" "}
+                    <span className="text-muted fw-normal ms-2">
                     ({packages.length})
                   </span>
-                </h5>
-              </div>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
-                <div>
-                  <Link
-                    to="#"
-                    className="btn btn-light"
-                    onClick={() => {
-                      setPackageData({});
-                      setIsEdit(false);
-                      toggle();
-                    }}
-                  >
-                    <i className="bx bx-plus me-1"></i> Add New Package
-                  </Link>
+                  </h5>
                 </div>
-              </div>
-            </Col>
-          </Row>
-          <Row>
-            <Col xl="12">
-              {loading ? (
-                <div className="text-center mt-5">
-                  <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Loading...</span>
+              </Col>
+              <Col md={6}>
+                <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
+                  <div>
+                    <Link
+                        to="#"
+                        className="btn btn-light"
+                        onClick={() => {
+                          setPackageData({});
+                          setIsEdit(false);
+                          toggle();
+                        }}
+                    >
+                      <i className="bx bx-plus me-1"></i> Add New Package
+                    </Link>
                   </div>
                 </div>
-              ) : filteredPackages.length === 0 ? (
-                <div className="text-center mt-5">
-                  <h3>No data available</h3>
-                </div>
-              ) : (
-                <table className="table align-middle">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Title</th>
-                      <th>Description</th>
-                      <th>Level</th>
-                      <th>Weeks</th>
-                      <th>Amount</th>
-                      <th>Age Range</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredPackages.map((pkg, index) => (
-                      <tr key={index}>
-                        <td>{index + 1}</td>
-                        <td>{pkg.title}</td>
-                        <td>{pkg.description}</td>
-                        <td>{pkg.level}</td>
-                        <td>{pkg.weekDuration}</td>
-                        <td>{pkg.amount}</td>
-                        <td>{pkg.minAge} - {pkg.maxAge}</td>
-                        <td>
-                          <div className="d-flex gap-3">
-                            <Link
-                              className="text-success"
-                              to="#"
-                              onClick={() => handlePackageClick(pkg)}
-                            >
-                              <i className="bx bx-edit font-size-18"></i>
-                            </Link>
-                            <Link
-                              className="text-danger"
-                              to="#"
-                              onClick={() => onClickDelete(pkg)}
-                            >
-                              <i className="bx bx-trash font-size-18"></i>
-                            </Link>
-                          </div>
-                        </td>
+              </Col>
+            </Row>
+            <Row>
+              <Col xl="12">
+                {loading ? (
+                    <div className="text-center mt-5">
+                      <div className="spinner-border text-primary" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                ) : filteredPackages.length === 0 ? (
+                    <div className="text-center mt-5">
+                      <h3>No data available</h3>
+                    </div>
+                ) : (
+                    <table className="table align-middle">
+                      <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Level</th>
+                        <th>Weeks</th>
+                        <th>Amount</th>
+                        <th>Alt.Amount</th>
+                        <th>Age Range</th>
+                        <th>Action</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-               <Modal isOpen={modal} toggle={toggle}>
-                    <ModalHeader toggle={toggle}>
-                      {isEdit ? "Edit Package" : "Add New Package"}
-                    </ModalHeader>
-                    <ModalBody>
-                      <Form onSubmit={validation.handleSubmit}>
-                        <Row>
-                          <Col xs={12}>
-                            <div className="mb-3">
-                              <Label className="form-label">Program Title</Label>
-                              <Input
+                      </thead>
+                      <tbody>
+                      {filteredPackages.map((pkg, index) => (
+                          <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td>{pkg.title}</td>
+                            <td>{pkg.description}</td>
+                            <td>{pkg.level}</td>
+                            <td>{pkg.weekDuration}</td>
+                            <td>{pkg.amount}</td>
+                            <td>{pkg.altAmount}</td>
+                            <td>{pkg.minAge} - {pkg.maxAge}</td>
+                            <td>
+                              <div className="d-flex gap-3">
+                                <Link
+                                    className="text-success"
+                                    to="#"
+                                    onClick={() => handlePackageClick(pkg)}
+                                >
+                                  <i className="bx bx-edit font-size-18"></i>
+                                </Link>
+                                <Link
+                                    className="text-danger"
+                                    to="#"
+                                    onClick={() => onClickDelete(pkg)}
+                                >
+                                  <i className="bx bx-trash font-size-18"></i>
+                                </Link>
+                              </div>
+                            </td>
+                          </tr>
+                      ))}
+                      </tbody>
+                    </table>
+                )}
+                <Modal isOpen={modal} toggle={toggle}>
+                  <ModalHeader toggle={toggle}>
+                    {isEdit ? "Edit Package" : "Add New Package"}
+                  </ModalHeader>
+                  <ModalBody>
+                    <Form onSubmit={validation.handleSubmit}>
+                      <Row>
+                        <Col xs={12}>
+                          <div className="mb-3">
+                            <Label className="form-label">Program Title</Label>
+                            <Input
                                 name="title"
                                 type="text"
                                 placeholder="Title"
@@ -271,17 +275,17 @@ pkg.title?.toLowerCase().includes(searchQuery.toLowerCase())
                                 onBlur={validation.handleBlur}
                                 value={validation.values.title || ""}
                                 invalid={
-                                  validation.touched.title &&
-                                  validation.errors.title
+                                    validation.touched.title &&
+                                    validation.errors.title
                                 }
-                              />
-                              <FormFeedback type="invalid">
-                                {validation.errors.title}
-                              </FormFeedback>
-                            </div>
-                            <div className="mb-3">
-                              <Label className="form-label">Program Description</Label>
-                              <Input
+                            />
+                            <FormFeedback type="invalid">
+                              {validation.errors.title}
+                            </FormFeedback>
+                          </div>
+                          <div className="mb-3">
+                            <Label className="form-label">Program Description</Label>
+                            <Input
                                 name="description"
                                 type="text"
                                 placeholder="Description"
@@ -289,46 +293,62 @@ pkg.title?.toLowerCase().includes(searchQuery.toLowerCase())
                                 onBlur={validation.handleBlur}
                                 value={validation.values.description || ""}
                                 invalid={
-                                  validation.touched.description &&
-                                  validation.errors.description
+                                    validation.touched.description &&
+                                    validation.errors.description
                                 }
-                              />
-                              <FormFeedback type="invalid">
-                                {validation.errors.description}
-                              </FormFeedback>
-                            </div>
-                           
+                            />
+                            <FormFeedback type="invalid">
+                              {validation.errors.description}
+                            </FormFeedback>
+                          </div>
 
 
-                                <div className="mb-3">
-                                  <Label>Level</Label>
-                                  <Input
-                                    type="select"
-                                    name="level"
-                                    onChange={validation.handleChange}
-                                    onBlur={validation.handleBlur}
-                                    value={validation.values.level || ""}
-                                    invalid={
+                          <Row>
+                            <div className="col-md-6 mb-3">
+                              <Label>Level</Label>
+                              <Input
+                                  type="select"
+                                  name="level"
+                                  onChange={validation.handleChange}
+                                  onBlur={validation.handleBlur}
+                                  value={validation.values.level || ""}
+                                  invalid={
                                       validation.touched.level &&
                                       validation.errors.level
-                                    }
-                                  >
-                                    <option value="">Select Level</option>
-                                    <option value="6">6</option>
-                                    <option value="5">5</option>
-                                    <option value="4">4</option>
-                                    <option value="3">3</option>
-                                    <option value="2">2</option>
-                                    <option value="1">1</option>
-                                  </Input>
-                                  <FormFeedback type="invalid">
-                                    {validation.errors.level}
-                                  </FormFeedback>
-                                </div>
-                              
-                            <div className="mb-3">
-                              <Label className="form-label">Image URL</Label>
+                                  }
+                              >
+                                <option value="">Select Level</option>
+                                <option value="6">6</option>
+                                <option value="5">5</option>
+                                <option value="4">4</option>
+                                <option value="3">3</option>
+                                <option value="2">2</option>
+                                <option value="1">1</option>
+                              </Input>
+                              <FormFeedback type="invalid">
+                                {validation.errors.level}
+                              </FormFeedback>
+                            </div>
+
+                            <div className="col-md-6 mb-3">
+                              <Label className="form-label">Week Duration </Label>
                               <Input
+                                  type="text"
+                                  name="weekDuration"
+                                  placeholder="Number of weeks"
+                                  onChange={validation.handleChange}
+                                  onBlur={validation.handleBlur}
+                                  value={validation.values.weekDuration || ""}
+                                  invalid={validation.touched.weekDuration && validation.errors.weekDuration}
+                              />
+                              <FormFeedback type="invalid">{validation.errors.weekDuration}</FormFeedback>
+                            </div>
+                          </Row>
+
+
+                          <div className="mb-3">
+                            <Label className="form-label">Image URL</Label>
+                            <Input
                                 name="imageUrl"
                                 type="text"
                                 placeholder="Image URL"
@@ -336,58 +356,65 @@ pkg.title?.toLowerCase().includes(searchQuery.toLowerCase())
                                 onBlur={validation.handleBlur}
                                 value={validation.values.imageUrl || ""}
                                 invalid={
-                                  validation.touched.imageUrl &&
-                                  validation.errors.imageUrl
+                                    validation.touched.imageUrl &&
+                                    validation.errors.imageUrl
                                 }
+                            />
+                            <FormFeedback type="invalid">
+                              {validation.errors.imageUrl}
+                            </FormFeedback>
+                          </div>
+
+
+
+                          <div className="row">
+
+
+                            <div className="col-md-6 mb-3">
+                              <Label className="form-label">Amount</Label>
+                              <Input
+                                  name="amount"
+                                  type="number"
+                                  placeholder="CAD"
+                                  onChange={validation.handleChange}
+                                  onBlur={validation.handleBlur}
+                                  value={validation.values.amount || ""}
+                                  invalid={validation.touched.amount && validation.errors.amount}
                               />
-                              <FormFeedback type="invalid">
-                                {validation.errors.imageUrl}
-                              </FormFeedback>
+                              <FormFeedback type="invalid">{validation.errors.amount}</FormFeedback>
                             </div>
-                            <div className="row">
-  <div className="col-md-6 mb-3">
-    <Label className="form-label">Week Duration </Label>
-    <Input
-      type="text"
-      name="weekDuration"
-      placeholder="Number of weeks"
-      onChange={validation.handleChange}
-      onBlur={validation.handleBlur}
-      value={validation.values.weekDuration || ""}
-      invalid={validation.touched.weekDuration && validation.errors.weekDuration}
-    />
-    <FormFeedback type="invalid">{validation.errors.weekDuration}</FormFeedback>
-  </div>
 
-  <div className="col-md-6 mb-3">
-    <Label className="form-label">Amount</Label>
-    <Input
-      name="amount"
-      type="number"
-      placeholder="Amount"
-      onChange={validation.handleChange}
-      onBlur={validation.handleBlur}
-      value={validation.values.amount || ""}
-      invalid={validation.touched.amount && validation.errors.amount}
-    />
-    <FormFeedback type="invalid">{validation.errors.amount}</FormFeedback>
-  </div>
-</div>
-<div className="row">
+                            <div className="col-md-6 mb-3">
+                              <Label className="form-label">Alt Amount</Label>
+                              <Input
+                                  name="altAmount"
+                                  type="number"
+                                  placeholder="NGN"
+                                  onChange={validation.handleChange}
+                                  onBlur={validation.handleBlur}
+                                  value={validation.values.altAmount || ""}
+                                  invalid={validation.touched.altAmount && validation.errors.altAmount}
+                              />
+                              <FormFeedback type="invalid">{validation.errors.altAmount}</FormFeedback>
 
-<div className="col-md-6 mb-3">
+                            </div>
+                          </div>
+
+                          <div className="row">
+
+                            <div className="col-md-6 mb-3">
                               <Label className="form-label">Min Age</Label>
                               <Input
-                                name="minAge"
-                                type="number"
-                                placeholder="Minimum Age"
-                                onChange={validation.handleChange}
-                                onBlur={validation.handleBlur}
-                                value={validation.values.minAge || ""}
-                                invalid={
-                                  validation.touched.minAge &&
-                                  validation.errors.minAge
-                                }
+                                  name="minAge"
+                                  type="number"
+                                  placeholder="Minimum Age"
+                                  onChange={validation.handleChange}
+                                  onBlur={validation.handleBlur}
+                                  value={validation.values.minAge || ""}
+                                  invalid={
+                                      validation.touched.minAge &&
+                                      validation.errors.minAge
+                                  }
                               />
                               <FormFeedback type="invalid">
                                 {validation.errors.minAge}
@@ -396,46 +423,46 @@ pkg.title?.toLowerCase().includes(searchQuery.toLowerCase())
                             <div className="col-md-6 mb-3">
                               <Label className="form-label">Max Age</Label>
                               <Input
-                                name="maxAge"
-                                type="number"
-                                placeholder="Maximum Age"
-                                onChange={validation.handleChange}
-                                onBlur={validation.handleBlur}
-                                value={validation.values.maxAge || ""}
-                                invalid={
-                                  validation.touched.maxAge &&
-                                  validation.errors.maxAge
-                                }
+                                  name="maxAge"
+                                  type="number"
+                                  placeholder="Maximum Age"
+                                  onChange={validation.handleChange}
+                                  onBlur={validation.handleBlur}
+                                  value={validation.values.maxAge || ""}
+                                  invalid={
+                                      validation.touched.maxAge &&
+                                      validation.errors.maxAge
+                                  }
                               />
                               <FormFeedback type="invalid">
                                 {validation.errors.maxAge}
                               </FormFeedback>
                             </div>
-</div>
-                          
-                          </Col>
-                        </Row>
-                        <Row>
-                          <Col>
-                            <div className="text-end">
-                              <button
+                          </div>
+
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col>
+                          <div className="text-end">
+                            <button
                                 type="submit"
                                 className="btn btn-primary save-user"
-                              >
-                                {isEdit ? "Update" : "Create"}
-                              </button>
-                            </div>
-                          </Col>
-                        </Row>
-                      </Form>
-                    </ModalBody>
-                  </Modal>
-            </Col>
-          </Row>
-        </Container>
-      </div>
-      <ToastContainer />
-    </React.Fragment>
+                            >
+                              {isEdit ? "Update" : "Create"}
+                            </button>
+                          </div>
+                        </Col>
+                      </Row>
+                    </Form>
+                  </ModalBody>
+                </Modal>
+              </Col>
+            </Row>
+          </Container>
+        </div>
+        <ToastContainer />
+      </React.Fragment>
   );
 };
 
