@@ -56,7 +56,7 @@ const ManageTeacher = () => {
   const handleTimezoneChange = (timezone) => {
     setSelectedTimezone(timezone);
   };
- 
+
   const handleTeacherClick = (teacher) => {
     if (teacher) {
       setTeacherData(teacher);
@@ -113,27 +113,27 @@ const ManageTeacher = () => {
           classLink: values.classLink,
           experience: values.experience,
         };
-  
-       
+
+
         let response;
         if (isEdit) {
-          
+
           response = await axios.put(
             `${baseUrl}/admin/teacher/edit/${teacherData.id}`,
             newTeacher
           );
           toast.success("Teacher updated successfully");
         } else {
-          
+
           response = await axios.post(
             `${baseUrl}/admin/teacher/create`,
             newTeacher
           );
           toast.success("Teacher created successfully");
         }
-  
+
         const responseData = response.data;
-  
+
         if (isEdit) {
           const updatedTeachers = teachers.map((teacher) =>
             teacher.id === teacherData.id ? { ...teacher, ...responseData } : teacher
@@ -142,7 +142,7 @@ const ManageTeacher = () => {
         } else {
           setTeachers([...teachers, responseData]);
         }
-  
+
         toggle();
       } catch (error) {
         console.error("Error:", error);
@@ -152,7 +152,7 @@ const ManageTeacher = () => {
 
   const handleDeleteTeacher = async () => {
     try {
-      
+
       await axios.delete(`${baseUrl}/admin/teacher/${teacherData.id}`);
       const updatedTeachers = teachers.filter(
         (teacher) => teacher.id !== teacherData.id
@@ -179,7 +179,7 @@ const ManageTeacher = () => {
 
   const removeInviteTeacher = async (id) => {
     try {
-    
+
       const response = await axios.delete(
         `${baseUrl}/admin/remove/invite/teacher/${id}`
       );
@@ -272,8 +272,8 @@ const ManageTeacher = () => {
               </Row>
               <Row>
                 <Col xl="12">
-            
-                    {loading ? ( 
+
+                    {loading ? (
                       <div className="text-center mt-5">
                       <div className="spinner-border text-primary" role="status">
                         <span className="visually-hidden">Loading...</span>
@@ -302,46 +302,48 @@ const ManageTeacher = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {Array.isArray(teachers) &&
+                      {Array.isArray(teachers) &&
                           teachers.map((teacher, index) => (
-                            <tr key={index}>
-                              <td>{index + 1}</td>
-                              <td>{teacher.firstName}</td>
-                              <td>{teacher.lastName}</td>
-                              <td>{teacher.email}</td>
-                              <td>{teacher.gender}</td>
-                              <td>{teacher.phone}</td>
-                              <td>{teacher.country}</td>
-                              <td>{teacher.timezone}</td>
-                              <td>{teacher.qualification}</td>
-                              <td>
-                                {teacher.docUrl &&
-                                  shortenUrl(teacher.docUrl, 10)}
-                              </td>
-                              <td>{teacher.experience}</td>
-                              <td>
-                                <div className="d-flex gap-3">
-                                  <Link
-                                    className="text-success"
-                                    to="#"
-                                    onClick={() => handleTeacherClick(teacher)}
-                                  >
-                                    <i className="mdi mdi-pencil font-size-18"></i>
-                                  </Link>
-                                  <Link
-                                    className="text-danger"
-                                    to="#"
-                                    onClick={() => onClickDelete(teacher)}
-                                  >
-                                    <i className="mdi mdi-delete font-size-18"></i>
-                                  </Link>
-                                </div>
-                              </td>
-                            </tr>
+                              <tr key={index}>
+                                <td>{index + 1}</td>
+                                <td>{teacher.firstName}</td>
+                                <td>{teacher.lastName}</td>
+                                <td>{teacher.email}</td>
+                                <td>{teacher.gender}</td>
+                                <td>{teacher.phone}</td>
+                                <td>{teacher.country}</td>
+                                <td>{teacher.timezone}</td>
+                                <td>{teacher.qualification}</td>
+                                <td>
+                                  <a target={'_blank'} href={teacher.docUrl}>Docs</a>
+                                </td>
+                                <td>{teacher.experience}</td>
+                                <td>
+                                  <a target={'_blank'} href={teacher.classLink}><i className="mdi mdi-link font-size-18"></i></a>
+                                </td>
+                                <td>
+                                  <div className="d-flex gap-3">
+                                    <Link
+                                        className="text-success"
+                                        to="#"
+                                        onClick={() => handleTeacherClick(teacher)}
+                                    >
+                                      <i className="mdi mdi-pencil font-size-18"></i>
+                                    </Link>
+                                    <Link
+                                        className="text-danger"
+                                        to="#"
+                                        onClick={() => onClickDelete(teacher)}>
+                                      <i className="mdi mdi-delete font-size-18"></i>
+                                    </Link>
+                                  </div>
+                                </td>
+                              </tr>
                           ))}
                       </tbody>
                     </table>
-                  )}
+                    )}
+
 
                   <Modal isOpen={modal} toggle={toggle}>
                     <ModalHeader toggle={toggle}>
