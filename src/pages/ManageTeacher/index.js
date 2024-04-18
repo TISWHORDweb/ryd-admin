@@ -296,9 +296,10 @@ const ManageTeacher = () => {
                           <th>Phone</th>
                           <th>Country</th>
                           <th>Timezone</th>
-                          <th>Qualification</th>
-                          <th>DocumentURL</th>
+                          <th>Cert.</th>
+                          <th>Docs</th>
                           <th>Experience</th>
+                          <th>Class Link</th>
                           <th>Action</th>
                         </tr>
                       </thead>
