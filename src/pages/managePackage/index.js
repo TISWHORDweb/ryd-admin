@@ -31,9 +31,10 @@ const ManagePackage = () => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [bannerUrl, setBannerUrl] = useState("");
 
   useEffect(() => {
-    fetchPackages();
+    fetchPackages().then(r => null);
   }, [modal]);
 
   const fetchPackages = async () => {
@@ -318,12 +319,10 @@ const ManagePackage = () => {
                                   }
                               >
                                 <option value="">Select Level</option>
-                                <option value="6">6</option>
-                                <option value="5">5</option>
                                 <option value="4">4</option>
                                 <option value="3">3</option>
                                 <option value="2">2</option>
-                                <option value="1">1</option>
+                                <option selected={true} value="1">1</option>
                               </Input>
                               <FormFeedback type="invalid">
                                 {validation.errors.level}
@@ -347,14 +346,16 @@ const ManagePackage = () => {
 
 
                           <div className="mb-3">
-                            <Label className="form-label">Image URL</Label>
+                            <Label className="form-label">Banner Image URL </Label>
+                            <small style={{marginLeft: 20}}><a href={'#'} onClick={()=>setBannerUrl("https://i.im.ge/2024/04/19/Z2k3bq.basic-bg.jpeg")}>Basic Banner</a> </small>
+                            <small style={{marginLeft: 20}}><a href={'#'} onClick={()=>setBannerUrl("https://i.im.ge/2024/04/19/Z2kgA1.advance-bg.jpeg")}>Adv. Banner</a> </small>
                             <Input
                                 name="imageUrl"
                                 type="text"
                                 placeholder="Image URL"
                                 onChange={validation.handleChange}
                                 onBlur={validation.handleBlur}
-                                value={validation.values.imageUrl || ""}
+                                value={validation.values.imageUrl || bannerUrl}
                                 invalid={
                                     validation.touched.imageUrl &&
                                     validation.errors.imageUrl
