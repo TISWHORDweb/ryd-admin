@@ -89,14 +89,14 @@ const ManageProgram = () => {
     fetchPrograms();
   }, [modal]);
 
-  
 
- 
+
+
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
- 
+
 
   const handleAssignClick = (programData) => {
     assignToggle(programData); // Pass program data to toggle for editing
@@ -159,10 +159,10 @@ const ManageProgram = () => {
         programIds: selectedProgram.map((program) => program.id),
         teacherId: selectedTeacher
       });
-  
+
       // Fetch the updated programs after successful assignment
       await fetchPrograms(); // Assuming fetchPrograms function updates the programs state
-  
+
       showSuccessNotification("Teacher assigned successfully.");
       setAssignModal(false);
     } catch (error) {
@@ -170,8 +170,8 @@ const ManageProgram = () => {
       showErrorNotification("Failed to assign teacher.");
     }
   };
-  
-  
+
+
 
   const validation = useFormik({
     enableReinitialize: true,
@@ -194,7 +194,7 @@ const ManageProgram = () => {
           isPaid: values.isPaid,
         };
 
-       
+
 
         let response;
         if (isEdit) {
@@ -225,7 +225,7 @@ const ManageProgram = () => {
 
   const handleDeleteProgram = async () => {
     try {
-     
+
       await axios.delete(`${baseUrl}/admin/program/${contact.id}`);
       const updatedPrograms = programs.filter(
         (program) => program.id !== contact.id
@@ -371,12 +371,12 @@ const ManageProgram = () => {
                         <tr key={index}>
                           <td>{index + 1}</td>
                           <td>{program?.child?.firstName}</td>
-                          <td>{`${program.child.lastName}`}</td>
-                          <td>{program.child.age}</td>
-                          <td>{program.child.gender}</td>
+                          <td>{`${program?.child?.lastName}`}</td>
+                          <td>{program?.child?.age}</td>
+                          <td>{program?.child?.gender}</td>
                           <td>{program?.teacher?.firstName}</td>
                           <td>{program?.package?.title}</td>
-                          <td>{program.assessmentUrl}</td>
+                          <td>{program?.assessmentUrl}</td>
                           <td>
                             {program?.package?.status ? "Active" : "Inactive"}
                           </td>
