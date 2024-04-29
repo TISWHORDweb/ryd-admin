@@ -50,19 +50,47 @@ export const times = [
     {label: "12:00AM", value: 24},
 ];
 
+const TIMES_ = [
+    "12:00AM",
+    "1:00AM",
+    "2:00AM",
+    "3:00AM",
+    "4:00AM",
+    "5:00AM",
+    "6:00AM",
+    "7:00AM",
+    "8:00AM",
+    "9:00AM",
+    "10:00AM",
+    "11:00AM",
+    "12:00PM",
+    "1:00PM",
+    "2:00PM",
+    "3:00PM",
+    "4:00PM",
+    "5:00PM",
+    "6:00PM",
+    "7:00PM",
+    "8:00PM",
+    "9:00PM",
+    "10:00PM",
+    "11:00PM",
+]
+
 const formatTime = (time) => {
-    const hour = Math.floor(time);
-    const minute = (time - hour) * 60;
-    const meridian = hour >= 12 ? "PM" : "AM";
-    const formattedHour = hour % 12 || 12; // Convert 0 to 12 for 12-hour format
-    return `${formattedHour}:${minute < 10 ? "0" : ""}${Math.floor(minute)} ${meridian}`;
+    // const hour = Math.floor(time);
+    // const minute = (time - hour) * 60;
+    // const meridian = hour >= 12 ? "PM" : "AM";
+    // const formattedHour = hour % 12 || 12; // Convert 0 to 12 for 12-hour format
+    // return `${formattedHour}:${minute < 10 ? "0" : ""}${Math.floor(minute)} ${meridian}`;
+    return TIMES_[time]
 };
 
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const formatDay = (day) => {
     // Adjust day to be within the range of 0 to 6
-    const adjustedDay = (((day - 1) % 7) + 7) % 7;
-    return days[adjustedDay];
+    //const adjustedDay = (((day - 1) % 7) + 7) % 7;
+    return days[day];
 };
 
 const ManageProgram = () => {
@@ -320,8 +348,6 @@ const ManageProgram = () => {
                       </span>
                                         </h5>
                                         <button onClick={() => {
-                                            //switch program
-                                            setSwitchProgram(!switchProgram)
                                             //check
                                             if (switchProgram) {
                                                 //filter to it
@@ -330,6 +356,8 @@ const ManageProgram = () => {
                                                 //filter to it
                                                 setProgramsList(programs.filter(r => r.isPaid === false && r.isCompleted === false))
                                             }
+                                            //switch program
+                                            setSwitchProgram(!switchProgram)
                                         }}>Switch Program Status: {switchProgram ? "Paid" : "UnPaid"}
                                         </button>
 
