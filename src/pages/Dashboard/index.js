@@ -40,10 +40,14 @@ const Dashboard = () => {
             const programResponse = await axios.get(`${baseUrl}/admin/program/all`);
             const responseData = programResponse.data;
 
+            // Fetch program data
+            const packageResponse = await axios.get(`${baseUrl}/admin/package/all`);
+
             const teacherAssignedCount = responseData.data.reduce((count, item) => count + (item.teacher ? 1 : 0), 0);
             const enrolledCount = responseData.data.reduce((count, item) => count + (item.child ? 1 : 0), 0);
             const programCount = responseData.data.length;
-            const packageCount = responseData.data.reduce((count, item) => count + (item.packageId ? 1 : 0), 0);
+
+            const packageCount = packageResponse?.data?.data.length
 
             setProgramData([
                 { title: "Total Programs", count: programCount, statusColor: "primary" },
