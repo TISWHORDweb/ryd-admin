@@ -422,10 +422,10 @@ const ManageProgram = () => {
                                             {programsList.map((program, index) => (
                                                 <tr key={index}>
                                                     <td>{index + 1}</td>
-                                                    <td>{program?.child?.parent?.firstName}</td>
+                                                    <td>{program?.child?.parent?.firstName +" "+program?.child?.parent?.lastName}</td>
                                                     <td>{program?.child?.parent?.phone}</td>
                                                     <td>{program?.child?.parent?.email}</td>
-                                                    <td>{program?.child?.firstName}</td>
+                                                    <td>{program?.child?.firstName+" "+program?.child?.lastName}</td>
                                                     <td>{program?.child?.age}</td>
                                                     <td>{program?.child?.gender}</td>
                                                     <td>{program?.teacher?.firstName}</td>
