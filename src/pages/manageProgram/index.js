@@ -316,7 +316,7 @@ const ManageProgram = () => {
         const programs = [...selectedProgram];
         programs.push(program);
         setSelectedProgram(programs);
-        console.log(selectedProgram);
+        //console.log(selectedProgram);
     };
 
     // Function to filter package list based on search query
@@ -324,6 +324,9 @@ const ManageProgram = () => {
         program?.child?.firstName.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const handleProgramClick = (programData) => {
+        toggle(programData); // Pass program data to toggle for editing
+    };
 
     return (
         <React.Fragment>
@@ -465,7 +468,7 @@ const ManageProgram = () => {
                                                     </td>
                                                     <td>
                                                         <div className="d-flex">
-                                                            <span className={'d-none'}>
+                                                            <span className={'d-block'}>
                                 <Link
                                     className="text-success"
                                     to="#"
@@ -535,7 +538,7 @@ const ManageProgram = () => {
                                 </Link>
                               </span>
 
-                                                            <span>
+                                                            <span className={'d-none'}>
                                 <Link
                                     className="text-secondary"
                                     to="#"
@@ -597,11 +600,10 @@ const ManageProgram = () => {
                                                                         invalid={
                                                                             validation.touched.day &&
                                                                             validation.errors.day
-                                                                        }
-                                                                    >
+                                                                        }>
                                                                         <option value="">Select Day</option>
                                                                         {days.map((day, index) => (
-                                                                            <option key={index} value={index + 1}>
+                                                                            <option key={index} value={index}>
                                                                                 {day}
                                                                             </option>
                                                                         ))}
@@ -624,8 +626,7 @@ const ManageProgram = () => {
                                                                         invalid={
                                                                             validation.touched.time &&
                                                                             validation.errors.time
-                                                                        }
-                                                                    >
+                                                                        }>
                                                                         <option value="">Select Time</option>
                                                                         {times.map((timeObj, index) => (
                                                                             <option key={index} value={timeObj.value}>
@@ -648,8 +649,7 @@ const ManageProgram = () => {
                                                             {!isEdit ? (
                                                                 <button
                                                                     type="submit"
-                                                                    className="btn btn-primary save-user"
-                                                                >
+                                                                    className="btn btn-primary save-user">
                                                                     Create Program
                                                                 </button>
                                                             ) : (
