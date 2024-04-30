@@ -195,7 +195,16 @@ const SidebarContent = props => {
               </Link>
             </li>
 
-           
+            <li>
+              <Link to="/manage-program-unpaid" className="">
+                <FeatherIcon
+                    icon="feather"
+                />{" "}
+                <span>{props.t("Manage Program UnPaid")}</span>
+              </Link>
+            </li>
+
+
 
             <li>
               <Link to="/manage-package" className="">
@@ -233,7 +242,7 @@ const SidebarContent = props => {
               </Link>
             </li>
 
-      
+
             <li>
               <Link to="/settings" className="">
                 <FeatherIcon
