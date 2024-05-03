@@ -204,6 +204,14 @@ const SidebarContent = props => {
               </Link>
             </li>
 
+            <li>
+              <Link to="/manage-program-inactive" className="">
+                <FeatherIcon
+                    icon="feather"
+                />{" "}
+                <span>{props.t("Manage Program Inactive")}</span>
+              </Link>
+            </li>
 
 
             <li>

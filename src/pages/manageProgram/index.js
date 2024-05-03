@@ -89,7 +89,7 @@ const formatTime = (time) => {
     return TIMES_[time]
 };
 
-const formatTimeZone = (tz,day,time) => {
+const formatTimeZone = (tz, day, time) => {
     const pTime = moment().utc(false).utcOffset(tz)
     pTime.day(day)
     pTime.hour(time)
@@ -153,14 +153,26 @@ const ManageProgram = () => {
     useEffect(() => {
         fetchTeachers();
     }, []);
+
+    function compareFn(a, b) {
+        if (a.time < b.time && a.day < b.day) {
+            return -1;
+        } else if (a.time > b.time && a.day > b.day) {
+            return 1;
+        }
+        // a must be equal to b
+        return 0;
+    }
+
     const fetchPrograms = async () => {
         try {
             const response = await axios.get(`${baseUrl}/admin/program/all`);
             setPrograms(response?.data?.data);
             setLoading(false);
-            setTimeout(()=>{
+            setTimeout(() => {
                 //filter to it
-                setProgramsList(response?.data?.data.filter(r => r.isPaid === true && r.isCompleted === false))
+                const xdata = response?.data?.data.filter(r => r.isPaid === true && r.isCompleted === false);
+                setProgramsList(xdata.sort(compareFn))
             }, 1000)
         } catch (error) {
             setLoading(false);
@@ -379,8 +391,8 @@ const ManageProgram = () => {
                                         <button onClick={() => {
                                             //switch program
                                             setSwitchProgram(!switchProgram)
-                                                //filter to it
-                                                setProgramsList(programs)
+                                            //filter to it
+                                            setProgramsList(programs)
                                         }}>Show All
                                         </button>
                                     </div>
@@ -399,8 +411,8 @@ const ManageProgram = () => {
                                 </Col>
                             </Row>
                             <Row>
-                                <Col xl="12" style={{overflow: 'scroll'}}>
-                                {loading ? (
+                                <Col xl="12" style={{overflow: 'scroll', width: '98%'}}>
+                                    {loading ? (
                                         <div className="text-center mt-5">
                                             <div className="spinner-border text-primary" role="status">
                                                 <span className="visually-hidden">Loading...</span>
@@ -438,10 +450,10 @@ const ManageProgram = () => {
                                             {programsList.map((program, index) => (
                                                 <tr key={index}>
                                                     <td>{index + 1}</td>
-                                                    <td>{program?.child?.parent?.firstName +" "+program?.child?.parent?.lastName}</td>
+                                                    <td>{program?.child?.parent?.firstName + " " + program?.child?.parent?.lastName}</td>
                                                     <td>{program?.child?.parent?.phone}</td>
                                                     <td>{program?.child?.parent?.email}</td>
-                                                    <td>{program?.child?.firstName+" "+program?.child?.lastName}</td>
+                                                    <td>{program?.child?.firstName + " " + program?.child?.lastName}</td>
                                                     <td>{program?.child?.age}</td>
                                                     <td>{program?.child?.gender}</td>
                                                     <td>{program?.teacher?.firstName}</td>
@@ -452,13 +464,16 @@ const ManageProgram = () => {
                                                     {/*</td>*/}
                                                     <td>{program.level}</td>
                                                     <td>{formatTime(program.time)}</td>
-                                                    <td><Moment format='hh:mm A' date={formatTimeZone(program.timeOffset,program.day,program.time).toISOString()} tz={"Africa/Lagos"}></Moment></td>
+                                                    <td><Moment format='hh:mm A'
+                                                                date={formatTimeZone(program.timeOffset, program.day, program.time).toISOString()}
+                                                                tz={"Africa/Lagos"}></Moment></td>
                                                     <td>{formatDay(program.day)}</td>
                                                     <td>{program.timeOffset}</td>
                                                     <td>
                                                          <span>
                                 {program.isPaid ? (
-                                    <a target={'_blank'} rel={'noreferrer'} href={'https://api-pro.rydlearning.com/common/stripe-check/'+program.trxId}>Paid</a>
+                                    <a target={'_blank'} rel={'noreferrer'}
+                                       href={'https://api-pro.rydlearning.com/common/stripe-check/' + program.trxId}>Paid</a>
                                 ) : (
                                     <button
                                         className="btn btn-link ms-1 text-primary"

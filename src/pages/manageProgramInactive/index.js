@@ -94,7 +94,7 @@ const formatDay = (day) => {
 };
 
 const ManageProgram = () => {
-    document.title = "Manage Program | RYD Admin";
+    document.title = "Manage Program Inactive | RYD Admin";
 
     const [programs, setPrograms] = useState([]);
     const [programsList, setProgramsList] = useState([]);
@@ -143,12 +143,14 @@ const ManageProgram = () => {
     }, []);
     const fetchPrograms = async () => {
         try {
-            const response = await axios.get(`${baseUrl}/admin/program/all`);
+            const response = await axios.get(`${baseUrl}/admin/program/old/all`);
             setPrograms(response?.data?.data);
             setLoading(false);
+
+
             setTimeout(()=>{
                 //filter to it
-                setProgramsList(response?.data?.data.filter(r => r.isPaid === false && r.isCompleted === false))
+                setProgramsList(response?.data?.data)
             }, 1000)
         } catch (error) {
             setLoading(false);
@@ -338,25 +340,18 @@ const ManageProgram = () => {
             />
             <div className="page-content">
                 <Container fluid>
-                    <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Program"/>
+                    <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Inactive Program"/>
                     <Row>
                         <Col lg="12">
                             <Row className="align-items-center">
                                 <Col md={6}>
                                     <div className="mb-3">
                                         <h5 className="card-title">
-                                            Manage Program UnPaid{" "}
+                                            Manage Program Inactive{" "}
                                             <span className="text-muted fw-normal ms-2">
                         ({programs.length})
                       </span>
                                         </h5>
-                                        <button onClick={() => {
-                                            //switch program
-                                            setSwitchProgram(!switchProgram)
-                                                //filter to it
-                                                setProgramsList(programs)
-                                        }}>Show All
-                                        </button>
                                     </div>
                                 </Col>
                                 <Col md={6}>
@@ -373,7 +368,7 @@ const ManageProgram = () => {
                                 </Col>
                             </Row>
                             <Row>
-                                <Col xl="12">
+                                <Col xl="12" style={{overflow: 'scroll', width: '98%'}}>
                                 {loading ? (
                                         <div className="text-center mt-5">
                                             <div className="spinner-border text-primary" role="status">
@@ -452,264 +447,11 @@ const ManageProgram = () => {
                                                              )}
                               </span>
                                                     </td>
-                                                    <td>
-                                                        <div className="d-flex">
-                                                            <span className={'d-block'}>
-                                <Link
-                                    className="text-success"
-                                    to="#"
-                                    id="edit"
-                                    onMouseEnter={() =>
-                                        setEditTooltipOpen(true)
-                                    }
-                                    onMouseLeave={() =>
-                                        setEditTooltipOpen(false)
-                                    }
-                                    onClick={() => handleProgramClick(program)}>
-                                  <i className="mdi mdi-pencil font-size-20"></i>
-                                </Link>
-                              </span>
-                                                            <span className={'d-none'}>
-                                <Tooltip
-                                    isOpen={deleteTooltipOpen}
-                                    target="delete"
-                                    toggle={() =>
-                                        setDeleteTooltipOpen(!deleteTooltipOpen)
-                                    }
-                                    placement="top"
-                                    delay={{show: 100, hide: 100}}
-                                >
-                                  Delete
-                                </Tooltip>
-                                <Link
-                                    className="text-danger"
-                                    to="#"
-                                    id="delete"
-                                    onMouseEnter={() =>
-                                        setDeleteTooltipOpen(true)
-                                    }
-                                    onMouseLeave={() =>
-                                        setDeleteTooltipOpen(false)
-                                    }
-                                    onClick={() => onClickDelete(program)}
-                                >
-                                  <i className="mdi mdi-delete font-size-20"></i>
-                                </Link>
-                              </span>
-                                                            <span>
-                                <Tooltip
-                                    isOpen={assignTooltipOpen}
-                                    target="assign"
-                                    toggle={() =>
-                                        setAssignTooltipOpen(!assignTooltipOpen)
-                                    }
-                                    placement="top"
-                                    delay={{show: 100, hide: 100}}
-                                >
-                                  Assign Teacher
-                                </Tooltip>
-                                <Link
-                                    className="text-primary"
-                                    to="#"
-                                    id="assign"
-                                    onMouseEnter={() =>
-                                        setAssignTooltipOpen(true)
-                                    }
-                                    onMouseLeave={() =>
-                                        setAssignTooltipOpen(false)
-                                    }
-                                    onClick={() => handleAssignClick(program)}
-                                >
-                                  <i className="mdi mdi-clipboard-account font-size-20"></i>
-                                </Link>
-                              </span>
-
-                                                            <span className={'d-none'}>
-                                <Link
-                                    className="text-secondary"
-                                    to="#"
-                                    onClick={() => addProgramToBulk(program)}
-                                >
-                                  <i className="mdi mdi-plus-box-multiple font-size-20"></i>
-                                </Link>
-                              </span>
-                                                        </div>
-                                                    </td>
                                                 </tr>
                                             ))}
                                             </tbody>
                                         </table>
                                     )}
-                                    <Modal isOpen={modal} toggle={() => toggle()}>
-                                        <ModalHeader toggle={() => toggle()}>
-                                            {isEdit ? "Edit Program" : "Add New Program"}
-                                        </ModalHeader>
-                                        <ModalBody>
-                                            <Form onSubmit={validation.handleSubmit}>
-                                                <Row>
-                                                    <Col xs={12}>
-                                                        <div className="row">
-                                                            <div className="">
-                                                                <div className="mb-3">
-                                                                    <Label>Level</Label>
-                                                                    <Input
-                                                                        type="select"
-                                                                        name="level"
-                                                                        onChange={validation.handleChange}
-                                                                        onBlur={validation.handleBlur}
-                                                                        value={validation.values.level || ""}
-                                                                        invalid={
-                                                                            validation.touched.level &&
-                                                                            validation.errors.level
-                                                                        }
-                                                                    >
-                                                                        <option value="">Select Level</option>
-                                                                        <option value="4">4</option>
-                                                                        <option value="3">3</option>
-                                                                        <option value="2">2</option>
-                                                                        <option value="1">1</option>
-                                                                    </Input>
-                                                                    <FormFeedback type="invalid">
-                                                                        {validation.errors.level}
-                                                                    </FormFeedback>
-                                                                </div>
-                                                            </div>
-                                                            <div className="col-md-6">
-                                                                <div className="mb-3">
-                                                                    <Label>Day</Label>
-                                                                    <Input
-                                                                        type="select"
-                                                                        name="day"
-                                                                        onChange={validation.handleChange}
-                                                                        onBlur={validation.handleBlur}
-                                                                        value={validation.values.day || ""}
-                                                                        invalid={
-                                                                            validation.touched.day &&
-                                                                            validation.errors.day
-                                                                        }>
-                                                                        <option value="">Select Day</option>
-                                                                        {days.map((day, index) => (
-                                                                            <option key={index} value={index}>
-                                                                                {day}
-                                                                            </option>
-                                                                        ))}
-                                                                    </Input>
-                                                                    <FormFeedback type="invalid">
-                                                                        {validation.errors.day}
-                                                                    </FormFeedback>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="col-md-6">
-                                                                <div className="mb-3">
-                                                                    <Label>Time</Label>
-                                                                    <Input
-                                                                        type="select"
-                                                                        name="time"
-                                                                        onChange={validation.handleChange}
-                                                                        onBlur={validation.handleBlur}
-                                                                        value={validation.values.time || ""}
-                                                                        invalid={
-                                                                            validation.touched.time &&
-                                                                            validation.errors.time
-                                                                        }>
-                                                                        <option value="">Select Time</option>
-                                                                        {times.map((timeObj, index) => (
-                                                                            <option key={index} value={timeObj.value}>
-                                                                                {timeObj.label}
-                                                                            </option>
-                                                                        ))}
-                                                                    </Input>
-                                                                    <FormFeedback type="invalid">
-                                                                        {validation.errors.time}
-                                                                    </FormFeedback>
-                                                                </div>
-                                                            </div>
-
-                                                        </div>
-                                                    </Col>
-                                                </Row>
-                                                <Row>
-                                                    <Col>
-                                                        <div className="text-end">
-                                                            {!isEdit ? (
-                                                                <button
-                                                                    type="submit"
-                                                                    className="btn btn-primary save-user">
-                                                                    Create Program
-                                                                </button>
-                                                            ) : (
-                                                                <button
-                                                                    type="submit"
-                                                                    className="btn btn-primary save-user"
-                                                                >
-                                                                    Update Program
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </Col>
-                                                </Row>
-                                            </Form>
-                                        </ModalBody>
-                                    </Modal>
-
-                                    <Modal isOpen={assignModal} toggle={() => assignToggle()}>
-                                        <ModalHeader toggle={() => assignToggle()}>Assign Teacher</ModalHeader>
-                                        <ModalBody>
-                                            <Form onSubmit={(e) => {
-                                                e.preventDefault();
-                                                handleTeacherAssignClick();
-                                            }}>
-                                                <Row>
-                                                    <Col xs={12}>
-                                                        <div className="row">
-                                                            <div className="col-md-12">
-                                                                <div className="mb-6">
-                                                                    <Input
-                                                                        name="teacherId"
-                                                                        type="select"
-                                                                        onChange={handleTeacherChange}
-                                                                        onBlur={validation.handleBlur}
-                                                                        // value={selectedTeacher.teacherId || ""}
-                                                                        >
-                                                                        <option value="">Select teacher</option>
-                                                                        {teachers?.length > 0 &&
-                                                                            teachers?.map((teacher) => (
-                                                                                <option key={teacher?.id}
-                                                                                        value={teacher?.id}>
-                                                                                    {teacher.firstName} {teacher.lastName}
-                                                                                </option>
-                                                                            ))}
-                                                                    </Input>
-                                                                    <FormFeedback type="invalid">
-                                                                        {validation.errors.teacherId}
-                                                                    </FormFeedback>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </Col>
-                                                    {assignError && (
-                                                        <p style={{color: "red", fontSize: "10px"}}>
-                                                            Teacher selection is required!
-                                                        </p>
-                                                    )}
-                                                </Row>
-                                                <Row>
-                                                    <Col>
-                                                        <br/>
-                                                        <div className="text-end">
-                                                            <button
-                                                                type="submit"
-                                                                className="btn btn-primary save-user"
-                                                            >
-                                                                Assign
-                                                            </button>
-                                                        </div>
-                                                    </Col>
-                                                </Row>
-                                            </Form>
-                                        </ModalBody>
-                                    </Modal>
                                 </Col>
                             </Row>
                         </Col>

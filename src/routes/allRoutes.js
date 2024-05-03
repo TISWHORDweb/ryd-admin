@@ -19,6 +19,7 @@ import Settings from "../pages/Settings";
 import ManagePackage from "../pages/managePackage";
 import ManageProgram from "../pages/manageProgram";
 import ManageProgramUnpaid from "../pages/manageProgramUnpaid";
+import ManageProgramInactive from "../pages/manageProgramInactive";
 import ManageSwap from "../pages/ManageSwap";
 import ManageSurvey from "../pages/ManageSurvey";
 import ManageCoupon from "../pages/ManageCoupon";
@@ -38,6 +39,8 @@ const userRoutes = [
   { path: "/manage-program", component: <ManageProgram/> },
 
   { path: "/manage-program-unpaid", component: <ManageProgramUnpaid/> },
+
+  { path: "/manage-program-inactive", component: <ManageProgramInactive/> },
 
   { path: "/manage-timetable", component: <ManageTimetable /> },
 
