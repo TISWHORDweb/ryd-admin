@@ -22,9 +22,6 @@ import withAuth from "../withAuth";
 import {ToastContainer, toast} from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {baseUrl} from '../../Network';
-import Moment from 'react-moment';
-import moment from 'moment-timezone';
-import 'moment-timezone';
 
 export const times = [
     {label: "1:00AM", value: 1},
@@ -89,15 +86,6 @@ const formatTime = (time) => {
     return TIMES_[time]
 };
 
-const formatTimeZone = (tz,day,time) => {
-    const pTime = moment().utc(false).utcOffset(tz)
-    pTime.day(day)
-    pTime.hour(time)
-    pTime.second(0)
-    pTime.minute(0)
-    return pTime
-};
-
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const formatDay = (day) => {
     // Adjust day to be within the range of 0 to 6
@@ -160,7 +148,7 @@ const ManageProgram = () => {
             setLoading(false);
             setTimeout(()=>{
                 //filter to it
-                setProgramsList(response?.data?.data.filter(r => r.isPaid === true && r.isCompleted === false))
+                setProgramsList(response?.data?.data.filter(r => r.isPaid === false && r.isCompleted === false))
             }, 1000)
         } catch (error) {
             setLoading(false);
@@ -357,25 +345,11 @@ const ManageProgram = () => {
                                 <Col md={6}>
                                     <div className="mb-3">
                                         <h5 className="card-title">
-                                            Manage Program{" "}
+                                            Manage Program UnPaid{" "}
                                             <span className="text-muted fw-normal ms-2">
                         ({programs.length})
                       </span>
                                         </h5>
-                                        <button onClick={() => {
-                                            //check
-                                            if (switchProgram) {
-                                                //filter to it
-                                                setProgramsList(programs.filter(r => r.isPaid === true && r.isCompleted === false))
-                                            } else {
-                                                //filter to it
-                                                setProgramsList(programs.filter(r => r.isPaid === false && r.isCompleted === false))
-                                            }
-                                            //switch program
-                                            setSwitchProgram(!switchProgram)
-                                        }}>Switch Program Status: {switchProgram ? "Paid" : "UnPaid"}
-                                        </button>
-
                                         <button onClick={() => {
                                             //switch program
                                             setSwitchProgram(!switchProgram)
@@ -399,7 +373,7 @@ const ManageProgram = () => {
                                 </Col>
                             </Row>
                             <Row>
-                                <Col xl="12" style={{overflow: 'scroll'}}>
+                                <Col xl="12">
                                 {loading ? (
                                         <div className="text-center mt-5">
                                             <div className="spinner-border text-primary" role="status">
@@ -427,7 +401,6 @@ const ManageProgram = () => {
                                                 {/*<th>Status</th>*/}
                                                 <th>Level</th>
                                                 <th>Time</th>
-                                                <th>(WAT)</th>
                                                 <th>Day</th>
                                                 <th>GMT</th>
                                                 <th>Status</th>
@@ -452,13 +425,13 @@ const ManageProgram = () => {
                                                     {/*</td>*/}
                                                     <td>{program.level}</td>
                                                     <td>{formatTime(program.time)}</td>
-                                                    <td><Moment format='hh:mm A' date={formatTimeZone(program.timeOffset,program.day,program.time).toISOString()} tz={"Africa/Lagos"}></Moment></td>
                                                     <td>{formatDay(program.day)}</td>
+
                                                     <td>{program.timeOffset}</td>
                                                     <td>
                                                          <span>
                                 {program.isPaid ? (
-                                    <a target={'_blank'} rel={'noreferrer'} href={'https://api-pro.rydlearning.com/common/stripe-check/'+program.trxId}>Paid</a>
+                                    "Paid"
                                 ) : (
                                     <button
                                         className="btn btn-link ms-1 text-primary"
@@ -531,7 +504,8 @@ const ManageProgram = () => {
                                         setAssignTooltipOpen(!assignTooltipOpen)
                                     }
                                     placement="top"
-                                    delay={{show: 100, hide: 100}}>
+                                    delay={{show: 100, hide: 100}}
+                                >
                                   Assign Teacher
                                 </Tooltip>
                                 <Link
@@ -697,7 +671,7 @@ const ManageProgram = () => {
                                                                         onChange={handleTeacherChange}
                                                                         onBlur={validation.handleBlur}
                                                                         // value={selectedTeacher.teacherId || ""}
-                                                                    >
+                                                                        >
                                                                         <option value="">Select teacher</option>
                                                                         {teachers?.length > 0 &&
                                                                             teachers?.map((teacher) => (
