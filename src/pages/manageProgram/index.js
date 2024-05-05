@@ -465,10 +465,10 @@ const ManageProgram = () => {
                                                     <td>{program.level}</td>
                                                     <td>{formatTime(program.time)}</td>
                                                     <td><Moment format='hh:mm A'
-                                                                date={formatTimeZone(program.timeOffset, program.day, program.time).toISOString()}
+                                                                date={formatTimeZone(program?.child?.parent?.timeOffset, program.day, program.time).toISOString()}
                                                                 tz={"Africa/Lagos"}></Moment></td>
                                                     <td>{formatDay(program.day)}</td>
-                                                    <td>{program.timeOffset}</td>
+                                                    <td>{program?.child?.parent?.timeOffset}</td>
                                                     <td>
                                                          <span>
                                 {program.isPaid ? (
