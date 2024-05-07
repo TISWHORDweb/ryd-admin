@@ -58,6 +58,12 @@ const ManageParent = () => {
     setModal(!modal);
   };
 
+  const handleUserClick = (userData) => {
+    setContact(userData);
+    setIsEdit(true);
+    toggle();
+  };
+
   const validation = useFormik({
     enableReinitialize: true,
     initialValues: {

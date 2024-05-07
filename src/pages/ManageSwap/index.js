@@ -51,14 +51,14 @@ const ManageSwap = () => {
         let apiUrl;
         let response;
         if (isEdit) {
-        
+
           response = await axios.put(
             `${baseUrl}/admin/swap/edit/${swap.id}`,
             values
           );
           toast.success("Swap updated successfully");
         } else {
-          
+
           response = await axios.post(`${baseUrl}/admin/swap/create`, values);
           toast.success("Swap created successfully");
         }
@@ -110,7 +110,7 @@ const ManageSwap = () => {
   const handleDeleteSwap = async () => {
     try {
       setLoading(true);
-     
+
       await axios.delete(`${baseUrl}/admin/swap/${swap.id}`);
       const updatedSwaps = swaps.filter((s) => s.id !== swap.id);
       setSwaps(updatedSwaps);
@@ -148,7 +148,7 @@ const ManageSwap = () => {
   const rejectSwap = async (id) => {
     try {
       setLoading(true);
-      
+
       await axios.put(`${baseUrl}/admin/swap/reject/${id}`);
       const updatedSwaps = swaps.map((s) =>
         s.id === id ? { ...s, status: false } : s
@@ -223,33 +223,30 @@ const ManageSwap = () => {
               swaps.map((swap, index) => (
                 <tr key={index}>
                   <td>{index + 1}</td>
-                  <td>{swap.title}</td>
-                  <td>{swap.description}</td>
+                  <td>{`Swap Request [${swap?.fromTeacher?.firstName}]`}</td>
+                  <td>{`Swap request from ${swap?.fromTeacher?.firstName} ${swap?.fromTeacher?.lastName} to ${swap?.toTeacher?.firstName} ${swap?.toTeacher?.lastName}: ${swap.body}`}</td>
                   <td>
                     <div className="d-flex gap-3">
-                      <Link
-                        className="text-success"
-                        to="#"
-                        onClick={() => {
-                          handleSwapClick(swap);
-                          setIsEdit(true);
-                        }}
-                      >
-                        <i className="mdi mdi-pencil font-size-18"></i>
-                      </Link>
-                      <Link
-                        className="text-danger"
-                        to="#"
-                        onClick={() => onClickDelete(swap)}
-                      >
-                        <i className="mdi mdi-delete font-size-18"></i>
-                      </Link>
-                      {!swap.status && (
+                      {/*<Link*/}
+                      {/*  className="text-success"*/}
+                      {/*  to="#"*/}
+                      {/*  onClick={() => {*/}
+                      {/*    handleSwapClick(swap);*/}
+                      {/*    setIsEdit(true);*/}
+                      {/*  }}>*/}
+                      {/*  <i className="mdi mdi-pencil font-size-18"></i>*/}
+                      {/*</Link>*/}
+                      {/*<Link*/}
+                      {/*  className="text-danger"*/}
+                      {/*  to="#"*/}
+                      {/*  onClick={() => onClickDelete(swap)}>*/}
+                      {/*  <i className="mdi mdi-delete font-size-18"></i>*/}
+                      {/*</Link>*/}
+                      {!swap.status? (
                         <>
                           <Button
                             color="success"
-                            onClick={() => acceptSwap(swap.id)}
-                          >
+                            onClick={() => acceptSwap(swap.id)}>
                             Accept
                           </Button>
                           <Button
@@ -259,7 +256,7 @@ const ManageSwap = () => {
                             Reject
                           </Button>
                         </>
-                      )}
+                      ):"Accepted"}
                     </div>
                   </td>
                 </tr>
