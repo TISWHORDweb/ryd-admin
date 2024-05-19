@@ -462,7 +462,7 @@ const ManageProgram = () => {
                                                     {/*<td>*/}
                                                     {/*  {program?.package?.status ? "Active" : "Inactive"}*/}
                                                     {/*</td>*/}
-                                                    <td>{program.level}</td>
+                                                    <td>{program?.package?.level}</td>
                                                     <td>{formatTime(program.time)}</td>
                                                     <td><Moment format='hh:mm A'
                                                                 date={formatTimeZone(program?.child?.parent?.timeOffset, program.day, program.time).toISOString()}

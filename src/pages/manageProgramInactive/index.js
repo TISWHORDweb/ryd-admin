@@ -406,10 +406,10 @@ const ManageProgram = () => {
                                             {programsList.map((program, index) => (
                                                 <tr key={index}>
                                                     <td>{index + 1}</td>
-                                                    <td>{program?.child?.parent?.firstName +" "+program?.child?.parent?.lastName}</td>
+                                                    <td>{program?.child?.parent?.firstName + " " + program?.child?.parent?.lastName}</td>
                                                     <td>{program?.child?.parent?.phone}</td>
                                                     <td>{program?.child?.parent?.email}</td>
-                                                    <td>{program?.child?.firstName+" "+program?.child?.lastName}</td>
+                                                    <td>{program?.child?.firstName + " " + program?.child?.lastName}</td>
                                                     <td>{program?.child?.age}</td>
                                                     <td>{program?.child?.gender}</td>
                                                     <td>{program?.teacher?.firstName}</td>
@@ -418,7 +418,7 @@ const ManageProgram = () => {
                                                     {/*<td>*/}
                                                     {/*  {program?.package?.status ? "Active" : "Inactive"}*/}
                                                     {/*</td>*/}
-                                                    <td>{program.level}</td>
+                                                    <td>{program?.package?.level}</td>
                                                     <td>{formatTime(program.time)}</td>
                                                     <td>{formatDay(program.day)}</td>
 

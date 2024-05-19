@@ -423,7 +423,7 @@ const ManageProgram = () => {
                                                     {/*<td>*/}
                                                     {/*  {program?.package?.status ? "Active" : "Inactive"}*/}
                                                     {/*</td>*/}
-                                                    <td>{program.level}</td>
+                                                    <td>{program?.package?.level}</td>
                                                     <td>{formatTime(program.time)}</td>
                                                     <td>{formatDay(program.day)}</td>
 
