@@ -196,22 +196,22 @@ const SidebarContent = props => {
             </li>
 
             <li>
-              <Link to="/manage-program-unpaid" className="">
+              <Link to="/manage-cohort" className="">
                 <FeatherIcon
                     icon="feather"
                 />{" "}
-                <span>{props.t("Manage Program UnPaid")}</span>
+                <span>{props.t("Manage Cohort")}</span>
               </Link>
             </li>
 
-            <li>
-              <Link to="/manage-program-inactive" className="">
-                <FeatherIcon
-                    icon="feather"
-                />{" "}
-                <span>{props.t("Manage Program Inactive")}</span>
-              </Link>
-            </li>
+            {/*<li>*/}
+            {/*  <Link to="/manage-program-inactive" className="">*/}
+            {/*    <FeatherIcon*/}
+            {/*        icon="feather"*/}
+            {/*    />{" "}*/}
+            {/*    <span>{props.t("Manage Program Inactive")}</span>*/}
+            {/*  </Link>*/}
+            {/*</li>*/}
 
 
             <li>

@@ -19,6 +19,7 @@ const Dashboard = () => {
         { title: "Total Package", count: 0, statusColor: "secondary" }
     ]);
     const [parentCount, setParentCount] = useState(0);
+    const [parentActive, setParentActive] = useState(0);
     const [childCount, setChildCount] = useState(0);
 
     useEffect(() => {
@@ -31,6 +32,10 @@ const Dashboard = () => {
             // Fetch parent count
             const parentResponse = await axios.get(`${baseUrl}/admin/parent/all`);
             setParentCount(parentResponse.data.data.length);
+
+            //filter parents
+            const __filter = parentResponse.data.data.filter((x) => x?.children.filter((y) => y?.programs.filter((z) => z.isPaid && !z.isCompleted).length > 0).length > 0 )
+            setParentActive(__filter.length)
 
             // Fetch child count
             const childResponse = await axios.get(`${baseUrl}/admin/child/all`);
@@ -73,6 +78,16 @@ const Dashboard = () => {
                                     <h4 className="mb-3">Total Parents</h4>
                                     <div className="badge bg-info-subtle text-info mb-3" style={{ fontSize: "15px", padding: "10px" }}>
                                         {parentCount}
+                                    </div>
+                                </CardBody>
+                            </Card>
+                        </Col>
+                        <Col xl={3} md={6}>
+                            <Card className="card-h-100">
+                                <CardBody>
+                                    <h4 className="mb-3">Active Parents</h4>
+                                    <div className="badge bg-success text-white mb-3" style={{ fontSize: "15px", padding: "10px" }}>
+                                        {parentActive}
                                     </div>
                                 </CardBody>
                             </Card>

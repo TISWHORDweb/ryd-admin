@@ -1,0 +1,6 @@
+/**
+Global table background removed
+ */
+td{
+    background-color: transparent !important;
+}

@@ -77,10 +77,10 @@ const ManageChild = () => {
           parentId: values.parentId,
         };
 
-      
+
         let response;
         if (isEdit) {
-          
+
           response = await axios.put(
             `${baseUrl}/admin/child/edit/${contact.id}`,
             newChild
@@ -179,12 +179,21 @@ const ManageChild = () => {
             </Col>
             <Col md={6}>
               <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
+                <div style={{width: 200}}>
+                  <select className={'form-control'} onChange={(e) => {
+                    //switch mode
+                  }}>
+                    <option value={0}>All Children</option>
+                    <option value={1}>With active cohort</option>
+                    <option value={2}>With no active cohort</option>
+                  </select>
+                </div>
                 <div>
                   <Input
-                    type="text"
-                    placeholder="Search"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                      type="text"
+                      placeholder="Search"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
               </div>
@@ -195,57 +204,63 @@ const ManageChild = () => {
               <Row>
                 <Col xl="12">
                   {loading ? (
-                    <div className="text-center mt-5">
-                      <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Loading...</span>
+                      <div className="text-center mt-5">
+                        <div className="spinner-border text-primary" role="status">
+                          <span className="visually-hidden">Loading...</span>
+                        </div>
                       </div>
-                    </div>
                   ) : filteredUsers.length === 0 ? (
-                    <div className="text-center mt-5">
-                      <h3>No data available</h3>
-                    </div>
+                      <div className="text-center mt-5">
+                        <h3>No data available</h3>
+                      </div>
                   ) : (
-                    <table className="table align-middle">
-                      <thead>
+                      <table className="table align-middle">
+                        <thead>
                         <tr>
                           <th>#</th>
                           <th>First Name</th>
-                          <th>Last Name</th>
-                          <th>Age</th>
-                          <th>Gender</th>
-                          <th>Action</th>
-                        </tr>
+                        <th>Last Name</th>
+                        <th>Parent Name</th>
+                        <th>Current Cohort</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Privacy Mode</th>
+                        <th>Action</th>
+                      </tr>
                       </thead>
                       <tbody>
                         {filteredUsers.map((user, index) => (
-                          <tr key={index}>
-                            <td>{index + 1}</td>
-                            <td>{user.firstName}</td>
-                            <td>{user.lastName}</td>
-                            <td>{user.age}</td>
-                            <td>{user.gender}</td>
-                            <td>
-                              <div className="d-flex gap-3">
-                                <Link
-                                  className="text-success"
-                                  to="#"
-                                  onClick={() => {
-                                    handleUserClick(user);
-                                    setIsEdit(true);
-                                  }}
-                                >
-                                  <i className="mdi mdi-pencil font-size-18"></i>
-                                </Link>
-                                <Link
-                                  className="text-danger"
-                                  to="#"
-                                  onClick={() => onClickDelete(user)}
-                                >
-                                  <i className="mdi mdi-delete font-size-18"></i>
-                                </Link>
-                              </div>
-                            </td>
-                          </tr>
+                            <tr key={index}>
+                              <td>{index + 1}</td>
+                              <td>{user.firstName}</td>
+                              <td>{user.lastName}</td>
+                              <td>{user?.parent?.firstName} {user?.parent?.lastName}</td>
+                              <td>No Cohort</td>
+                              <td>{user.age}</td>
+                              <td>{user.gender}</td>
+                              <td>{(user.parent.privacyMode || user.privacyMode) ? "Private" : "Not Private"}</td>
+                              <td>
+                                <div className="d-flex gap-3">
+                                  <Link
+                                      className="text-success"
+                                      to="#"
+                                      onClick={() => {
+                                        handleUserClick(user);
+                                        setIsEdit(true);
+                                      }}
+                                  >
+                                    <i className="mdi mdi-pencil font-size-18"></i>
+                                  </Link>
+                                  <Link
+                                      className="text-danger"
+                                      to="#"
+                                      onClick={() => onClickDelete(user)}
+                                  >
+                                    <i className="mdi mdi-delete font-size-18"></i>
+                                  </Link>
+                                </div>
+                              </td>
+                            </tr>
                         ))}
                       </tbody>
                     </table>

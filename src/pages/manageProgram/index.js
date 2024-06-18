@@ -126,6 +126,7 @@ const ManageProgram = () => {
     const [loading, setLoading] = useState(true);
     const [switchProgram, setSwitchProgram] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+    const [coupons, setCoupons] = useState([]);
 
     useEffect(() => {
         fetchPrograms();
@@ -147,12 +148,24 @@ const ManageProgram = () => {
     };
 
     useEffect(() => {
-        fetchPrograms();
+        fetchPrograms().then(r => null)
     }, [modal]);
 
     useEffect(() => {
-        fetchTeachers();
+        fetchTeachers().then(r => null)
+        //fetch coupon
+        fetchCoupons().then(r => null)
     }, []);
+
+    const fetchCoupons = async () => {
+        try {
+            const response = await axios.get(`${baseUrl}/admin/coupon/all`);
+            setCoupons(response.data.data);
+            setLoading(false); // Update loading state after data fetch
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    };
 
     function compareFn(a, b) {
         if (a.time < b.time && a.day < b.day) {
@@ -171,9 +184,9 @@ const ManageProgram = () => {
             setLoading(false);
             setTimeout(() => {
                 //filter to it
-                const xdata = response?.data?.data.filter(r => r.isPaid === true && r.isCompleted === false);
+                const xdata = response?.data?.data;
                 setProgramsList(xdata.sort(compareFn))
-            }, 1000)
+            }, 100)
         } catch (error) {
             setLoading(false);
             console.error("Error:", error);
@@ -369,36 +382,52 @@ const ManageProgram = () => {
                                 <Col md={6}>
                                     <div className="mb-3">
                                         <h5 className="card-title">
-                                            Manage Program{" "}
-                                            <span className="text-muted fw-normal ms-2">
-                        ({programs.length})
-                      </span>
+                                            Manage List Program{" "}
+                                            <span className="text-muted fw-normal ms-2">({programsList.length})</span>
                                         </h5>
-                                        <button onClick={() => {
-                                            //check
-                                            if (switchProgram) {
-                                                //filter to it
-                                                setProgramsList(programs.filter(r => r.isPaid === true && r.isCompleted === false))
-                                            } else {
-                                                //filter to it
-                                                setProgramsList(programs.filter(r => r.isPaid === false && r.isCompleted === false))
-                                            }
-                                            //switch program
-                                            setSwitchProgram(!switchProgram)
-                                        }}>Switch Program Status: {switchProgram ? "Paid" : "UnPaid"}
-                                        </button>
-
-                                        <button onClick={() => {
-                                            //switch program
-                                            setSwitchProgram(!switchProgram)
-                                            //filter to it
-                                            setProgramsList(programs)
-                                        }}>Show All
-                                        </button>
                                     </div>
                                 </Col>
                                 <Col md={6}>
                                     <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
+                                        <div>
+                                            <select className={'form-control'} onChange={(e) => {
+
+                                            }}>
+                                                <option value={0}>All Cohort</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <select className={'form-control'} onChange={(e) => {
+                                                //filter based on status
+                                                if (Number(e.target.value) === 1) {
+                                                    setProgramsList(programs.filter(r => r.isPaid === true && r.isCompleted === false))
+                                                } else if (Number(e.target.value) === 2) {
+                                                    setProgramsList(programs.filter(r => r.isPaid === false && r.isCompleted === false))
+                                                } else {
+                                                    window.location.reload()
+                                                }
+                                            }}>
+                                                <option value={0}>All Programs</option>
+                                                <option value={1}>Active Programs (Paid)</option>
+                                                <option value={2}>InActive Programs (UnPaid)</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <select style={{width: 150}} className={'form-control'} onChange={(e) => {
+                                                //filter based on coupon
+                                                const couponID = Number(e.target.value)
+                                                if (Number(couponID) === 0) {
+                                                    //reload to fetch new data
+                                                    window.location.reload()
+                                                } else {
+                                                    //filter with coupon code
+                                                    setProgramsList(programsList.filter((p) => p?.coupon?.id === couponID))
+                                                }
+                                            }}>
+                                                <option value={0}>All Coupon</option>
+                                                {coupons.map((c, i) => <option key={i} value={c.id}>{c.code} [{c.value}]</option>)}
+                                            </select>
+                                        </div>
                                         <div>
                                             <Input
                                                 type="text"
@@ -448,8 +477,17 @@ const ManageProgram = () => {
                                             </thead>
                                             <tbody>
                                             {programsList.map((program, index) => (
-                                                <tr key={index}>
-                                                    <td>{index + 1}</td>
+                                                <tr key={index} style={{backgroundColor: (program.isPaid)?'#f1fdf4':'#fff'}}>
+                                                    <td>
+                                                        <div style={{width: 50}} className={'align-middle'}>
+                                                        <input style={{marginRight: 5}} type={'checkbox'}
+                                                               onChange={(d) => {
+                                                                   //multiple selection push to array
+
+                                                               }}/>
+                                                        {index + 1}
+                                                        </div>
+                                                    </td>
                                                     <td>{program?.child?.parent?.firstName + " " + program?.child?.parent?.lastName}</td>
                                                     <td>{program?.child?.parent?.phone}</td>
                                                     <td>{program?.child?.parent?.email}</td>
@@ -470,111 +508,63 @@ const ManageProgram = () => {
                                                     <td>{formatDay(program.day)}</td>
                                                     <td>{program?.child?.parent?.timeOffset}</td>
                                                     <td>
-                                                         <span>
-                                {program.isPaid ? (
-                                    <a target={'_blank'} rel={'noreferrer'}
-                                       href={'https://api-pro.rydlearning.com/common/stripe-check/' + program.trxId}>Paid</a>
-                                ) : (
-                                    <button
-                                        className="btn btn-link ms-1 text-primary"
-                                        onClick={() =>
-                                            handleToggleIsPaid(program)
-                                        }
-                                        disabled={program.isPaid}
-                                    >
-                                        Unpaid
-                                    </button>
-                                )}
-                                                             {!program.isPaid && (
-                                                                 <Link
-                                                                     className="ms-1 text-primary"
-                                                                     to="#"
-                                                                     onClick={(e) => e.preventDefault()}
-                                                                 ></Link>
-                                                             )}
-                              </span>
+                                                        <div style={{width: 50}}>
+                                                            {program.isPaid ? (
+                                                                <a target={'_blank'} rel={'noreferrer'}
+                                                                   href={'https://api-pro.rydlearning.com/common/stripe-check/' + program.trxId}>Paid</a>
+                                                            ) : (
+                                                                <a rel={'noreferrer'} href={'#'} onClick={(e) => {
+                                                                    e.preventDefault()
+                                                                    handleToggleIsPaid(program)
+                                                                }}
+                                                                   disabled={program.isPaid}>
+                                                                    Unpaid
+                                                                </a>
+                                                            )}
+                                                            {!program.isPaid && (
+                                                                <Link
+                                                                    className="ms-1 text-primary"
+                                                                    to="#"
+                                                                    onClick={(e) => e.preventDefault()}
+                                                                ></Link>
+                                                            )}
+                                                            <br/>
+                                                            <small
+                                                                style={{fontSize: 12}}>{program?.coupon?.code}</small>
+                                                        </div>
                                                     </td>
                                                     <td>
-                                                        <div className="d-flex">
-                                                            <span className={'d-block'}>
-                                <Link
-                                    className="text-success"
-                                    to="#"
-                                    id="edit"
-                                    onMouseEnter={() =>
-                                        setEditTooltipOpen(true)
-                                    }
-                                    onMouseLeave={() =>
-                                        setEditTooltipOpen(false)
-                                    }
-                                    onClick={() => handleProgramClick(program)}>
-                                  <i className="mdi mdi-pencil font-size-20"></i>
-                                </Link>
-                              </span>
-                                                            <span className={'d-none'}>
-                                <Tooltip
-                                    isOpen={deleteTooltipOpen}
-                                    target="delete"
-                                    toggle={() =>
-                                        setDeleteTooltipOpen(!deleteTooltipOpen)
-                                    }
-                                    placement="top"
-                                    delay={{show: 100, hide: 100}}
-                                >
-                                  Delete
-                                </Tooltip>
-                                <Link
-                                    className="text-danger"
-                                    to="#"
-                                    id="delete"
-                                    onMouseEnter={() =>
-                                        setDeleteTooltipOpen(true)
-                                    }
-                                    onMouseLeave={() =>
-                                        setDeleteTooltipOpen(false)
-                                    }
-                                    onClick={() => onClickDelete(program)}
-                                >
-                                  <i className="mdi mdi-delete font-size-20"></i>
-                                </Link>
-                              </span>
-                                                            <span>
-                                <Tooltip
-                                    isOpen={assignTooltipOpen}
-                                    target="assign"
-                                    toggle={() =>
-                                        setAssignTooltipOpen(!assignTooltipOpen)
-                                    }
-                                    placement="top"
-                                    delay={{show: 100, hide: 100}}>
-                                  Assign Teacher
-                                </Tooltip>
-                                <Link
-                                    className="text-primary"
-                                    to="#"
-                                    id="assign"
-                                    onMouseEnter={() =>
-                                        setAssignTooltipOpen(true)
-                                    }
-                                    onMouseLeave={() =>
-                                        setAssignTooltipOpen(false)
-                                    }
-                                    onClick={() => handleAssignClick(program)}
-                                >
-                                  <i className="mdi mdi-clipboard-account font-size-20"></i>
-                                </Link>
-                              </span>
 
-                                                            <span className={'d-none'}>
-                                <Link
-                                    className="text-secondary"
-                                    to="#"
-                                    onClick={() => addProgramToBulk(program)}
-                                >
-                                  <i className="mdi mdi-plus-box-multiple font-size-20"></i>
-                                </Link>
-                              </span>
-                                                        </div>
+                                                        <Link
+                                                            className="text-success"
+                                                            to="#"
+                                                            id="edit"
+                                                            onMouseEnter={() =>
+                                                                setEditTooltipOpen(true)
+                                                            }
+                                                            onMouseLeave={() =>
+                                                                setEditTooltipOpen(false)
+                                                            }
+                                                            onClick={() => handleProgramClick(program)}>
+                                                            <i className="mdi mdi-pencil font-size-20"></i>
+                                                        </Link>
+
+                                                        <Link
+                                                            className="text-primary"
+                                                            to="#"
+                                                            id="assign"
+                                                            onMouseEnter={() =>
+                                                                setAssignTooltipOpen(true)
+                                                            }
+                                                            onMouseLeave={() =>
+                                                                setAssignTooltipOpen(false)
+                                                            }
+                                                            onClick={() => handleAssignClick(program)}
+                                                        >
+                                                            <i className="mdi mdi-clipboard-account font-size-20"></i>
+                                                        </Link>
+
+
                                                     </td>
                                                 </tr>
                                             ))}
