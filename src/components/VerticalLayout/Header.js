@@ -103,8 +103,8 @@ const Header = props => {
 
             <form className="app-search d-none d-lg-block" method={'get'} action={'/manage-parent/edit'}>
               <div className="position-relative">
-                <input required={true} name={'email'} type="text" className="form-control" placeholder="Search parent..." />
-                <button className="btn btn-primary" type="submit"><i className="bx bx-search-alt align-middle"></i></button>
+                <input disabled={true} required={true} name={'email'} type="text" className="form-control" placeholder="Search in system..." />
+                <button disabled={true} className="btn btn-primary" type="submit"><i className="bx bx-search-alt align-middle"></i></button>
               </div>
             </form>
           </div>
@@ -116,7 +116,7 @@ const Header = props => {
             {/* light / dark mode */}
             <LightDark layoutMode={props['layoutMode']} onChangeLayoutMode={onChangeLayoutMode} />
 
-           
+
 
             <ProfileMenu />
 

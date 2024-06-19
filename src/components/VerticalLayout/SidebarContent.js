@@ -198,7 +198,7 @@ const SidebarContent = props => {
             <li>
               <Link to="/manage-cohort" className="">
                 <FeatherIcon
-                    icon="feather"
+                    icon="grid"
                 />{" "}
                 <span>{props.t("Manage Cohort")}</span>
               </Link>

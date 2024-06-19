@@ -48,7 +48,7 @@ const Login = (props) => {
       } catch (error) {
         setFieldError("email", "An error occurred while logging in."); // Set generic login error message to email field error
       }
-    }, 
+    },
   });
 
   document.title = "Login | RYD Admin";
@@ -85,8 +85,7 @@ const Login = (props) => {
                           e.preventDefault();
                           validation.handleSubmit();
                           return false;
-                        }}
-                      >
+                        }}>
                         {validation.errors.email && (
                           <div className="mb-3 text-danger">{validation.errors.email}</div>
                         )}
@@ -104,7 +103,7 @@ const Login = (props) => {
                               validation.touched.email && validation.errors.email ? true : false
                             }
                           />
-                        
+
                         </div>
 
                         <div className="mb-3">

@@ -731,8 +731,7 @@ const ManageProgram = () => {
                                                         <div className="text-end">
                                                             <button
                                                                 type="submit"
-                                                                className="btn btn-primary save-user"
-                                                            >
+                                                                className="btn btn-primary save-user">
                                                                 Assign
                                                             </button>
                                                         </div>

@@ -78,14 +78,6 @@ const Header = props => {
               <i className="fa fa-fw fa-bars" />
             </button>
 
-            <form className="app-search d-none d-lg-block">
-              <div className="position-relative">
-                <input type="text" className="form-control"
-                  placeholder="Search..." />
-                <button className="btn btn-primary" type="button"><i
-                  className="bx bx-search-alt align-middle"></i></button>
-              </div>
-            </form>
           </div>
 
           <div className="d-flex">
@@ -106,7 +98,7 @@ const Header = props => {
                 }
                 aria-labelledby="page-header-search-dropdown"
               >
-                <form className="p-3">
+                <form className="p-3 d-none">
                   <div className="form-group m-0">
                     <div className="input-group">
                       <input

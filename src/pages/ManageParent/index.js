@@ -11,6 +11,7 @@ import {Col, Container, Form, Input, Label, Modal, ModalBody, ModalHeader, Row,}
 import {toast, ToastContainer} from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {BtnBold, BtnItalic, Editor, EditorProvider, Toolbar, BtnLink, BtnBulletList, BtnClearFormatting, BtnNumberedList, BtnStyles, BtnUndo, BtnRedo, BtnStrikeThrough, BtnUnderline} from "react-simple-wysiwyg";
+import UploadWidget from "../../Uploader";
 
 const ManageParent = () => {
     const [usersRaw, setUsersRaw] = useState([]);
@@ -30,11 +31,24 @@ const ManageParent = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [groupEmailData, SetGroupEmailData] = useState({t: 0, s: "", b: ""});
+    const [url, updateUrl] = useState(null);
+    const [error, updateError] = useState();
 
     useEffect(() => {
         document.title = "Parents | RYD Admin";
         fetchUsers().then(null);
     }, [modal]);
+
+    function handleOnUpload(error, result, widget) {
+        if ( error ) {
+            updateError(error);
+            widget.close({
+                quiet: true
+            });
+            return;
+        }
+        updateUrl(result?.info?.secure_url);
+    }
 
     const fetchUsers = async () => {
         try {
@@ -91,6 +105,7 @@ const ManageParent = () => {
             await axios.post(`${baseUrl}/admin/parent/send/${selectedUserId}`, {
                 body: validation.values.message,
                 subject: validation.values.subject,
+                attachmentLink: url
             });
             toast.success("Email sent to the parent successfully");
             toggleSingle();
@@ -372,6 +387,19 @@ const ManageParent = () => {
                                             </Toolbar>
                                         </Editor>
                                     </EditorProvider>
+                                    <UploadWidget onUpload={handleOnUpload}>
+                                        {({ open }) => {
+                                            function handleOnClick(e) {
+                                                e.preventDefault();
+                                                open();
+                                            }
+                                            return (
+                                                <a style={{marginTop: 5}} href={'#'} onClick={handleOnClick}>
+                                                    {(url)?"Override attachment": "Add attachment"}
+                                                </a>
+                                            )
+                                        }}
+                                    </UploadWidget>
                                 </div>
                             </Col>
                         </Row>
@@ -433,6 +461,19 @@ const ManageParent = () => {
                                             </Toolbar>
                                         </Editor>
                                     </EditorProvider>
+                                    <UploadWidget onUpload={handleOnUpload}>
+                                        {({ open }) => {
+                                            function handleOnClick(e) {
+                                                e.preventDefault();
+                                                open();
+                                            }
+                                            return (
+                                                <a style={{marginTop: 5}} href={'#'} onClick={handleOnClick}>
+                                                    {(url)?"Override attachment": "Add attachment"}
+                                                </a>
+                                            )
+                                        }}
+                                    </UploadWidget>
                                 </div>
                             </Col>
                         </Row>
