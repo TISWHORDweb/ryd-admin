@@ -69,7 +69,7 @@ const ManageCoupon = () => {
           isActive: true,
         };
 
-     
+
         let response;
         if (isEdit) {
           response = await axios.put(
@@ -78,7 +78,7 @@ const ManageCoupon = () => {
           );
           toast.success("Coupon updated successfully");
         } else {
-        
+
           response = await axios.post(
             `${baseUrl}/admin/coupon/create`,
             newCoupon
@@ -104,7 +104,7 @@ const ManageCoupon = () => {
     },
   });
 
- 
+
   useEffect(() => {
     fetchCoupons();
   }, [modal]);
@@ -153,7 +153,7 @@ const ManageCoupon = () => {
 
   const toggleCouponStatus = async (couponId, isActive) => {
     try {
-      
+
       await axios.put(`${baseUrl}/admin/coupon/edit/${couponId}`, { isActive: !isActive });
       const updatedCoupons = coupons.map((c) =>
         c.id === couponId ? { ...c, isActive: !isActive } : c
@@ -256,7 +256,7 @@ const ManageCoupon = () => {
                               {c.byCountry}
                             </td>
                             <td>
-                              {c.byLevel}
+                              {c.byLevel===0?"All Levels":c.byLevel}
                             </td>
                             <td>{c.isActive ? "Active" : "Inactive"}</td>
                             <td>
@@ -333,7 +333,7 @@ const ManageCoupon = () => {
                       </tbody>
                     </table>
 
-                    
+
                   )}
                        <Modal isOpen={modal} toggle={toggle}>
                   <ModalHeader toggle={toggle}>
@@ -413,7 +413,7 @@ const ManageCoupon = () => {
                                 validation.touched.byCountry &&
                                 validation.errors.byCountry
                               }
-                             
+
                             />
 
                  <FormFeedback type="invalid">

@@ -1,57 +1,15 @@
 import React, {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
-import DeleteModal from "../../components/Common/DeleteModal";
-import * as Yup from "yup";
-import {useFormik} from "formik";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import axios from "axios";
-import {
-    Col,
-    Container,
-    Tooltip,
-    Label,
-    Row,
-    Modal,
-    ModalHeader,
-    ModalBody,
-    Form,
-    Input,
-    FormFeedback,
-} from "reactstrap";
+import {Col, Container, Form, Input, Label, Modal, ModalBody, ModalHeader, Row,} from "reactstrap";
 import withAuth from "../withAuth";
-import {ToastContainer, toast} from "react-toastify";
+import {toast, ToastContainer} from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {baseUrl} from '../../Network';
 import Moment from 'react-moment';
 import moment from 'moment-timezone';
 import 'moment-timezone';
-
-export const times = [
-    {label: "1:00AM", value: 1},
-    {label: "2:00AM", value: 2},
-    {label: "3:00AM", value: 3},
-    {label: "4:00AM", value: 4},
-    {label: "5:00AM", value: 5},
-    {label: "6:00AM", value: 6},
-    {label: "7:00AM", value: 7},
-    {label: "8:00AM", value: 8},
-    {label: "9:00AM", value: 9},
-    {label: "10:00AM", value: 10},
-    {label: "11:00AM", value: 11},
-    {label: "12:00PM", value: 12},
-    {label: "1:00PM", value: 13},
-    {label: "2:00PM", value: 14},
-    {label: "3:00PM", value: 15},
-    {label: "4:00PM", value: 16},
-    {label: "5:00PM", value: 17},
-    {label: "6:00PM", value: 18},
-    {label: "7:00PM", value: 19},
-    {label: "8:00PM", value: 20},
-    {label: "9:00PM", value: 21},
-    {label: "10:00PM", value: 22},
-    {label: "11:00PM", value: 23},
-    {label: "12:00AM", value: 24},
-];
 
 const TIMES_ = [
     "12:00AM",
@@ -110,30 +68,34 @@ const ManageProgram = () => {
 
     const [programs, setPrograms] = useState([]);
     const [programsList, setProgramsList] = useState([]);
-    const [contact, setContact] = useState({});
     const [modal, setModal] = useState(false);
     const [assignModal, setAssignModal] = useState(false);
-    const [isEdit, setIsEdit] = useState(false);
-    const [deleteModal, setDeleteModal] = useState(false);
+    const [assignActionModal, setAssignActionModal] = useState(false);
     const [teachers, setTeachers] = useState([]);
     const [selectedTeacher, setSelectedTeacher] = useState("");
     const [selectedProgram, setSelectedProgram] = useState(null);
-    const [assignError, setAssignError] = useState(false);
     const [loading, setLoading] = useState(true);
     const [multiIDs, setMultiIDs] = useState([]);
+    const [multiTargetIDs, setMultiTargetIDs] = useState({});
+    const [programMData, setProgramMData] = useState({});
     const [searchQuery, setSearchQuery] = useState("");
     const [coupons, setCoupons] = useState([]);
     const [cohorts, setCohorts] = useState([]);
+    const [packages, setPackages] = useState([]);
 
     useEffect(() => {
         fetchPrograms().then(r => null);
     }, [modal]);
 
 
-
     const handleAssignClick = (programData) => {
         setSelectedProgram(programData);
-        assignToggle(programData); // Pass program data to toggle for editing
+        setAssignModal(true)
+    };
+
+    const handleActionAssignClick = (programData) => {
+        setMultiTargetIDs({})
+        setAssignActionModal(true)
     };
 
     const handleTeacherChange = (e) => {
@@ -172,14 +134,17 @@ const ManageProgram = () => {
 
     const fetchPrograms = async () => {
         try {
+            const packages = await axios.get(`${baseUrl}/admin/package/all`);
             const cohorts = await axios.get(`${baseUrl}/admin/cohort/all`);
             const response = await axios.get(`${baseUrl}/admin/program/all`);
             setPrograms(response?.data?.data);
             setCohorts(cohorts?.data?.data);
+            setPackages(packages?.data?.data)
             setLoading(false);
             setTimeout(() => {
                 //filter to it
                 const xdata = response?.data?.data;
+                //setProgramsList(xdata.sort(compareFn))
                 setProgramsList(xdata.sort(compareFn))
             }, 100)
         } catch (error) {
@@ -197,29 +162,10 @@ const ManageProgram = () => {
         }
     };
 
-    const toggle = (programData) => {
-        if (programData) {
-            setContact(programData);
-            setIsEdit(true);
-        } else {
-            setContact({
-                level: "",
-                time: "",
-                day: "", // Add day field to contact state
-            });
-            setIsEdit(false);
-        }
-        setModal(!modal);
-    };
     const handleTeacherAssignClick = async () => {
-        if (selectedTeacher === '' || selectedProgram.length === 0) {
-            setAssignError(true);
-            return;
-        }
-        setAssignError(false);
         try {
-            const response = await axios.post(`${baseUrl}/admin/program/assign/teacher`, {
-                programIds:  selectedProgram.id,
+            await axios.post(`${baseUrl}/admin/program/assign/teacher`, {
+                programIds: selectedProgram.id,
                 teacherId: selectedTeacher
             });
             // Fetch the updated programs after successful assignment
@@ -233,67 +179,22 @@ const ManageProgram = () => {
         }
     };
 
-
-    const validation = useFormik({
-        enableReinitialize: true,
-        initialValues: {
-            level: contact.level || "",
-            time: contact.time || "",
-            day: contact.day || "", // Add day field to initialValues
-        },
-        validationSchema: Yup.object({
-            level: Yup.string().required("Please Enter Level"),
-            time: Yup.string().required("Please Enter Time"),
-            day: Yup.string().required("Please Select Day"), // Add validation for day field
-        }),
-        onSubmit: async (values) => {
-            try {
-                const newProgram = {
-                    level: values.level,
-                    time: values.time,
-                    day: values.day, // Include day in newProgram object
-                    isPaid: values.isPaid,
-                };
-
-
-                let response;
-                if (isEdit) {
-                    response = await axios.put(
-                        `${baseUrl}/admin/program/edit/${contact.id}`,
-                        newProgram
-                    );
-                    const responseData = response.data;
-
-                    const updatedPrograms = programs.map((program) =>
-                        program.id === contact.id
-                            ? {...program, ...responseData}
-                            : program
-                    );
-                    setPrograms(updatedPrograms);
-                    toast.success("Program updated successfully.");
-                } else {
-                    // Handle adding new program here if needed
-                }
-
-                toggle();
-            } catch (error) {
-                console.error("Error:", error);
-                toast.error("Failed to update program.");
-            }
-        },
-    });
-
-    const assignToggle = (programData) => {
-        if (programData) {
-        } else {
-            setContact({
-                level: "",
-                time: "",
-                day: "",
-            });
+    const handleProgramClickSubmit = async () => {
+        if (!selectedProgram || !selectedProgram?.id) {
+            //console.error("Invalid program data.");
+            toast.warn("Reload this page and try again")
+            return;
         }
-        setAssignModal(!assignModal);
-    };
+        //if nothing was picked
+        if (Object.keys(programMData).length < 1) {
+            toast.dark("No changes were made...")
+            return;
+        }
+        //check and push to server
+        await axios.put(`${baseUrl}/admin/program/edit/${selectedProgram.id}`, programMData);
+        toast.success("Program data altered changes");
+        await fetchPrograms()
+    }
 
     const handleToggleIsPaid = async (programData) => {
         try {
@@ -315,8 +216,8 @@ const ManageProgram = () => {
                     program.id === programData.id ? updatedProgram : program
                 );
                 setPrograms(updatedPrograms);
-               toast.success("Program marked as paid.");
-               await fetchPrograms();
+                toast.success("Program marked as paid.");
+                await fetchPrograms();
             }
         } catch (error) {
             console.error("Error:", error);
@@ -329,9 +230,25 @@ const ManageProgram = () => {
     );
 
     const handleProgramClick = (programData) => {
-        toggle(programData); // Pass program data to toggle for editing
-
+        // Pass program data to toggle for editing
+        setSelectedProgram(programData)
+        setModal(true)
     };
+
+    const processBatchOperations = async () => {
+        //performing group actions
+        try{
+            if (multiIDs.length > 0 && Object.keys(multiTargetIDs).length > 0) {
+                await axios.post(`${baseUrl}/admin/program/batch-update`, {ids: multiIDs, ...multiTargetIDs});
+                toast.success("Program data altered changes");
+                await fetchPrograms()
+            } else {
+                toast.error("Please, select at least 1 child/program to perform action")
+            }
+        }catch (e) {
+            toast.error("Reload this page and try again")
+        }
+    }
 
     return (
         <React.Fragment>
@@ -393,6 +310,23 @@ const ManageProgram = () => {
                                         <div>
                                             <select style={{width: 150}} className={'form-control'} onChange={(e) => {
                                                 //filter based on coupon
+                                                const packageID = Number(e.target.value)
+                                                if (Number(packageID) === 0) {
+                                                    //reload to fetch new data
+                                                    window.location.reload()
+                                                } else {
+                                                    //filter with coupon code
+                                                    setProgramsList(programsList.filter((p) => p?.package?.id === packageID))
+                                                }
+                                            }}>
+                                                <option value={0}>All Packages</option>
+                                                {packages.map((p, i) => <option key={i}
+                                                                                value={p.id}>{p.title}</option>)}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <select style={{width: 150}} className={'form-control'} onChange={(e) => {
+                                                //filter based on coupon
                                                 const couponID = Number(e.target.value)
                                                 if (Number(couponID) === 0) {
                                                     //reload to fetch new data
@@ -403,13 +337,16 @@ const ManageProgram = () => {
                                                 }
                                             }}>
                                                 <option value={0}>All Coupon</option>
-                                                {coupons.map((c, i) => <option key={i} value={c.id}>{c.code} [{c.value}]</option>)}
+                                                {coupons.map((c, i) => <option key={i}
+                                                                               value={c.id}>{c.code} [{c.value}]</option>)}
                                             </select>
                                         </div>
                                         <div style={{marginRight: 20}}>
-                                            <button><i className="mdi mdi-run-fast font-size-20"></i></button>
-                                            <span className={'m-2'}></span>
-                                            <button><i className="mdi mdi-clipboard-account font-size-20"></i></button>
+                                            <button onClick={handleActionAssignClick}>
+                                                <i className="mdi mdi-run-fast font-size-20"></i>
+                                                <span className={'m-2'}></span>
+                                                <i className="mdi mdi-clipboard-account font-size-20"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 </Col>
@@ -419,7 +356,7 @@ const ManageProgram = () => {
                                     {loading ? (
                                         <div className="text-center mt-5">
                                             <div className="spinner-border text-primary" role="status">
-                                            <span className="visually-hidden">Loading...</span>
+                                                <span className="visually-hidden">Loading...</span>
                                             </div>
                                         </div>
                                     ) : filteredPrograms.length === 0 ? (
@@ -430,11 +367,11 @@ const ManageProgram = () => {
                                         <table className="table align-middle">
                                             <thead>
                                             <tr>
-                                                <th>#</th>
+                                                <th>#{multiIDs.length || ""}</th>
                                                 <th>P.Name</th>
+                                                <th>C.Name</th>
                                                 <th>Phone</th>
                                                 <th>Email</th>
-                                                <th>C.Name</th>
                                                 <th>Age</th>
                                                 <th>Gender</th>
                                                 <th>T.Name</th>
@@ -450,25 +387,35 @@ const ManageProgram = () => {
                                             </thead>
                                             <tbody>
                                             {programsList.map((program, index) => (
-                                                <tr key={index} style={{backgroundColor: (program.isPaid)?'#f1fdf4':'#fff'}}>
+                                                <tr key={index}
+                                                    style={{backgroundColor: (program.isPaid) ? '#f1fdf4' : '#fff'}}>
                                                     <td>
                                                         <div style={{width: 50}} className={'align-middle'}>
-                                                        <input style={{marginRight: 5}} type={'checkbox'}
-                                                               onChange={(d) => {
-                                                                   //multiple selection push to array
-
-                                                               }}/>
-                                                        {index + 1}
+                                                            <input style={{marginRight: 5}} type={'checkbox'}
+                                                                   onChange={(d) => {
+                                                                       //multiple selection push to array
+                                                                       if (multiIDs.includes(program.id)) {
+                                                                           //remove from array
+                                                                           setMultiIDs(multiIDs.filter(i => i !== program.id))
+                                                                           toast.error(program?.child?.firstName + " removed is been from the action list.")
+                                                                       } else {
+                                                                           setMultiIDs([...multiIDs, program.id])
+                                                                           toast.warn(program?.child?.firstName + " has been added to action list.")
+                                                                       }
+                                                                   }}/>
+                                                            {index + 1}
                                                         </div>
                                                     </td>
                                                     <td>{program?.child?.parent?.firstName + " " + program?.child?.parent?.lastName}</td>
+                                                    <td>{program?.child?.firstName + " " + program?.child?.lastName}</td>
                                                     <td>{program?.child?.parent?.phone}</td>
                                                     <td>{program?.child?.parent?.email}</td>
-                                                    <td>{program?.child?.firstName + " " + program?.child?.lastName}</td>
                                                     <td>{program?.child?.age}</td>
                                                     <td>{program?.child?.gender}</td>
                                                     <td>{program?.teacher?.firstName}</td>
-                                                    <td>{program?.package?.title}<br/><small style={{color: 'red'}}>[{program?.cohort?.title || "No Cohort"}]</small></td>
+                                                    <td>{program?.package?.title}<br/><small
+                                                        style={{color: 'red'}}>[{program?.cohort?.title || "No Cohort"}]</small>
+                                                    </td>
                                                     {/*<td>*/}
                                                     {/*  {program?.package?.status ? "Active" : "Inactive"}*/}
                                                     {/*</td>*/}
@@ -484,7 +431,7 @@ const ManageProgram = () => {
                                                             {program.isPaid ? (
                                                                 <a rel={'noreferrer'}
                                                                    href={'#' + program.trxId}
-                                                                   onClick={(e)=>{
+                                                                   onClick={(e) => {
                                                                        e.preventDefault()
                                                                        handleToggleIsPaid(program).then(r => null)
                                                                    }}
@@ -527,131 +474,119 @@ const ManageProgram = () => {
                                                             <i className="mdi mdi-clipboard-account font-size-12"></i>
                                                         </Link>
 
-
                                                     </td>
                                                 </tr>
                                             ))}
                                             </tbody>
                                         </table>
                                     )}
-                                    <Modal isOpen={modal} toggle={() => toggle()}>
-                                        <ModalHeader toggle={() => toggle()}>
-                                            {isEdit ? "Edit Program" : "Add New Program"}
+                                    <Modal isOpen={modal} toggle={() => setModal(!modal)}>
+                                        <ModalHeader toggle={() => setModal(!modal)}>
+                                            {"Modify Program Data"}
                                         </ModalHeader>
                                         <ModalBody>
-                                            <Form onSubmit={validation.handleSubmit}>
-                                                <Row>
-                                                    <Col xs={12}>
-                                                        <div className="row">
-                                                            <div className="">
-                                                                <div className="mb-3">
-                                                                    <Label>Level</Label>
-                                                                    <Input
-                                                                        type="select"
-                                                                        name="level"
-                                                                        onChange={validation.handleChange}
-                                                                        onBlur={validation.handleBlur}
-                                                                        value={validation.values.level || ""}
-                                                                        invalid={
-                                                                            validation.touched.level &&
-                                                                            validation.errors.level
-                                                                        }>
-                                                                        <option value="">Select Level</option>
-                                                                        <option value="4">4</option>
-                                                                        <option value="3">3</option>
-                                                                        <option value="2">2</option>
-                                                                        <option value="1">1</option>
-                                                                    </Input>
-                                                                    <FormFeedback type="invalid">
-                                                                        {validation.errors.level}
-                                                                    </FormFeedback>
-                                                                </div>
+                                            <Row>
+                                                <small className={'mb-2 text-danger'}>Warning: Check and be sure of
+                                                    parent timezone offset before any changes</small>
+                                                <Col xs={12}>
+                                                    <div className="row">
+                                                        <div className="col-md-6">
+                                                            <div className="mb-3">
+                                                                <Label>Cohort</Label>
+                                                                <select className={'form-control'}
+                                                                        onChange={e => setProgramMData({
+                                                                            ...programMData,
+                                                                            cohortId: e.target.value
+                                                                        })}>
+                                                                    <option value="">Select Cohort</option>
+                                                                    {cohorts && cohorts.map((d, i) => <option
+                                                                        key={i} value={d.id}>{d.title}</option>)}
+                                                                </select>
                                                             </div>
-                                                            <div className="col-md-6">
-                                                                <div className="mb-3">
-                                                                    <Label>Day</Label>
-                                                                    <Input
-                                                                        type="select"
-                                                                        name="day"
-                                                                        onChange={validation.handleChange}
-                                                                        onBlur={validation.handleBlur}
-                                                                        value={validation.values.day || ""}
-                                                                        invalid={
-                                                                            validation.touched.day &&
-                                                                            validation.errors.day
-                                                                        }>
-                                                                        <option value="">Select Day</option>
-                                                                        {days.map((day, index) => (
-                                                                            <option key={index} value={index}>
-                                                                                {day}
-                                                                            </option>
-                                                                        ))}
-                                                                    </Input>
-                                                                    <FormFeedback type="invalid">
-                                                                        {validation.errors.day}
-                                                                    </FormFeedback>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="col-md-6">
-                                                                <div className="mb-3">
-                                                                    <Label>Time</Label>
-                                                                    <Input
-                                                                        type="select"
-                                                                        name="time"
-                                                                        onChange={validation.handleChange}
-                                                                        onBlur={validation.handleBlur}
-                                                                        value={validation.values.time || ""}
-                                                                        invalid={
-                                                                            validation.touched.time &&
-                                                                            validation.errors.time
-                                                                        }>
-                                                                        <option value="">Select Time</option>
-                                                                        {times.map((timeObj, index) => (
-                                                                            <option key={index} value={timeObj.value}>
-                                                                                {timeObj.label}
-                                                                            </option>
-                                                                        ))}
-                                                                    </Input>
-                                                                    <FormFeedback type="invalid">
-                                                                        {validation.errors.time}
-                                                                    </FormFeedback>
-                                                                </div>
-                                                            </div>
-
                                                         </div>
-                                                    </Col>
-                                                </Row>
-                                                <Row>
-                                                    <Col>
-                                                        <div className="text-end">
-                                                            {!isEdit ? (
-                                                                <button
-                                                                    type="submit"
-                                                                    className="btn btn-primary save-user">
-                                                                    Create Program
-                                                                </button>
-                                                            ) : (
-                                                                <button
-                                                                    type="submit"
-                                                                    className="btn btn-primary save-user"
-                                                                >
-                                                                    Update Program
-                                                                </button>
-                                                            )}
+                                                        <div className="col-md-6">
+                                                            <div className="mb-3">
+                                                                <Label>Packages</Label>
+                                                                <select className={'form-control'}
+                                                                        onChange={e => setProgramMData({
+                                                                            ...programMData,
+                                                                            packageId: e.target.value
+                                                                        })}>
+                                                                    <option value="">Select Package</option>
+                                                                    {packages && packages.map((d, i) => <option
+                                                                        key={i} value={d.id}>{d.title}</option>)}
+                                                                </select>
+                                                            </div>
                                                         </div>
-                                                    </Col>
-                                                </Row>
-                                            </Form>
+                                                        <div className="col-md-6">
+                                                            <div className="mb-3">
+                                                                <Label>Level</Label>
+                                                                <select className={'form-control'}
+                                                                        onChange={e => setProgramMData({
+                                                                            ...programMData,
+                                                                            level: e.target.value
+                                                                        })}>
+                                                                    <option value="">Select Level</option>
+                                                                    <option value="4">4</option>
+                                                                    <option value="3">3</option>
+                                                                    <option value="2">2</option>
+                                                                    <option value="1">1</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-md-6">
+                                                            <div className="mb-3">
+                                                                <Label>Day</Label>
+                                                                <select className={'form-control'}
+                                                                        onChange={e => setProgramMData({
+                                                                            ...programMData,
+                                                                            day: e.target.value
+                                                                        })}>
+                                                                    <option value="">Select Day</option>
+                                                                    {days.map((d, i) => <option
+                                                                        key={i} value={i}>{d}</option>)}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-md-6">
+                                                            <div className="mb-3">
+                                                                <Label>Time</Label>
+                                                                <select className={'form-control'}
+                                                                        onChange={e => setProgramMData({
+                                                                            ...programMData,
+                                                                            time: e.target.value
+                                                                        })}>
+                                                                    <option value="">Select Time</option>
+                                                                    {TIMES_.map((d, i) => <option
+                                                                        key={i} value={i}>{d}</option>)}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Col>
+                                                    <div className="text-end">
+                                                        <button
+                                                            onClick={handleProgramClickSubmit}
+                                                            className="btn btn-primary save-user">
+                                                            Update Program Data
+                                                        </button>
+                                                    </div>
+                                                </Col>
+                                            </Row>
                                         </ModalBody>
                                     </Modal>
 
-                                    <Modal isOpen={assignModal} toggle={() => assignToggle()}>
-                                        <ModalHeader toggle={() => assignToggle()}>Assign Teacher</ModalHeader>
+                                    <Modal isOpen={assignModal} toggle={() => setAssignModal(!assignModal)}>
+                                        <ModalHeader toggle={() => setAssignModal(!assignModal)}>Assign
+                                            Teacher</ModalHeader>
                                         <ModalBody>
                                             <Form onSubmit={(e) => {
                                                 e.preventDefault();
-                                                handleTeacherAssignClick();
+                                                handleTeacherAssignClick().then(r => null);
                                             }}>
                                                 <Row>
                                                     <Col xs={12}>
@@ -661,10 +596,7 @@ const ManageProgram = () => {
                                                                     <Input
                                                                         name="teacherId"
                                                                         type="select"
-                                                                        onChange={handleTeacherChange}
-                                                                        onBlur={validation.handleBlur}
-                                                                        // value={selectedTeacher.teacherId || ""}
-                                                                    >
+                                                                        onChange={handleTeacherChange}>
                                                                         <option value="">Select teacher</option>
                                                                         {teachers?.length > 0 &&
                                                                             teachers?.map((teacher) => (
@@ -674,18 +606,10 @@ const ManageProgram = () => {
                                                                                 </option>
                                                                             ))}
                                                                     </Input>
-                                                                    <FormFeedback type="invalid">
-                                                                        {validation.errors.teacherId}
-                                                                    </FormFeedback>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </Col>
-                                                    {assignError && (
-                                                        <p style={{color: "red", fontSize: "10px"}}>
-                                                            Teacher selection is required!
-                                                        </p>
-                                                    )}
                                                 </Row>
                                                 <Row>
                                                     <Col>
@@ -694,7 +618,7 @@ const ManageProgram = () => {
                                                             <button
                                                                 type="submit"
                                                                 className="btn btn-primary save-user">
-                                                                Assign
+                                                                Assign New Teacher
                                                             </button>
                                                         </div>
                                                     </Col>
@@ -702,6 +626,74 @@ const ManageProgram = () => {
                                             </Form>
                                         </ModalBody>
                                     </Modal>
+
+                                    <Modal isOpen={assignActionModal}
+                                           toggle={() => setAssignActionModal(!assignActionModal)}>
+                                        <ModalHeader toggle={() => setAssignActionModal(!assignActionModal)}>
+                                            Perform Group Action</ModalHeader>
+                                        <ModalBody>
+                                            <Row>
+                                                <small className={'text-danger mb-3'}>Warning: This action will
+                                                    alter {multiIDs.length} children. confirm again !</small>
+                                                <Col xs={12}>
+                                                    <div className="row">
+                                                        <div className="col-md-6">
+                                                            <div className="mb-6">
+                                                                <select
+                                                                    className={'form-control'}
+                                                                    onChange={e => setMultiTargetIDs({
+                                                                        ...multiTargetIDs,
+                                                                        cohortId: e.target.value
+                                                                    })}>
+                                                                    <option value="">Select Cohort</option>
+                                                                    {cohorts?.length > 0 &&
+                                                                        cohorts?.map((c, i) => (
+                                                                            <option key={i}
+                                                                                    value={c.id}>
+                                                                                {c.title}
+                                                                            </option>
+                                                                        ))}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-md-6">
+                                                            <div className="mb-6">
+                                                                <select
+                                                                    className={'form-control'}
+                                                                    onChange={e => setMultiTargetIDs({
+                                                                        ...multiTargetIDs,
+                                                                        teacherId: e.target.value
+                                                                    })}>
+                                                                    <option value="">Select Teacher</option>
+                                                                    {teachers?.length > 0 &&
+                                                                        teachers?.map((teacher) => (
+                                                                            <option key={teacher?.id}
+                                                                                    value={teacher?.id}>
+                                                                                {teacher.firstName} {teacher.lastName}
+                                                                            </option>
+                                                                        ))}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Col>
+                                                    <br/>
+                                                    <div className="text-end">
+                                                        <button
+                                                            onClick={processBatchOperations}
+                                                            type="submit"
+                                                            className="btn btn-primary save-user">
+                                                            Process Batch Data
+                                                        </button>
+                                                    </div>
+                                                </Col>
+                                            </Row>
+                                        </ModalBody>
+                                    </Modal>
+
                                 </Col>
                             </Row>
                         </Col>
