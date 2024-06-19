@@ -111,36 +111,29 @@ const ManageProgram = () => {
     const [programs, setPrograms] = useState([]);
     const [programsList, setProgramsList] = useState([]);
     const [contact, setContact] = useState({});
-    const [assigns, setAssigns] = useState({});
     const [modal, setModal] = useState(false);
     const [assignModal, setAssignModal] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
     const [deleteModal, setDeleteModal] = useState(false);
     const [teachers, setTeachers] = useState([]);
     const [selectedTeacher, setSelectedTeacher] = useState("");
-    const [selectedProgram, setSelectedProgram] = useState([]);
+    const [selectedProgram, setSelectedProgram] = useState(null);
     const [assignError, setAssignError] = useState(false);
-    const [assignTooltipOpen, setAssignTooltipOpen] = useState(false);
-    const [editTooltipOpen, setEditTooltipOpen] = useState(false);
-    const [deleteTooltipOpen, setDeleteTooltipOpen] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [switchProgram, setSwitchProgram] = useState(true);
+    const [multiIDs, setMultiIDs] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [coupons, setCoupons] = useState([]);
+    const [cohorts, setCohorts] = useState([]);
 
     useEffect(() => {
-        fetchPrograms();
+        fetchPrograms().then(r => null);
     }, [modal]);
 
 
-    const handleSearchInputChange = (e) => {
-        setSearchQuery(e.target.value);
-    };
-
 
     const handleAssignClick = (programData) => {
+        setSelectedProgram(programData);
         assignToggle(programData); // Pass program data to toggle for editing
-        setSelectedProgram([programData]);
     };
 
     const handleTeacherChange = (e) => {
@@ -179,8 +172,10 @@ const ManageProgram = () => {
 
     const fetchPrograms = async () => {
         try {
+            const cohorts = await axios.get(`${baseUrl}/admin/cohort/all`);
             const response = await axios.get(`${baseUrl}/admin/program/all`);
             setPrograms(response?.data?.data);
+            setCohorts(cohorts?.data?.data);
             setLoading(false);
             setTimeout(() => {
                 //filter to it
@@ -224,18 +219,17 @@ const ManageProgram = () => {
         setAssignError(false);
         try {
             const response = await axios.post(`${baseUrl}/admin/program/assign/teacher`, {
-                programIds: selectedProgram.map((program) => program.id),
+                programIds:  selectedProgram.id,
                 teacherId: selectedTeacher
             });
-
             // Fetch the updated programs after successful assignment
             await fetchPrograms(); // Assuming fetchPrograms function updates the programs state
 
-            showSuccessNotification("Teacher assigned successfully.");
+            toast.success("Teacher assigned successfully.");
             setAssignModal(false);
         } catch (error) {
             console.error("Error:", error);
-            showErrorNotification("Failed to assign teacher.");
+            toast.error("Failed to assign teacher.");
         }
     };
 
@@ -276,7 +270,7 @@ const ManageProgram = () => {
                             : program
                     );
                     setPrograms(updatedPrograms);
-                    showSuccessNotification("Program updated successfully.");
+                    toast.success("Program updated successfully.");
                 } else {
                     // Handle adding new program here if needed
                 }
@@ -284,31 +278,10 @@ const ManageProgram = () => {
                 toggle();
             } catch (error) {
                 console.error("Error:", error);
-                showErrorNotification("Failed to update program.");
+                toast.error("Failed to update program.");
             }
         },
     });
-
-    const handleDeleteProgram = async () => {
-        try {
-
-            await axios.delete(`${baseUrl}/admin/program/${contact.id}`);
-            const updatedPrograms = programs.filter(
-                (program) => program.id !== contact.id
-            );
-            setPrograms(updatedPrograms);
-            setDeleteModal(false);
-            showSuccessNotification("Program deleted successfully.");
-        } catch (error) {
-            console.error("Error:", error);
-            showErrorNotification("Failed to delete program.");
-        }
-    };
-
-    const onClickDelete = (programData) => {
-        setContact(programData);
-        setDeleteModal(true);
-    };
 
     const assignToggle = (programData) => {
         if (programData) {
@@ -325,35 +298,29 @@ const ManageProgram = () => {
     const handleToggleIsPaid = async (programData) => {
         try {
             if (!programData || !programData.id) {
-                console.error("Invalid program data.");
+                //console.error("Invalid program data.");
                 return;
             }
-            const updatedProgram = {...programData, isPaid: true};
+            const updatedProgram = {...programData, isPaid: !programData.isPaid};
             await axios.put(
                 `${baseUrl}/admin/program/edit/${programData.id}`,
                 updatedProgram
             );
 
             const confirmMarkAsPaid = window.confirm(
-                "Are you sure you want to mark this program as paid?"
+                "Are you sure you want to toggle this program payment status ?"
             );
             if (confirmMarkAsPaid) {
                 const updatedPrograms = programs.map((program) =>
                     program.id === programData.id ? updatedProgram : program
                 );
                 setPrograms(updatedPrograms);
-                showSuccessNotification("Program marked as paid.");
+               toast.success("Program marked as paid.");
+               await fetchPrograms();
             }
         } catch (error) {
             console.error("Error:", error);
         }
-    };
-
-    const addProgramToBulk = (program) => {
-        const programs = [...selectedProgram];
-        programs.push(program);
-        setSelectedProgram(programs);
-        //console.log(selectedProgram);
     };
 
     // Function to filter package list based on search query
@@ -363,23 +330,19 @@ const ManageProgram = () => {
 
     const handleProgramClick = (programData) => {
         toggle(programData); // Pass program data to toggle for editing
+
     };
 
     return (
         <React.Fragment>
             <ToastContainer/>
-            <DeleteModal
-                show={deleteModal}
-                onDeleteClick={handleDeleteProgram}
-                onCloseClick={() => setDeleteModal(false)}
-            />
             <div className="page-content">
                 <Container fluid>
                     <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Program"/>
                     <Row>
                         <Col lg="12">
-                            <Row className="align-items-center">
-                                <Col md={6}>
+                            <Row className="align-items-center me-2">
+                                <Col md={4}>
                                     <div className="mb-3">
                                         <h5 className="card-title">
                                             Manage List Program{" "}
@@ -387,13 +350,28 @@ const ManageProgram = () => {
                                         </h5>
                                     </div>
                                 </Col>
-                                <Col md={6}>
+                                <Col md={8}>
                                     <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
                                         <div>
+                                            <Input
+                                                type="text"
+                                                placeholder="Search"
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                            />
+                                        </div>
+                                        <div>
                                             <select className={'form-control'} onChange={(e) => {
-
+                                                //filter based on cohorts
+                                                if (Number(e.target.value) === 0) {
+                                                    window.location.reload()
+                                                } else {
+                                                    setProgramsList(programs.filter(r => Number(r.cohortId) === Number(e.target.value)))
+                                                }
                                             }}>
-                                                <option value={0}>All Cohort</option>
+                                                <option value={0}>All Cohorts</option>
+                                                {cohorts && cohorts.map((d, i) => <option key={i}
+                                                                                          value={d.id}>{d.title}</option>)}
                                             </select>
                                         </div>
                                         <div>
@@ -428,13 +406,10 @@ const ManageProgram = () => {
                                                 {coupons.map((c, i) => <option key={i} value={c.id}>{c.code} [{c.value}]</option>)}
                                             </select>
                                         </div>
-                                        <div>
-                                            <Input
-                                                type="text"
-                                                placeholder="Search"
-                                                value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
-                                            />
+                                        <div style={{marginRight: 20}}>
+                                            <button><i className="mdi mdi-run-fast font-size-20"></i></button>
+                                            <span className={'m-2'}></span>
+                                            <button><i className="mdi mdi-clipboard-account font-size-20"></i></button>
                                         </div>
                                     </div>
                                 </Col>
@@ -444,7 +419,7 @@ const ManageProgram = () => {
                                     {loading ? (
                                         <div className="text-center mt-5">
                                             <div className="spinner-border text-primary" role="status">
-                                                <span className="visually-hidden">Loading...</span>
+                                            <span className="visually-hidden">Loading...</span>
                                             </div>
                                         </div>
                                     ) : filteredPrograms.length === 0 ? (
@@ -464,8 +439,6 @@ const ManageProgram = () => {
                                                 <th>Gender</th>
                                                 <th>T.Name</th>
                                                 <th>P.Title</th>
-                                                <th>Ass.</th>
-                                                {/*<th>Status</th>*/}
                                                 <th>Level</th>
                                                 <th>Time</th>
                                                 <th>(WAT)</th>
@@ -495,8 +468,7 @@ const ManageProgram = () => {
                                                     <td>{program?.child?.age}</td>
                                                     <td>{program?.child?.gender}</td>
                                                     <td>{program?.teacher?.firstName}</td>
-                                                    <td>{program?.package?.title}</td>
-                                                    <td>{program?.assessmentUrl}</td>
+                                                    <td>{program?.package?.title}<br/><small style={{color: 'red'}}>[{program?.cohort?.title || "No Cohort"}]</small></td>
                                                     {/*<td>*/}
                                                     {/*  {program?.package?.status ? "Active" : "Inactive"}*/}
                                                     {/*</td>*/}
@@ -510,12 +482,17 @@ const ManageProgram = () => {
                                                     <td>
                                                         <div style={{width: 50}}>
                                                             {program.isPaid ? (
-                                                                <a target={'_blank'} rel={'noreferrer'}
-                                                                   href={'https://api-pro.rydlearning.com/common/stripe-check/' + program.trxId}>Paid</a>
+                                                                <a rel={'noreferrer'}
+                                                                   href={'#' + program.trxId}
+                                                                   onClick={(e)=>{
+                                                                       e.preventDefault()
+                                                                       handleToggleIsPaid(program).then(r => null)
+                                                                   }}
+                                                                >Paid</a>
                                                             ) : (
                                                                 <a rel={'noreferrer'} href={'#'} onClick={(e) => {
                                                                     e.preventDefault()
-                                                                    handleToggleIsPaid(program)
+                                                                    handleToggleIsPaid(program).then(r => null)
                                                                 }}
                                                                    disabled={program.isPaid}>
                                                                     Unpaid
@@ -530,38 +507,24 @@ const ManageProgram = () => {
                                                             )}
                                                             <br/>
                                                             <small
-                                                                style={{fontSize: 12}}>{program?.coupon?.code}</small>
+                                                                style={{fontSize: 10}}>{program?.coupon?.code}</small>
                                                         </div>
                                                     </td>
                                                     <td>
-
                                                         <Link
-                                                            className="text-success"
+                                                            className="text-danger"
                                                             to="#"
                                                             id="edit"
-                                                            onMouseEnter={() =>
-                                                                setEditTooltipOpen(true)
-                                                            }
-                                                            onMouseLeave={() =>
-                                                                setEditTooltipOpen(false)
-                                                            }
                                                             onClick={() => handleProgramClick(program)}>
-                                                            <i className="mdi mdi-pencil font-size-20"></i>
+                                                            <i className="mdi mdi-clock-outline font-size-12"></i>
                                                         </Link>
 
                                                         <Link
                                                             className="text-primary"
                                                             to="#"
                                                             id="assign"
-                                                            onMouseEnter={() =>
-                                                                setAssignTooltipOpen(true)
-                                                            }
-                                                            onMouseLeave={() =>
-                                                                setAssignTooltipOpen(false)
-                                                            }
-                                                            onClick={() => handleAssignClick(program)}
-                                                        >
-                                                            <i className="mdi mdi-clipboard-account font-size-20"></i>
+                                                            onClick={() => handleAssignClick(program)}>
+                                                            <i className="mdi mdi-clipboard-account font-size-12"></i>
                                                         </Link>
 
 
@@ -592,8 +555,7 @@ const ManageProgram = () => {
                                                                         invalid={
                                                                             validation.touched.level &&
                                                                             validation.errors.level
-                                                                        }
-                                                                    >
+                                                                        }>
                                                                         <option value="">Select Level</option>
                                                                         <option value="4">4</option>
                                                                         <option value="3">3</option>

@@ -295,7 +295,7 @@ const ManageParent = () => {
                                                             .includes(searchQuery.toLowerCase())
                                                     )
                                                     .map((user, index) => (
-                                                        <tr key={index} style={{backgroundColor: user.privacyMode ? '#fce4f7' : '#fff'}}>
+                                                        <tr key={index} style={{backgroundColor: user.privacyMode ? '#ffeff2' : '#fff'}}>
                                                             <td>{index + 1}</td>
                                                             <td>{user.firstName} {user.lastName}</td>
                                                             <td>{user.email}</td>

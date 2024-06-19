@@ -153,7 +153,7 @@ const ManageChild = () => {
 
   // Function to filter child list based on search query
   const filteredUsers = users.filter((user) =>
-    `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
+    `${user.firstName} ${user.lastName} ${user?.parent?.firstName} ${user?.parent?.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -230,15 +230,15 @@ const ManageChild = () => {
                       </thead>
                       <tbody>
                         {filteredUsers.map((user, index) => (
-                            <tr key={index}>
+                            <tr key={index} style={{backgroundColor: (user?.parent?.privacyMode || user?.privacyMode) ? '#ffeff2' : '#fff'}}>
                               <td>{index + 1}</td>
                               <td>{user.firstName}</td>
                               <td>{user.lastName}</td>
                               <td>{user?.parent?.firstName} {user?.parent?.lastName}</td>
-                              <td>No Cohort</td>
+                              <td>{user?.programs?(user?.programs[0]?.cohort?.title || "No Cohort"):"No Cohort"}</td>
                               <td>{user.age}</td>
                               <td>{user.gender}</td>
-                              <td>{(user.parent.privacyMode || user.privacyMode) ? "Private" : "Not Private"}</td>
+                              <td>{(user?.parent?.privacyMode || user?.privacyMode) ? "Private" : "Not Private"}</td>
                               <td>
                                 <div className="d-flex gap-3">
                                   <Link

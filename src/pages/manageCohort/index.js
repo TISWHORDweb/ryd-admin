@@ -65,6 +65,41 @@ const ManageProgram = () => {
         }
     }
 
+    //alternate methods
+    const updateRecords = async (id, t, d) => {
+        try{
+            if (t === "d") {
+                //delete records if there is no students
+                if (confirm("Are you sure to remove this cohort ?")) {
+                    //deleting....
+                    toast.warn("Deleting, please wait !")
+                    const response = await axios.get(`${baseUrl}/admin/cohort/remove/${id}`);
+                    if (response.data.status) {
+                        setTimeout(() => {
+                            window.location.reload()
+                        }, 2000)
+                    }
+                }
+            }
+            //toggle status
+            if (t === "u") {
+                //delete records if there is no students
+                if (confirm("Are you sure to toggle the current state")) {
+                    //deleting....
+                    toast.warn("Updating, please wait...")
+                    const response = await axios.post(`${baseUrl}/admin/cohort/update/${id}`, d);
+                    if (response.data.status) {
+                        setTimeout(() => {
+                            window.location.reload()
+                        }, 1000)
+                    }
+                }
+            }
+        }catch (ex){
+            toast.error("Unable to perform this operations at the moment...")
+        }
+    }
+
     return (
         <React.Fragment>
             <ToastContainer/>
@@ -114,46 +149,53 @@ const ManageProgram = () => {
                                             <th>Start Date</th>
                                             <th>End Date</th>
                                             <th>When</th>
-                                            <th>Running</th>
-                                            <th>Status</th>
+                                            <th>Lesson Status</th>
+                                            <th>Reg. Status</th>
                                             <th></th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         {(cohort && cohort.length > 0) ?
-                                            cohort.map((d,i)=> {
-                                                    return <tr key={i}>
-                                                        <td>{i+1}</td>
-                                                        <td>{d.title}</td>
-                                                        <td style={{width: 200}}>{d.description}</td>
-                                                        <td>{d?.programs.length}</td>
-                                                        <td><Moment date={d.startDate} format={"ddd, MMM Do YYYY"}/></td>
-                                                        <td><Moment date={d.endDate} format={"ddd, MMM Do YYYY"}/></td>
-                                                        <td><Moment date={d.startDate} fromNow={true}/></td>
-                                                        <td>{d.isStarted?"Current":"Ended"}</td>
-                                                        <td>{d.status?"Open": "Closed"}</td>
-                                                        <td>
-                                                            <a href={'#'} onClick={(e) => {
-                                                                //prevent it
-                                                                e.preventDefault()
+                                            cohort.map((d, i) => {
+                                                return <tr key={i} style={{backgroundColor: (d.status && d.isStarted) ?"#effff2": (d.isStarted)?"#FFFAD1FF":(d.status)?"#fff1f1": "#fff"}}>
+                                                    <td>{i + 1}</td>
+                                                    <td>{d.title}</td>
+                                                    <td style={{width: 200}}>{d.description}</td>
+                                                    <td>{d?.programs.length}</td>
+                                                    <td><Moment date={d.startDate} format={"ddd, MMM Do YYYY"}/></td>
+                                                    <td><Moment date={d.endDate} format={"ddd, MMM Do YYYY"}/></td>
+                                                    <td><Moment date={d.startDate} fromNow={true}/></td>
+                                                    <td>{d.isStarted ? <span className={'blink'}>Ongoing</span> : "Not started"}</td>
+                                                    <td>{d.status ? "Open" : "Closed"}</td>
+                                                    <td>
+                                                        <a href={'#'} onClick={(e) => {
+                                                            //prevent it
+                                                            e.preventDefault()
+                                                            updateRecords(d.id, "u", {isStarted: !d.isStarted}).then(r => null)
 
-                                                            }}><i className="mdi mdi-human-child font-size-18"></i></a>
-                                                            <span style={{margin: 5}}/>
-                                                            <a href={'#'} onClick={(e) => {
-                                                                //prevent it
-                                                                e.preventDefault()
+                                                        }}><i className="mdi mdi-human-child font-size-18"></i></a>
+                                                        <span style={{margin: 5}}/>
+                                                        <a href={'#'} onClick={(e) => {
+                                                            //prevent it
+                                                            e.preventDefault()
+                                                            updateRecords(d.id, "u", {status: !d.status}).then(r => null)
 
-                                                            }}><i style={{color: '#000000'}}
-                                                                  className="mdi mdi-exit-run font-size-18"></i></a>
-                                                            <span style={{margin: 5}}/>
-                                                            <a href={'#'} onClick={(e) => {
-                                                                //prevent it
-                                                                e.preventDefault()
+                                                        }}><i style={{color: '#000000'}}
+                                                              className="mdi mdi-exit-run font-size-18"></i></a>
+                                                        <span style={{margin: 5}}/>
+                                                        <a href={'#'} onClick={(e) => {
+                                                            //prevent it
+                                                            e.preventDefault()
+                                                            if (d?.programs.length > 0) {
+                                                                toast.warn("Unable to  delete this cohort. currently enrolled")
+                                                            } else {
+                                                                updateRecords(d.id, "d", d).then(r => null)
+                                                            }
 
-                                                            }}><i style={{color: '#fd0000'}}
-                                                                  className="mdi mdi-delete-forever font-size-18"></i></a>
-                                                        </td>
-                                                    </tr>
+                                                        }}><i style={{color: '#fd0000'}}
+                                                              className="mdi mdi-delete-forever font-size-18"></i></a>
+                                                    </td>
+                                                </tr>
                                             })
                                             : null
                                         }
