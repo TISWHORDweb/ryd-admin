@@ -236,6 +236,7 @@ const ManageCoupon = () => {
                           <th>#</th>
                           <th>Code</th>
                           <th>Discount</th>
+                          <th>Usage</th>
                           <th>Country</th>
                           <th>Level</th>
                           <th>Status</th>
@@ -252,6 +253,7 @@ const ManageCoupon = () => {
                                 ? `${c.value}%`
                                 : `${c.value}%`}
                             </td>
+                            <td>{c?.programs?.length}</td>
                             <td>
                               {c.byCountry}
                             </td>

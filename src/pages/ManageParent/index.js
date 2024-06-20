@@ -10,7 +10,22 @@ import {baseUrl} from "../../Network";
 import {Col, Container, Form, Input, Label, Modal, ModalBody, ModalHeader, Row,} from "reactstrap";
 import {toast, ToastContainer} from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {BtnBold, BtnItalic, Editor, EditorProvider, Toolbar, BtnLink, BtnBulletList, BtnClearFormatting, BtnNumberedList, BtnStyles, BtnUndo, BtnRedo, BtnStrikeThrough, BtnUnderline} from "react-simple-wysiwyg";
+import {
+    BtnBold,
+    BtnItalic,
+    Editor,
+    EditorProvider,
+    Toolbar,
+    BtnLink,
+    BtnBulletList,
+    BtnClearFormatting,
+    BtnNumberedList,
+    BtnStyles,
+    BtnUndo,
+    BtnRedo,
+    BtnStrikeThrough,
+    BtnUnderline
+} from "react-simple-wysiwyg";
 import UploadWidget from "../../Uploader";
 
 const ManageParent = () => {
@@ -40,7 +55,7 @@ const ManageParent = () => {
     }, [modal]);
 
     function handleOnUpload(error, result, widget) {
-        if ( error ) {
+        if (error) {
             updateError(error);
             widget.close({
                 quiet: true
@@ -153,13 +168,23 @@ const ManageParent = () => {
             const __filter = [...usersRawF].filter((x => x.privacyMode === true))
             setUsers(__filter)
         }
-        if(n===0){
+        if (n === 0) {
             window.location.reload()
         }
     }
 
-    const groupEmail=(t, e)=> {
+    const groupEmail = (t, e) => {
         SetGroupEmailData({...groupEmailData, [t]: e.target.value})
+    }
+
+    //resolve all child names for parents
+    const getAllChildName = (pData) => {
+        if(pData?.children?.length>0){
+            //fetch child name
+            return pData.children.map(((child)=>({childNames: `${child?.firstName} ${child?.lastName}`, isActive: child.programs.filter(y=>y.isPaid && !y.isCompleted).length})))
+        }else{
+            return null
+        }
     }
 
     return (
@@ -195,7 +220,7 @@ const ManageParent = () => {
                                                     window.location.reload()
                                                 }
                                                 if (Number(e.target.value) === 1) {
-                                                    const __filter = usersRaw.filter((x) => x?.children.filter((y) => y?.programs.filter((z) => z.isPaid && !z.isCompleted).length > 0).length > 0 && x.privacyMode === (privateParentOnly === 1))
+                                                    const __filter = usersRaw.filter((x) => x?.children.filter((y) => y?.programs.filter((z) => z.isPaid && !z.isCompleted).length > 0).length >0)
                                                     setUsersRawF(__filter)
                                                     setUsers(__filter)
                                                 }
@@ -215,13 +240,13 @@ const ManageParent = () => {
                                                     setUsers(__filter)
                                                 }
                                             }}>
-                                                <option value={0}>With All Cohort Status</option>
+                                                <option value={0}>All Parents</option>
                                                 <option value={1}>With Active Cohort</option>
                                                 <option value={2}>With No Active Cohort</option>
-                                                <option value={3}>With Idle Cohort</option>
+                                                <option value={3}>All Alumni</option>
                                             </select>
                                         </div>
-                                        <div style={{width: 200}}>
+                                        <div style={{width: 200, display: 'none'}}>
                                             <select className={'form-control'} onChange={(e) => {
                                                 //switch mode
                                                 setPrivateParentOnly(Number(e.target.value))
@@ -275,11 +300,12 @@ const ManageParent = () => {
                                             <thead>
                                             <tr>
                                                 <th>#</th>
-                                                <th>First Name</th>
+                                                <th>Parent Name</th>
+                                                <th>Children Name(s)</th>
                                                 <th>Email</th>
                                                 <th>Phone</th>
                                                 <th>State</th>
-                                                <th>Data Privacy</th>
+                                                {/*<th>Data Privacy</th>*/}
                                                 <th>Country</th>
                                                 <th>Timezone</th>
                                                 <th>No.Child</th>
@@ -295,13 +321,17 @@ const ManageParent = () => {
                                                             .includes(searchQuery.toLowerCase())
                                                     )
                                                     .map((user, index) => (
-                                                        <tr key={index} style={{backgroundColor: user.privacyMode ? '#ffeff2' : '#fff'}}>
+                                                        <tr key={index}
+                                                            style={{backgroundColor: user?.privacyMode ? '#ffeff2' : '#fff'}}>
                                                             <td>{index + 1}</td>
                                                             <td>{user.firstName} {user.lastName}</td>
+                                                            <td style={{width: 200}}>
+                                                                <div style={{whiteSpace: 'nowrap'}}>{(user?.children?.length>0 && getAllChildName(user).map((x,i)=><li style={{textDecoration: !x.isActive?'line-through':'none'}} key={i}>{x.childNames}</li>))||<li>No Child</li>}</div>
+                                                            </td>
                                                             <td>{user.email}</td>
                                                             <td>{user.phone}</td>
                                                             <td style={{width: 20}}>{user.state}</td>
-                                                            <td>{user.privacyMode ? "Private" : "Not Private"}</td>
+                                                            {/*<td>{user.privacyMode ? "Private" : "Not Private"}</td>*/}
                                                             <td>{user.country}</td>
                                                             <td>{user.timezone}</td>
                                                             <td>{user?.children?.length}</td>
@@ -351,7 +381,8 @@ const ManageParent = () => {
                             <Col xs={12}>
                                 <div className={'mb-3'}>
                                     <Label className="form-label">Email Target</Label>
-                                    <select value={groupEmailData.t} className={'form-control'} onChange={(e)=>groupEmail("t", e)}>
+                                    <select value={groupEmailData.t} className={'form-control'}
+                                            onChange={(e) => groupEmail("t", e)}>
                                         <option value={0}>With All Cohort Status</option>
                                         <option value={1}>With Active Cohort</option>
                                         <option value={2}>With No Active Cohort</option>
@@ -364,17 +395,18 @@ const ManageParent = () => {
                                         name="subject"
                                         type="text"
                                         placeholder="Subject"
-                                        onChange={(e)=>groupEmail("s", e)}
+                                        onChange={(e) => groupEmail("s", e)}
                                         value={groupEmailData.s}
                                     />
                                 </div>
                                 <div className="mb-3">
                                     <Label className="form-label">Email Body</Label>
                                     <EditorProvider>
-                                        <Editor value={groupEmailData.b} onChange={(e)=>groupEmail("b", e)} containerProps={{ style: { resize: 'vertical', height: 200 } }}>
+                                        <Editor value={groupEmailData.b} onChange={(e) => groupEmail("b", e)}
+                                                containerProps={{style: {resize: 'vertical', height: 200}}}>
                                             <Toolbar>
-                                                <BtnBold />
-                                                <BtnItalic />
+                                                <BtnBold/>
+                                                <BtnItalic/>
                                                 <BtnLink/>
                                                 <BtnBulletList/>
                                                 <BtnClearFormatting/>
@@ -388,14 +420,15 @@ const ManageParent = () => {
                                         </Editor>
                                     </EditorProvider>
                                     <UploadWidget onUpload={handleOnUpload}>
-                                        {({ open }) => {
+                                        {({open}) => {
                                             function handleOnClick(e) {
                                                 e.preventDefault();
                                                 open();
                                             }
+
                                             return (
                                                 <a style={{marginTop: 5}} href={'#'} onClick={handleOnClick}>
-                                                    {(url)?"Override attachment": "Add attachment"}
+                                                    {(url) ? "Override attachment" : "Add attachment"}
                                                 </a>
                                             )
                                         }}
@@ -445,10 +478,12 @@ const ManageParent = () => {
                                 <div className="mb-3">
                                     <Label className="form-label">Email Body</Label>
                                     <EditorProvider>
-                                        <Editor name="message" onChange={validation.handleChange} value={validation.values.message}  containerProps={{ style: { resize: 'vertical', height: 200 } }}>
+                                        <Editor name="message" onChange={validation.handleChange}
+                                                value={validation.values.message}
+                                                containerProps={{style: {resize: 'vertical', height: 200}}}>
                                             <Toolbar>
-                                                <BtnBold />
-                                                <BtnItalic />
+                                                <BtnBold/>
+                                                <BtnItalic/>
                                                 <BtnLink/>
                                                 <BtnBulletList/>
                                                 <BtnClearFormatting/>
@@ -462,14 +497,15 @@ const ManageParent = () => {
                                         </Editor>
                                     </EditorProvider>
                                     <UploadWidget onUpload={handleOnUpload}>
-                                        {({ open }) => {
+                                        {({open}) => {
                                             function handleOnClick(e) {
                                                 e.preventDefault();
                                                 open();
                                             }
+
                                             return (
                                                 <a style={{marginTop: 5}} href={'#'} onClick={handleOnClick}>
-                                                    {(url)?"Override attachment": "Add attachment"}
+                                                    {(url) ? "Override attachment" : "Add attachment"}
                                                 </a>
                                             )
                                         }}

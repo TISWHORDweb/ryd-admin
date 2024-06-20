@@ -303,8 +303,8 @@ const ManageProgram = () => {
                                                 }
                                             }}>
                                                 <option value={0}>All Programs</option>
-                                                <option value={1}>Active Programs (Paid)</option>
-                                                <option value={2}>InActive Programs (UnPaid)</option>
+                                                <option value={1}>Active Enrolment</option>
+                                                <option value={2}>Awaiting Checkout</option>
                                             </select>
                                         </div>
                                         <div>
@@ -380,7 +380,6 @@ const ManageProgram = () => {
                                                 <th>Time</th>
                                                 <th>(WAT)</th>
                                                 <th>Day</th>
-                                                <th>GMT</th>
                                                 <th>Status</th>
                                                 <th></th>
                                             </tr>
@@ -425,7 +424,6 @@ const ManageProgram = () => {
                                                                 date={formatTimeZone(program?.child?.parent?.timeOffset, program.day, program.time).toISOString()}
                                                                 tz={"Africa/Lagos"}></Moment></td>
                                                     <td>{formatDay(program.day)}</td>
-                                                    <td>{program?.child?.parent?.timeOffset}</td>
                                                     <td>
                                                         <div style={{width: 50}}>
                                                             {program.isPaid ? (

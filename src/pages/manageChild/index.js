@@ -28,11 +28,11 @@ const ManageChild = () => {
   document.title = "Manage Child | RYD Admin";
 
   const [users, setUsers] = useState([]);
+  const [usersData, setUsersData] = useState([]);
   const [contact, setContact] = useState({});
   const [modal, setModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
-  const [parentOptions, setParentOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -116,6 +116,7 @@ const ManageChild = () => {
     try {
       const response = await axios.get(`${baseUrl}/admin/child/all`);
       setUsers(response.data.data);
+      setUsersData(response.data.data)
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -151,11 +152,6 @@ const ManageChild = () => {
     }
   };
 
-  // Function to filter child list based on search query
-  const filteredUsers = users.filter((user) =>
-    `${user.firstName} ${user.lastName} ${user?.parent?.firstName} ${user?.parent?.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
     <React.Fragment>
       <DeleteModal
@@ -181,11 +177,18 @@ const ManageChild = () => {
               <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
                 <div style={{width: 200}}>
                   <select className={'form-control'} onChange={(e) => {
-                    //switch mode
+                    //filter based on status
+                    if (Number(e.target.value) === 1) {
+                      setUsersData(users.filter(r => r?.programs?.filter(y=>y.isPaid === true && !y.isCompleted === false).length>0))
+                    } else if (Number(e.target.value) === 2) {
+                      setUsersData(users.filter(r => r?.programs?.filter(y=>y.isPaid === true && y.isCompleted === false).length>0))
+                    } else {
+                      window.location.reload()
+                    }
                   }}>
                     <option value={0}>All Children</option>
-                    <option value={1}>With active cohort</option>
-                    <option value={2}>With no active cohort</option>
+                    <option value={1}>Active Program(s)</option>
+                    <option value={2}>No Active Program(s)</option>
                   </select>
                 </div>
                 <div>
@@ -193,7 +196,11 @@ const ManageChild = () => {
                       type="text"
                       placeholder="Search"
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) =>{
+                        setUsersData(users.filter((user) =>
+                            `${user.firstName} ${user.lastName} ${user?.parent?.firstName} ${user?.parent?.lastName}`.toLowerCase().includes(e.target.value)
+                        ))
+                      }}
                   />
                 </div>
               </div>
@@ -209,7 +216,7 @@ const ManageChild = () => {
                           <span className="visually-hidden">Loading...</span>
                         </div>
                       </div>
-                  ) : filteredUsers.length === 0 ? (
+                  ) : usersData.length === 0 ? (
                       <div className="text-center mt-5">
                         <h3>No data available</h3>
                       </div>
@@ -229,7 +236,7 @@ const ManageChild = () => {
                       </tr>
                       </thead>
                       <tbody>
-                        {filteredUsers.map((user, index) => (
+                        {usersData.map((user, index) => (
                             <tr key={index} style={{backgroundColor: (user?.parent?.privacyMode || user?.privacyMode) ? '#ffeff2' : '#fff'}}>
                               <td>{index + 1}</td>
                               <td>{user.firstName}</td>
