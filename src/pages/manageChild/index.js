@@ -228,6 +228,7 @@ const ManageChild = () => {
                           <th>First Name</th>
                         <th>Last Name</th>
                         <th>Parent Name</th>
+                        <th>Phone</th>
                         <th>Current Cohort</th>
                         <th>Age</th>
                         <th>Gender</th>
@@ -242,6 +243,7 @@ const ManageChild = () => {
                               <td>{user.firstName}</td>
                               <td>{user.lastName}</td>
                               <td>{user?.parent?.firstName} {user?.parent?.lastName}</td>
+                              <td>{user?.parent?.phone}</td>
                               <td>{user?.programs?(user?.programs[0]?.cohort?.title || "No Cohort"):"No Cohort"}</td>
                               <td>{user.age}</td>
                               <td>{user.gender}</td>

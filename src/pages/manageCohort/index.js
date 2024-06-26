@@ -26,7 +26,6 @@ const ManageProgram = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
 
-
     useEffect(() => {
         document.title = "Manage Cohort | RYD Admin";
         //toast.success("Email sent to all parents successfully");

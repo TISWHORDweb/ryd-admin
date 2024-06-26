@@ -116,7 +116,6 @@ const ManageProgram = () => {
         try {
             const response = await axios.get(`${baseUrl}/admin/coupon/all`);
             setCoupons(response.data.data);
-            setLoading(false); // Update loading state after data fetch
         } catch (error) {
             console.error("Error:", error);
         }
@@ -146,10 +145,11 @@ const ManageProgram = () => {
                 const xdata = response?.data?.data;
                 //setProgramsList(xdata.sort(compareFn))
                 setProgramsList(xdata.sort(compareFn))
+                setLoading(false); // Update loading state after data fetch
             }, 100)
         } catch (error) {
             setLoading(false);
-            console.error("Error:", error);
+            //console.error("Error:", error);
         }
     };
 
@@ -406,7 +406,10 @@ const ManageProgram = () => {
                                                         </div>
                                                     </td>
                                                     <td>{program?.child?.parent?.firstName + " " + program?.child?.parent?.lastName}</td>
-                                                    <td>{program?.child?.firstName + " " + program?.child?.lastName}</td>
+                                                    <td>{program?.child?.firstName + " " + program?.child?.lastName}
+                                                    <br/>
+                                                        [{program?.child?.parent?.country}]
+                                                    </td>
                                                     <td>{program?.child?.parent?.phone}</td>
                                                     <td>{program?.child?.parent?.email}</td>
                                                     <td>{program?.child?.age}</td>
