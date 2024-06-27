@@ -145,12 +145,16 @@ const ManageParent = () => {
         setDeleteModal(true);
     };
 
-    const onClickResetPassword = (userData) => {
+    const onClickResetPassword = async (userData) => {
         //set new password for parent
         let _newPass = prompt("Enter new password for " + userData?.firstName + " " + userData?.lastName + ". Warning: This action cannot be undo");
         if (_newPass) {
             //reset parent password
-            alert(_newPass)
+            await axios.post(`${baseUrl}/admin/parent/reset-password/${userData.id}`, {
+                newPassword: _newPass,
+            });
+            //parent password altered
+            toast.success("Parent password altered !")
         }
     };
 
