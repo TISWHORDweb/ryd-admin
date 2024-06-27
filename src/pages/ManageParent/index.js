@@ -145,6 +145,15 @@ const ManageParent = () => {
         setDeleteModal(true);
     };
 
+    const onClickResetPassword = (userData) => {
+        //set new password for parent
+        let _newPass = prompt("Enter new password for " + userData?.firstName + " " + userData?.lastName + ". Warning: This action cannot be undo");
+        if (_newPass) {
+            //reset parent password
+            alert(_newPass)
+        }
+    };
+
     const handleDeleteUser = async () => {
         try {
             await axios.delete(`${baseUrl}/admin/parent/${contact.id}`);
@@ -179,10 +188,13 @@ const ManageParent = () => {
 
     //resolve all child names for parents
     const getAllChildName = (pData) => {
-        if(pData?.children?.length>0){
+        if (pData?.children?.length > 0) {
             //fetch child name
-            return pData.children.map(((child)=>({childNames: `${child?.firstName} ${child?.lastName}`, isActive: child.programs.filter(y=>y.isPaid && !y.isCompleted).length})))
-        }else{
+            return pData.children.map(((child) => ({
+                childNames: `${child?.firstName} ${child?.lastName}`,
+                isActive: child.programs.filter(y => y.isPaid && !y.isCompleted).length
+            })))
+        } else {
             return null
         }
     }
@@ -220,7 +232,7 @@ const ManageParent = () => {
                                                     window.location.reload()
                                                 }
                                                 if (Number(e.target.value) === 1) {
-                                                    const __filter = usersRaw.filter((x) => x?.children.filter((y) => y?.programs.filter((z) => z.isPaid && !z.isCompleted).length > 0).length >0)
+                                                    const __filter = usersRaw.filter((x) => x?.children.filter((y) => y?.programs.filter((z) => z.isPaid && !z.isCompleted).length > 0).length > 0)
                                                     setUsersRawF(__filter)
                                                     setUsers(__filter)
                                                 }
@@ -326,7 +338,11 @@ const ManageParent = () => {
                                                             <td>{index + 1}</td>
                                                             <td>{user.firstName} {user.lastName}</td>
                                                             <td style={{width: 200}}>
-                                                                <div style={{whiteSpace: 'nowrap'}}>{(user?.children?.length>0 && getAllChildName(user).map((x,i)=><li style={{textDecoration: !x.isActive?'line-through':'none'}} key={i}>{x.childNames}</li>))||<li>No Child</li>}</div>
+                                                                <div
+                                                                    style={{whiteSpace: 'nowrap'}}>{(user?.children?.length > 0 && getAllChildName(user).map((x, i) =>
+                                                                        <li style={{fontWeight: !x.isActive ? 'normal' : 'bold'}}
+                                                                            key={i}>{x.childNames}</li>)) ||
+                                                                    <li>No Child</li>}</div>
                                                             </td>
                                                             <td>{user.email}</td>
                                                             <td>{user.phone}</td>
@@ -355,10 +371,16 @@ const ManageParent = () => {
                                                                     {/*    <i className="mdi mdi-pencil font-size-18"></i>*/}
                                                                     {/*</Link>*/}
                                                                     <Link
-                                                                        className="text-danger"
+                                                                        className="text-danger d-none"
                                                                         to="#"
                                                                         onClick={() => onClickDelete(user)}>
                                                                         <i className="mdi mdi-delete font-size-18"></i>
+                                                                    </Link>
+                                                                    <Link
+                                                                        className="text-danger"
+                                                                        to="#"
+                                                                        onClick={() => onClickResetPassword(user)}>
+                                                                        <i className="mdi mdi-key font-size-18"></i>
                                                                     </Link>
                                                                 </div>
                                                             </td>
