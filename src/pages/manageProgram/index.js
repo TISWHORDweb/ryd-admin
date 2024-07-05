@@ -82,6 +82,9 @@ const ManageProgram = () => {
     const [coupons, setCoupons] = useState([]);
     const [cohorts, setCohorts] = useState([]);
     const [packages, setPackages] = useState([]);
+    const [filteredProgramList0, setFilteredProgramList0] = useState([]);
+    const [filteredProgramList2, setFilteredProgramList2] = useState([]);
+    const [displayProgramList, setDisplayProgramList] = useState([]);
 
     useEffect(() => {
         fetchPrograms().then(r => null);
@@ -144,7 +147,11 @@ const ManageProgram = () => {
                 //filter to it
                 const xdata = response?.data?.data;
                 //setProgramsList(xdata.sort(compareFn))
-                setProgramsList(xdata.sort(compareFn))
+                const __xdata = xdata.sort(compareFn)
+                setProgramsList(__xdata)
+                setDisplayProgramList(__xdata)
+                setFilteredProgramList0(__xdata)
+                setFilteredProgramList2(__xdata)
                 setLoading(false); // Update loading state after data fetch
             }, 100)
         } catch (error) {
@@ -258,7 +265,7 @@ const ManageProgram = () => {
                                     <div className="mb-3">
                                         <h5 className="card-title">
                                             Manage List Program{" "}
-                                            <span className="text-muted fw-normal ms-2">({programsList.length})</span>
+                                            <span className="text-muted fw-normal ms-2">({displayProgramList.length})</span>
                                         </h5>
                                     </div>
                                 </Col>
@@ -272,8 +279,8 @@ const ManageProgram = () => {
                                                 onChange={(e) => {
                                                     setSearchQuery(e.target.value)
                                                     // Function to filter package list based on search query
-                                                    const filteredPrograms = programs.filter((program) =>`${program?.child?.firstName} ${program?.child?.lastName} ${program?.child?.parent?.firstName} ${program?.child?.parent?.lastName}`.toLowerCase().includes(e.target.value.toLowerCase()));
-                                                    setProgramsList(filteredPrograms)
+                                                    const searchProgrammed = programs.filter((program) => `${program?.child?.firstName} ${program?.child?.lastName} ${program?.child?.parent?.firstName} ${program?.child?.parent?.lastName}`.toLowerCase().includes(e.target.value.toLowerCase()));
+                                                    setDisplayProgramList(searchProgrammed)
                                                 }}
                                             />
                                         </div>
@@ -283,7 +290,10 @@ const ManageProgram = () => {
                                                 if (Number(e.target.value) === 0) {
                                                     window.location.reload()
                                                 } else {
-                                                    setProgramsList(programs.filter(r => Number(r.cohortId) === Number(e.target.value)))
+                                                    const __cohortFilter = programs.filter(r => Number(r.cohortId) === Number(e.target.value));
+                                                    setDisplayProgramList(__cohortFilter)
+                                                    setFilteredProgramList0(__cohortFilter)
+                                                    setFilteredProgramList2(__cohortFilter)
                                                 }
                                             }}>
                                                 <option value={0}>All Cohorts</option>
@@ -295,9 +305,11 @@ const ManageProgram = () => {
                                             <select className={'form-control'} onChange={(e) => {
                                                 //filter based on status
                                                 if (Number(e.target.value) === 1) {
-                                                    setProgramsList(programs.filter(r => r.isPaid === true && r.isCompleted === false))
+                                                    const __activeProgramFilter = filteredProgramList0.filter(r => r.isPaid === true && r.isCompleted === false)
+                                                    setDisplayProgramList(__activeProgramFilter)
+                                                    setFilteredProgramList2(__activeProgramFilter)
                                                 } else if (Number(e.target.value) === 2) {
-                                                    setProgramsList(programs.filter(r => r.isPaid === false && r.isCompleted === false))
+                                                    setDisplayProgramList(filteredProgramList0.filter(r => r.isPaid === false && r.isCompleted === false))
                                                 } else {
                                                     window.location.reload()
                                                 }
@@ -316,7 +328,7 @@ const ManageProgram = () => {
                                                     window.location.reload()
                                                 } else {
                                                     //filter with coupon code
-                                                    setProgramsList(programsList.filter((p) => p?.package?.id === packageID))
+                                                    setDisplayProgramList(filteredProgramList2.filter((p) => p?.package?.id === packageID))
                                                 }
                                             }}>
                                                 <option value={0}>All Packages</option>
@@ -333,12 +345,31 @@ const ManageProgram = () => {
                                                     window.location.reload()
                                                 } else {
                                                     //filter with coupon code
-                                                    setProgramsList(programsList.filter((p) => p?.coupon?.id === couponID))
+                                                    setDisplayProgramList(filteredProgramList2.filter((p) => p?.coupon?.id === couponID))
                                                 }
                                             }}>
                                                 <option value={0}>All Coupon</option>
                                                 {coupons.map((c, i) => <option key={i}
                                                                                value={c.id}>{c.code} [{c.value}]</option>)}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <select className={'form-control'} onChange={(e) => {
+                                                //filter based on status
+                                                if (Number(e.target.value) === 1) {
+                                                    const __activeProgramFilter = filteredProgramList2.filter(r => r.teacherId !== null)
+                                                    setDisplayProgramList(__activeProgramFilter)
+
+                                                } else if (Number(e.target.value) === 2) {
+                                                    const __activeProgramFilter = filteredProgramList2.filter(r => r.teacherId === null)
+                                                    setDisplayProgramList(__activeProgramFilter)
+                                                } else {
+                                                    window.location.reload()
+                                                }
+                                            }}>
+                                                <option value={0}>All Filter(s)</option>
+                                                <option value={1}>With Teacher</option>
+                                                <option value={2}>With No Teacher</option>
                                             </select>
                                         </div>
                                         <div style={{marginRight: 20}}>
@@ -359,12 +390,12 @@ const ManageProgram = () => {
                                                 <span className="visually-hidden">Loading...</span>
                                             </div>
                                         </div>
-                                    ) : programsList.length === 0 ? (
+                                    ) : displayProgramList.length === 0 ? (
                                         <div className="text-center mt-5">
                                             <h3>No data available</h3>
                                         </div>
                                     ) : (
-                                        <table className="table align-middle">
+                                        <table className="table align-middle" style={{height: 100}}>
                                             <thead>
                                             <tr>
                                                 <th>#{multiIDs.length || ""}</th>
@@ -385,7 +416,7 @@ const ManageProgram = () => {
                                             </tr>
                                             </thead>
                                             <tbody>
-                                            {programsList.map((program, index) => (
+                                            {displayProgramList.map((program, index) => (
                                                 <tr key={index}
                                                     style={{backgroundColor: (program.isPaid) ? '#f1fdf4' : '#fff'}}>
                                                     <td>

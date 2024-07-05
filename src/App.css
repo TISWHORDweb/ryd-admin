@@ -1,24 +1,26 @@
 /**
 Global table background removed
  */
-td{
+td {
     background-color: transparent !important;
     font-size: 12px;
 }
 
-tr:hover{
-    background-color: #f3f3f3 !important;
+tr:hover {
+    background-color: #ffedfc !important;
 }
 
 .blink {
     animation: blink-animation 1s steps(5, start) infinite;
     -webkit-animation: blink-animation 1s steps(5, start) infinite;
 }
+
 @keyframes blink-animation {
     to {
         visibility: hidden;
     }
 }
+
 @-webkit-keyframes blink-animation {
     to {
         visibility: hidden;
