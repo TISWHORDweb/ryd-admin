@@ -395,7 +395,7 @@ const ManageProgram = () => {
                                             <h3>No data available</h3>
                                         </div>
                                     ) : (
-                                        <table className="table align-middle" style={{height: 100}}>
+                                        <table className="table align-middle table-hover">
                                             <thead>
                                             <tr>
                                                 <th>#{multiIDs.length || ""}</th>
