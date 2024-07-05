@@ -560,7 +560,6 @@ const ManageParent = () => {
                     </Form>
                 </ModalBody>
             </Modal>
-
             <ToastContainer/>
         </React.Fragment>
     );
