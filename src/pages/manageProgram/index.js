@@ -224,11 +224,6 @@ const ManageProgram = () => {
         }
     };
 
-    // Function to filter package list based on search query
-    const filteredPrograms = programs.filter((program) =>
-        program?.child?.firstName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
     const handleProgramClick = (programData) => {
         // Pass program data to toggle for editing
         setSelectedProgram(programData)
@@ -274,7 +269,12 @@ const ManageProgram = () => {
                                                 type="text"
                                                 placeholder="Search"
                                                 value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                onChange={(e) => {
+                                                    setSearchQuery(e.target.value)
+                                                    // Function to filter package list based on search query
+                                                    const filteredPrograms = programs.filter((program) =>`${program?.child?.firstName} ${program?.child?.lastName} ${program?.child?.parent?.firstName} ${program?.child?.parent?.lastName}`.toLowerCase().includes(e.target.value.toLowerCase()));
+                                                    setProgramsList(filteredPrograms)
+                                                }}
                                             />
                                         </div>
                                         <div>
@@ -359,7 +359,7 @@ const ManageProgram = () => {
                                                 <span className="visually-hidden">Loading...</span>
                                             </div>
                                         </div>
-                                    ) : filteredPrograms.length === 0 ? (
+                                    ) : programsList.length === 0 ? (
                                         <div className="text-center mt-5">
                                             <h3>No data available</h3>
                                         </div>
@@ -454,8 +454,8 @@ const ManageProgram = () => {
                                                                 ></Link>
                                                             )}
                                                             <br/>
-                                                            <small
-                                                                style={{fontSize: 10}}>{program?.coupon?.code}</small>
+                                                            <small style={{fontSize: 10, backgroundColor: "#e3e3e3", padding:2, display: program?.coupon?.code?"block":"none"}}>{program?.coupon?.code}</small>
+                                                            <small style={{fontSize: 10}}><Moment format={'DD-MM-YY'} date={program?.createdAt}/></small>
                                                         </div>
                                                     </td>
                                                     <td>
