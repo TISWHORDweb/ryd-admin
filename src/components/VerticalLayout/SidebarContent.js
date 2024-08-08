@@ -250,6 +250,14 @@ const SidebarContent = props => {
               </Link>
             </li>
 
+            <li>
+              <Link to="/manage-testimonial" className="">
+                <FeatherIcon
+                    icon="message-circle"
+                />{" "}
+                <span>{props.t("Manage Testimonial")}</span>
+              </Link>
+            </li>
 
             <li>
               <Link to="/settings" className="">

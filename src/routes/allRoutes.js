@@ -23,6 +23,7 @@ import ManageSwap from "../pages/ManageSwap";
 import ManageSurvey from "../pages/ManageSurvey";
 import ManageCoupon from "../pages/ManageCoupon";
 import ManageCohort from "../pages/manageCohort";
+import ManageTestimonial from "../pages/ManageTestimonial";
 
 const userRoutes = [
   //dashboard
@@ -49,8 +50,10 @@ const userRoutes = [
   { path: "/manage-swap", component: <ManageSwap/> },
 
   { path: "/manage-survey", component: <ManageSurvey/> },
-  { path: "/manage-coupon", component: <ManageCoupon/> },
 
+  { path: "/manage-coupon", component: <ManageCoupon/> },
+  
+  { path: "/manage-testimonial", component: <ManageTestimonial/> },
 
   { path: "/settings", component: <Settings /> },
 
