@@ -165,6 +165,18 @@ const ManageCoupon = () => {
       toast.error("Failed to toggle coupon status");
     }
   };
+
+  const toggleRevoke= async (couponId) => {
+    try {
+      await axios.put(`${baseUrl}/admin/coupon/revoke/${couponId}`);
+      toast.success(`Coupon revoked successfully`);
+      fetchCoupons();
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to toggle coupon revoke");
+    }
+  };
+  
   const filteredCoupons = coupons.filter(coupon =>
     coupon.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -235,6 +247,7 @@ const ManageCoupon = () => {
                         <tr>
                           <th>#</th>
                           <th>Code</th>
+                          <th>Access key</th>
                           <th>Discount</th>
                           <th>Usage</th>
                           <th>Country</th>
@@ -248,6 +261,7 @@ const ManageCoupon = () => {
                           <tr key={index}>
                             <td>{index + 1}</td>
                             <td>{c.code}</td>
+                            <td>{c.accessKey ? c.accessKey : "---" }</td>
                             <td>
                               {c.isPercentage
                                 ? `${c.value}%`
@@ -327,6 +341,13 @@ const ManageCoupon = () => {
                                   ) : (
                                     <i className="mdi mdi-sync-off font-size-18"></i>
                                   )}
+                                </Link>
+                                <Link
+                                  className="text-secondary"
+                                  onClick={() => toggleRevoke(c.id)}
+                                  id="revoke"
+                                >
+                                  <button className="btn btn-primary">Revoke</button>
                                 </Link>
                               </div>
                             </td>

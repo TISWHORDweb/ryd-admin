@@ -147,8 +147,9 @@ const ManageTestimonial = () => {
                         <thead>
                           <tr>
                             <th>#</th>
-                            <th>Parent Name</th>
-                            <th>Parent Email</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Country</th>
                             <th>Testimonial</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -159,8 +160,11 @@ const ManageTestimonial = () => {
                             testimonials.map((testimonial, index) => (
                               <tr key={index}>
                                 <td>{index + 1}</td>
-                                <td>{testimonial?.parent?.firstName + " " + testimonial?.parent?.lastName}</td>
-                                <td>{testimonial?.parent?.email}</td>
+                                <td>{testimonial?.parentId ? testimonial?.parent?.firstName + " " + testimonial?.parent?.lastName : testimonial?.name}</td>
+                                <td>{testimonial?.parentId ? testimonial?.parent?.email : "----"}</td>
+                                <td className="">
+                                  { testimonial?.parentId ? testimonial?.parent?.country : testimonial?.country}
+                                </td>
                                 <td className="">
                                   {testimonial?.testimonial}
                                 </td>
