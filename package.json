@@ -5,7 +5,7 @@
   "dependencies": {
     "@ckeditor/ckeditor5-build-classic": "^40.1.0",
     "@ckeditor/ckeditor5-core": "^40.1.0",
-    "@ckeditor/ckeditor5-engine": "^40.1.0",
+    "@ckeditor/ckeditor5-engine": "^43.0.0",
     "@ckeditor/ckeditor5-react": "^6.2.0",
     "@ckeditor/ckeditor5-utils": "^40.1.0",
     "@ckeditor/ckeditor5-watchdog": "^40.1.0",
