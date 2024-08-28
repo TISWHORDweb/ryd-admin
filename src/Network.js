@@ -4,7 +4,7 @@
  Git: nusktec
  **/
 
-class Network {
+ class Network {
   //baseUrl
   netData = null;
   headerConfig = { "Content-Type": "application/json" }
@@ -57,7 +57,8 @@ class Network {
     return this;
   }
 }
-export const baseUrl =  "http://localhost:3000";
+// export const baseUrl =  "http://localhost:3000";
+export const baseUrl =  "https://ryd-learning-api-v2.onrender.com"
 // export const baseUrl =  "https://api-pro.rydlearning.com";
 
 export default Network
