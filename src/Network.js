@@ -8,9 +8,9 @@ class Network {
   //baseUrl
   netData = null;
   headerConfig = { "Content-Type": "application/json" }
-  //baseUrl = "https://api-pro.rydlearning.com"
+  baseUrl = "https://api-pro.rydlearning.com"
   // baseUrl = "http://localhost:3000";
-  baseUrl = "https://ryd-learning-api-v2.onrender.com"
+  // baseUrl = "https://ryd-learning-api-v2.onrender.com"
   paymentBaseUrl = this.baseUrl + "/v1/stripe/ask/create-pay"
 
   constructor(baseUrl = null) {
@@ -58,7 +58,7 @@ class Network {
   }
 }
 // export const baseUrl =  "http://localhost:3000";
-export const baseUrl =  "https://ryd-learning-api-v2.onrender.com"
-// export const baseUrl =  "https://api-pro.rydlearning.com";
+// export const baseUrl =  "https://ryd-learning-api-v2.onrender.com"
+export const baseUrl =  "https://api-pro.rydlearning.com";
 
 export default Network
