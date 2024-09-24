@@ -77,6 +77,8 @@ const ManagePartner = () => {
 
 
   useEffect(() => {
+    //Title
+    window.document.title = "Partner - RYD Admin"
     fetchPartners();
   }, [modal]);
 
@@ -138,13 +140,12 @@ const ManagePartner = () => {
                     </div>
                     <div>
                       <button
-                        className="btn btn-light"
+                        className="btn btn-light d-none"
                         onClick={() => {
                           setPartner({});
                           setIsEdit(false);
                           toggle();
-                        }}
-                      >
+                        }}>
                         <i className="bx bx-plus me-1"></i> Add New Partner
                       </button>
                     </div>
@@ -171,7 +172,7 @@ const ManagePartner = () => {
                           <th>Organization Name</th>
                           <th>Address</th>
                           <th>email</th>
-                          <th>Discount</th>
+                          <th>Discount (%)</th>
                           <th>Status</th>
                           <th>Action</th>
                         </tr>
@@ -183,7 +184,7 @@ const ManagePartner = () => {
                             <td>{p?.organizationName}</td>
                             <td>{p?.address}</td>
                             <td>{p?.email}</td>
-                            <td>{p.discount}</td>
+                            <td>{p.discount}%</td>
                             <td>{p.approved ? "Approved" : "Unapproved"}</td>
                             <td>
                               <div className="d-flex gap-3">

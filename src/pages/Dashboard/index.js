@@ -58,7 +58,8 @@ const Dashboard = () => {
                 { title: "Total Programs", count: programCount, statusColor: "primary" },
                 { title: "Teacher Assigned", count: teacherAssignedCount, statusColor: "success" },
                 { title: "Enrolled", count: enrolledCount, statusColor: "danger" },
-                { title: "Total Package", count: packageCount, statusColor: "secondary" }
+                { title: "Total Packages", count: packageCount, statusColor: "secondary" },
+                { title: "Total Partners", count: 0, statusColor: "primary" }
             ]);
         } catch (error) {
             console.error("Error fetching data:", error);
