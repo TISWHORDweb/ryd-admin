@@ -54,7 +54,7 @@ const ManageCoupon = () => {
         .max(6, "Code cannot be more than 6 characters"),
       discount: Yup.number().required("Please Enter Discount"),
       isPercentage: Yup.boolean().required("Please Choose Discount Type"),
-      byLevel: Yup.number().required("Please Choose level"),
+      byLevel: Yup.string().required("Please Choose level"),
       byCountry: Yup.string().required("Please Choose Country"),
     }),
 
@@ -64,7 +64,7 @@ const ManageCoupon = () => {
           code: values.code,
           value: values.discount,
           isPercentage: values.isPercentage,
-          byLevel: values.byLevel,
+          byLevel: parseInt(values.byLevel),
           byCountry: values.byCountry,
           isActive: true,
         };
@@ -178,7 +178,7 @@ const ManageCoupon = () => {
   };
   
   const filteredCoupons = coupons.filter(coupon =>
-    coupon.code.toLowerCase().includes(searchQuery.toLowerCase())
+   coupon.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

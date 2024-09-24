@@ -24,6 +24,7 @@ import ManageSurvey from "../pages/ManageSurvey";
 import ManageCoupon from "../pages/ManageCoupon";
 import ManageCohort from "../pages/manageCohort";
 import ManageTestimonial from "../pages/ManageTestimonial";
+import ManagePartner from "../pages/ManagePartner";
 
 const userRoutes = [
   //dashboard
@@ -52,6 +53,8 @@ const userRoutes = [
   { path: "/manage-survey", component: <ManageSurvey/> },
 
   { path: "/manage-coupon", component: <ManageCoupon/> },
+
+  { path: "/manage-partner", component: <ManagePartner/> },
   
   { path: "/manage-testimonial", component: <ManageTestimonial/> },
 
