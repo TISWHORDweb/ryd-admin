@@ -5,7 +5,7 @@ import { Routes, Route } from "react-router-dom"
 import { connect } from "react-redux"
 
 // Import Routes all
-import { userRoutes, authRoutes } from "./routes/allRoutes"
+import { userRoutes, authRoutes, partnerRoutes } from "./routes/allRoutes"
 
 // Import all middleware
 import Authmiddleware from "./routes/middleware/Authmiddleware"
@@ -14,6 +14,7 @@ import Authmiddleware from "./routes/middleware/Authmiddleware"
 import VerticalLayout from "./components/VerticalLayout/"
 import HorizontalLayout from "./components/HorizontalLayout/"
 import NonAuthLayout from "./components/NonAuthLayout"
+import PartnerLayout from "./components/PartnerLayout"
 
 // Import scss
 import "./assets/scss/theme.scss"
@@ -59,7 +60,7 @@ const App = props => {
 
   const Layout = getLayout()
   return (
-  <React.Fragment>
+    <React.Fragment>
       {/* <Router> */}
       <Routes>
         {authRoutes.map((route, idx) => (
@@ -69,6 +70,20 @@ const App = props => {
               <NonAuthLayout>
                 {route.component}
               </NonAuthLayout>
+            }
+            key={idx}
+            exact={true}
+          />
+
+        ))}
+
+        {partnerRoutes.map((route, idx) => (
+          <Route
+            path={route.path}
+            element={
+              <PartnerLayout>
+                {route.component}
+              </PartnerLayout>
             }
             key={idx}
             exact={true}

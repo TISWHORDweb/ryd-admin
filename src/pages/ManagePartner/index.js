@@ -35,7 +35,8 @@ const ManagePartner = () => {
   const [isApprove, setIsApprove] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  // const [partnerId, setPartnerID] = useState("");
+  const [discount, setDiscount] = useState("");
+  const [editTooltipOpen, setEditTooltipOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
 
@@ -96,7 +97,12 @@ const ManagePartner = () => {
     setModal(!modal);
   };
 
-  const handlePartnerClick = (partnerData) => {
+  const handleCreateDiscountClick = (partnerData) => {
+    setPartner(partnerData);
+    toggle();
+  };
+
+  const handleUpdateDiscountClick = (partnerData) => {
     setPartner(partnerData);
     toggle();
   };
@@ -188,31 +194,36 @@ const ManagePartner = () => {
                             <td>{p.approved ? "Approved" : "Unapproved"}</td>
                             <td>
                               <div className="d-flex gap-3">
-                                {/* <Tooltip
-                                  isOpen={statusTooltipOpen}
-                                  target="status"
-                                  toggle={() => setStatusTooltipOpen(!statusTooltipOpen)}
+                              {p.approved ?
+                            <>
+                              <Tooltip
+                                  isOpen={editTooltipOpen}
+                                  target="edit"
+                                  toggle={() => setEditTooltipOpen(!editTooltipOpen)}
                                   placement="top"
                                   delay={{ show: 100, hide: 100 }}
                                 >
-                                  {!p.approved ? 'Deactivate' : 'Activate'}
+                                  Edit
                                 </Tooltip>
                                 <Link
-                                  className="text-secondary"
-                                  onClick={() => togglePartnerStatus(p.id, p.isActive)}
-                                  id="status"
-                                  onMouseEnter={() => setStatusTooltipOpen(true)}
-                                  onMouseLeave={() => setStatusTooltipOpen(false)}
+                                  className="text-success"
+                                  to="#"
+                                  id="edit"
+                                  onMouseEnter={() => setEditTooltipOpen(true)}
+                                  onMouseLeave={() => setEditTooltipOpen(false)}
+                                  onClick={() => {
+                                    handleUpdateDiscountClick(p);
+                                    setIsApprove(false);
+                                    setDiscount(p.discount)
+                                  }}
                                 >
-                                  {!p.approved ? (
-                                    <i className="mdi mdi-sync font-size-18"></i>
-                                  ) : (
-                                    <i className="mdi mdi-sync-off font-size-18"></i>
-                                  )}
-                                </Link> */}
+                                  <i className="mdi mdi-pencil font-size-18"></i>
+                                </Link>
+                                </>: null }
                                 {p.approved ?
                                   <Link
                                     className="text-secondary"
+                                    to={`/partner/dashboard/${p.id}`}
                                     onClick={() => toggleRevoke(p.id)}
                                     id="manage"
                                   >
@@ -220,7 +231,7 @@ const ManagePartner = () => {
                                   </Link> : <Button
                                     color="success"
                                     onClick={() => {
-                                      handlePartnerClick(p);
+                                      handleCreateDiscountClick(p);
                                       setIsApprove(true);
                                     }}>
                                     Approve
@@ -236,7 +247,7 @@ const ManagePartner = () => {
                   )}
                   <Modal isOpen={modal} toggle={toggle}>
                     <ModalHeader toggle={toggle}>
-                      {isApprove ? "Add Discount" : "Add New Partner"}
+                      {isApprove ? "Add Discount" : "Edit Discount"}
                     </ModalHeader>
                     <ModalBody>
                       <Form onSubmit={validation.handleSubmit}>
@@ -250,7 +261,7 @@ const ManagePartner = () => {
                                 placeholder="Discount"
                                 onChange={validation.handleChange}
                                 onBlur={validation.handleBlur}
-                                value={validation.values.discount || ""}
+                                value={validation.values.discount || discount}
                                 invalid={
                                   validation.touched.discount &&
                                   validation.errors.discount
@@ -270,7 +281,7 @@ const ManagePartner = () => {
                                   type="submit"
                                   className="btn btn-primary save-user"
                                 >
-                                  Create Partner
+                                  Update
                                 </button>
                               ) : (
                                 <button

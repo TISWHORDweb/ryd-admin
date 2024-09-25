@@ -47,10 +47,14 @@ const Dashboard = () => {
 
             // Fetch program data
             const packageResponse = await axios.get(`${baseUrl}/admin/package/all`);
+            // Fetch Partner data   
+            const partnerResponse = await axios.get(`${baseUrl}/admin/partner/all`);
+            const parnerResponseData = partnerResponse.data;
 
             const teacherAssignedCount = responseData.data.reduce((count, item) => count + (item.teacher ? 1 : 0), 0);
             const enrolledCount = responseData.data.reduce((count, item) => count + (item.child ? 1 : 0), 0);
             const programCount = responseData.data.length;
+            const partnerCount = parnerResponseData.data.length;
 
             const packageCount = packageResponse?.data?.data.length
 
@@ -59,7 +63,7 @@ const Dashboard = () => {
                 { title: "Teacher Assigned", count: teacherAssignedCount, statusColor: "success" },
                 { title: "Enrolled", count: enrolledCount, statusColor: "danger" },
                 { title: "Total Packages", count: packageCount, statusColor: "secondary" },
-                { title: "Total Partners", count: 0, statusColor: "primary" }
+                { title: "Total Partners", count: partnerCount, statusColor: "primary" }
             ]);
         } catch (error) {
             console.error("Error fetching data:", error);

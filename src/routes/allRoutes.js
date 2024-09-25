@@ -25,6 +25,10 @@ import ManageCoupon from "../pages/ManageCoupon";
 import ManageCohort from "../pages/manageCohort";
 import ManageTestimonial from "../pages/ManageTestimonial";
 import ManagePartner from "../pages/ManagePartner";
+import ParnerDashboard from "../pages/ManagePartner/PartnerDashboard";
+import PartnerParent from "../pages/ManagePartner/PartnerParent";
+import PartnerChild from "../pages/ManagePartner/PartnerChild";
+import PartnerProgram from "../pages/ManagePartner/PartnerProgram";
 
 const userRoutes = [
   //dashboard
@@ -74,4 +78,12 @@ const authRoutes = [
   { path: "/auth/forgot", component: <Password /> },
 ];
 
-export { userRoutes, authRoutes };
+const partnerRoutes = [
+  //authencation page
+  { path: "/partner/dashboard/:id", component: <ParnerDashboard /> },
+  { path: "/partner/manage-parent/:id", component: <PartnerParent /> },
+  { path: "/partner/manage-child/:id", component: <PartnerChild /> },
+  { path: "/partner/manage-program/:id", component: <PartnerProgram /> },
+];
+
+export { userRoutes, authRoutes, partnerRoutes };
