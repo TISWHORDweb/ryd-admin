@@ -57,7 +57,7 @@ const Dashboard = () => {
           { title: "Total Programs", count: programCount, statusColor: "primary" },
           { title: "Teacher Child", count: childCount, statusColor: "success" },
           { title: "Total Parents", count: parentCount, statusColor: "danger" },
-          { title: "Total Debt", count: debtCount, statusColor: "secondary" }
+          { title: "Total Debt", count: "$"+debtCount, statusColor: "secondary" }
         ]);
       }
     } catch (error) {

@@ -193,7 +193,7 @@ const SidebarContent = props => {
               <div className="mt-4">
                 <h5 className="alertcard-title font-size-16">Administrator</h5>
                 <p className="font-size-13">Always see live changes while managing the portable.</p>
-                <a target="_blank" href="https://rydlearning.com" className="btn btn-primary mt-2" rel="noreferrer">RYD Website</a>
+                <a href="/" className="btn btn-primary mt-2" rel="noreferrer">Main Admin</a>
               </div>
             </div>
           </div>
