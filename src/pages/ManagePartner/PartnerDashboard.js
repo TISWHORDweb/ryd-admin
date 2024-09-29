@@ -31,7 +31,7 @@ const Dashboard = () => {
     { title: "Total Programs", count: 0, statusColor: "primary" },
     { title: "Teacher Assigned", count: 0, statusColor: "success" },
     { title: "Enrolled", count: 0, statusColor: "danger" },
-    { title: "Total Package", count: 0, statusColor: "secondary" }
+    { title: "Total Debt", count: 0, statusColor: "secondary" }
   ]);
 
   const { id } = useParams()
@@ -51,13 +51,23 @@ const Dashboard = () => {
         const debtCount = partnerDashboardResponse.data.data.debt;
         const programCount = partnerDashboardResponse.data.data.programs?.length;
         const childCount = partnerDashboardResponse.data.data.totalStudent;
-        setCohorts(partnerDashboardResponse.data.data.cohort)
+        //filter cohort before my account
+        const pDate = new Date(partnerDashboardResponse.data.data.partner.createdAt)
+        pDate.setHours(0, 0, 0, 0)
+        pDate.setDate(1)
+        const cd = partnerDashboardResponse.data.data.cohort.filter(f => {
+          const dd = new Date(f.createdAt)
+          dd.setDate(1)
+          dd.setHours(0, 0, 0, 0)
+          return dd>=pDate
+        })
+        setCohorts(cd)
         setPartner(partnerDashboardResponse.data.data.partner)
         setProgramData([
           { title: "Total Programs", count: programCount, statusColor: "primary" },
           { title: "Teacher Child", count: childCount, statusColor: "success" },
           { title: "Total Parents", count: parentCount, statusColor: "danger" },
-          { title: "Total Debt", count: "$"+debtCount, statusColor: "secondary" }
+          { title: "Total Debt", count: (partnerDashboardResponse.data.data?.rate?.currencyCode || "$") +debtCount, statusColor: "secondary" }
         ]);
       }
     } catch (error) {
