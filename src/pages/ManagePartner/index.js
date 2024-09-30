@@ -26,6 +26,7 @@ import {
 } from "reactstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { calculateDebt } from "../../utils";
 
 const ManagePartner = () => {
   const [partners, setPartners] = useState([]);
@@ -53,7 +54,7 @@ const ManagePartner = () => {
       try {
         const approvePartner = {
           discount: values.discount,
-          id:partner.id
+          id: partner.id
         };
 
 
@@ -115,6 +116,44 @@ const ManagePartner = () => {
   const filteredParners = partners.filter(partner =>
     partner.organizationName.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleDisablePartner = async (id) => {
+    try {
+      const response = await axios.put(`${baseUrl}/admin/partner/disable/${id}`);
+      if (!response.status) {
+        toast.error(response.message);
+        return;
+      }
+      toast.success("Partner disabled successfully");
+      const responseData = response.data;
+      const updatedPartners = partners.map((p) =>
+        p.id === partner.id ? { ...p, ...responseData } : p
+      );
+      setPartners(updatedPartners);
+      fetchPartners()
+    } catch (error) {
+      toast.error("Failed to disable partner");
+    }
+  };
+
+  const handleEnablePartner = async (id) => {
+    try {
+      const response = await axios.put(`${baseUrl}/admin/partner/enable/${id}`);
+      if (!response.status) {
+        toast.error(response.message);
+        return;
+      }
+      toast.success("Partner enabled successfully");
+      const responseData = response.data;
+      const updatedPartners = partners.map((p) =>
+        p.id === partner.id ? { ...p, ...responseData } : p
+      );
+      setPartners(updatedPartners);
+      fetchPartners()
+    } catch (error) {
+      toast.error("Failed to enable partner");
+    }
+  };
 
   return (
     <React.Fragment>
@@ -179,6 +218,7 @@ const ManagePartner = () => {
                           <th>Address</th>
                           <th>email</th>
                           <th>Discount (%)</th>
+                          <th>Debt</th>
                           <th>Status</th>
                           <th>Action</th>
                         </tr>
@@ -191,43 +231,44 @@ const ManagePartner = () => {
                             <td>{p?.address}</td>
                             <td>{p?.email}</td>
                             <td>{p.discount}%</td>
+                            <td>{calculateDebt(p.programs)}</td>
                             <td>{p.approved ? "Approved" : "Unapproved"}</td>
                             <td>
                               <div className="d-flex gap-3">
-                              {p.approved ?
-                            <>
-                              <Tooltip
-                                  isOpen={editTooltipOpen}
-                                  target="edit"
-                                  toggle={() => setEditTooltipOpen(!editTooltipOpen)}
-                                  placement="top"
-                                  delay={{ show: 100, hide: 100 }}
-                                >
-                                  Edit
-                                </Tooltip>
-                                <Link
-                                  className="text-success"
-                                  to="#"
-                                  id="edit"
-                                  onMouseEnter={() => setEditTooltipOpen(true)}
-                                  onMouseLeave={() => setEditTooltipOpen(false)}
-                                  onClick={() => {
-                                    handleUpdateDiscountClick(p);
-                                    setIsApprove(false);
-                                    setDiscount(p.discount)
-                                  }}
-                                >
-                                  <i className="mdi mdi-pencil font-size-18"></i>
-                                </Link>
-                                </>: null }
+                                {p.approved ?
+                                  <>
+                                    <Tooltip
+                                      isOpen={editTooltipOpen}
+                                      target="edit"
+                                      toggle={() => setEditTooltipOpen(!editTooltipOpen)}
+                                      placement="top"
+                                      delay={{ show: 100, hide: 100 }}
+                                    >
+                                      Edit
+                                    </Tooltip>
+                                    <Link
+                                      className="text-success"
+                                      to="#"
+                                      id="edit"
+                                      onMouseEnter={() => setEditTooltipOpen(true)}
+                                      onMouseLeave={() => setEditTooltipOpen(false)}
+                                      onClick={() => {
+                                        handleUpdateDiscountClick(p);
+                                        setIsApprove(false);
+                                        setDiscount(p.discount)
+                                      }}
+                                    >
+                                      <i className="mdi mdi-pencil font-size-18"></i>
+                                    </Link>
+                                  </> : null}
                                 {p.approved ?
                                   <Link
-                                    className="text-secondary"
+                                    className="text-[#1671D9]"
                                     to={`/partner/dashboard/${p.id}`}
                                     onClick={() => toggleRevoke(p.id)}
                                     id="manage"
                                   >
-                                    <button className="btn btn-primary">Manage Partner</button>
+                                    <span className="">Manage Partner</span>
                                   </Link> : <Button
                                     color="success"
                                     onClick={() => {
@@ -236,6 +277,25 @@ const ManagePartner = () => {
                                     }}>
                                     Approve
                                   </Button>}
+                                {p.status ?
+                                  <Link
+                                    className="text-danger"
+                                    onClick={() => {
+                                      if (confirm("Do you really want to DISABLE " + p?.organizationName + " ?")) {
+                                        handleDisablePartner(p.id)
+                                      }
+                                    }}
+                                    id="manage"
+                                  >
+                                    <span className="">Disable</span>
+                                  </Link> : <a href="#"
+                                  className="text-success"
+                                    onClick={() => {
+                                      if (confirm("Do you really want to ENABLE " + p?.organizationName + " ?")) {
+                                        handleEnablePartner(p.id)
+                                      }
+                                    }}>
+                                    Enable</a>}
                               </div>
                             </td>
                           </tr>
