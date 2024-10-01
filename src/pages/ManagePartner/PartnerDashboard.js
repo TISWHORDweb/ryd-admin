@@ -5,13 +5,14 @@ import {Card, CardBody, Col, Container, Input, Row,} from "reactstrap";
 import axios from 'axios';
 import {baseUrl} from '../../Network';
 import {useParams} from 'react-router-dom';
-import {newFormatDate, totalCohortChild, totalCohortParent} from '../../utils';
+import {checkPartnerProgram, newFormatDate, totalCohortChild, totalCohortParent} from '../../utils';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [cohorts, setCohorts] = useState([]);
   const [partner, setPartner] = useState();
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterData, setFilterData] = useState([]);
   const [programData, setProgramData] = useState([
     { title: "Total Programs", count: 0, statusColor: "primary" },
     { title: "Teacher Assigned", count: 0, statusColor: "success" },
@@ -47,6 +48,7 @@ const Dashboard = () => {
           return dd>=pDate
         })
         setCohorts(cd)
+        setFilterData(cd);
         setPartner(partnerDashboardResponse.data.data.partner)
         setProgramData([
           { title: "Total Programs", count: programCount, statusColor: "primary" },
@@ -60,12 +62,22 @@ const Dashboard = () => {
     }
   };
 
-  const filteredCohort = cohorts.filter(cohort =>
-    cohort.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-  };
+  function filterTableData(data, searchQuery) {
+    return data.filter((cohort) => {
+      const searchText = searchQuery.toLowerCase();
+      return (
+        cohort.title.toLowerCase().includes(searchText)
+      );
+    });
+  }
+
+  useEffect(() => {
+    if (searchQuery) {
+      setFilterData(filterTableData(cohorts, searchQuery));
+    } else {
+      setFilterData(cohorts);
+    }
+  }, [searchQuery]);
 
   return (
     <React.Fragment>
@@ -103,8 +115,7 @@ const Dashboard = () => {
                       <Input
                         type="text"
                         placeholder="Search"
-                        value={searchQuery}
-                        onChange={handleSearch}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                       />
                     </div>
                   </div>
@@ -118,7 +129,7 @@ const Dashboard = () => {
                     <span className="visually-hidden">Loading...</span>
                   </div>
                 </div>
-              ) : filteredCohort.length === 0 ? (
+              ) : filterData.length === 0 ? (
                 <div className="text-center mt-5">
                   <h3>No data available</h3>
                 </div>
@@ -136,14 +147,14 @@ const Dashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredCohort.map((p, index) => (
+                    {filterData.map((p, index) => (
                       <tr key={index}>
                         <td>{index + 1}</td>
                         <td>{p?.title}</td>
                         <td>{newFormatDate(p?.startDate)}</td>
                         <td>{newFormatDate(p?.startDate)}</td>
-                        <td>{totalCohortChild(p.partner_programs)}</td>
-                        <td>{totalCohortParent(p.partner_programs)}</td>
+                        <td>{totalCohortChild(p.partner_programs, parseInt(id))}</td>
+                        <td>{totalCohortParent(p.partner_programs, parseInt(id))}</td>
                         <td>{p.status ? (
                           <p className=" bg-custom-yellow  font-normal text-yellow-600 text-center p-1 rounded-2xl" style={{background:"rgba(255, 255, 0, 0.147)",color:"blavk"}}>
                             Ongoing

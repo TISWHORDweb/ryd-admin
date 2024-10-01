@@ -1,6 +1,7 @@
 
-export const totalCohortChild = (programs) => {
-  const programCount = programs.reduce((count, program) => {
+export const totalCohortChild = (programs,id) => {
+  const filteredPrograms = programs.filter((program) => program.partnerId === id);
+  const programCount = filteredPrograms.reduce((count, program) => {
     const childId = program.childId;
     if (!count.has(childId)) {
       count.set(childId, 1);
@@ -12,8 +13,9 @@ export const totalCohortChild = (programs) => {
 };
 
 
-export const totalCohortParent = (programs) => {
-  const programCount = programs.reduce((count, program) => {
+export const totalCohortParent = (programs,id) => {
+  const filteredPrograms = programs.filter((program) => program.partnerId === id);
+  const programCount = filteredPrograms.reduce((count, program) => {
     const parentId = program.child.parentId;
     if (!count.has(parentId)) {
       count.set(parentId, 1);
