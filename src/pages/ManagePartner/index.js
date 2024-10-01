@@ -118,6 +118,7 @@ const ManagePartner = () => {
   );
 
   const handleDisablePartner = async (id) => {
+    setLoading(true)
     try {
       const response = await axios.put(`${baseUrl}/admin/partner/disable/${id}`);
       if (!response.status) {
@@ -137,6 +138,7 @@ const ManagePartner = () => {
   };
 
   const handleEnablePartner = async (id) => {
+    setLoading(true)
     try {
       const response = await axios.put(`${baseUrl}/admin/partner/enable/${id}`);
       if (!response.status) {
@@ -231,71 +233,70 @@ const ManagePartner = () => {
                             <td>{p?.address}</td>
                             <td>{p?.email}</td>
                             <td>{p.discount}%</td>
-                            <td>{calculateDebt(p.programs)}</td>
+                            <td>CAD{calculateDebt(p.programs)}</td>
                             <td>{p.approved ? "Approved" : "Unapproved"}</td>
                             <td>
                               <div className="d-flex gap-3">
                                 {p.approved ?
-                                  <>
-                                    <Tooltip
-                                      isOpen={editTooltipOpen}
-                                      target="edit"
-                                      toggle={() => setEditTooltipOpen(!editTooltipOpen)}
-                                      placement="top"
-                                      delay={{ show: 100, hide: 100 }}
-                                    >
-                                      Edit
-                                    </Tooltip>
-                                    <Link
-                                      className="text-success"
-                                      to="#"
-                                      id="edit"
-                                      onMouseEnter={() => setEditTooltipOpen(true)}
-                                      onMouseLeave={() => setEditTooltipOpen(false)}
-                                      onClick={() => {
-                                        handleUpdateDiscountClick(p);
-                                        setIsApprove(false);
-                                        setDiscount(p.discount)
-                                      }}
-                                    >
-                                      <i className="mdi mdi-pencil font-size-18"></i>
-                                    </Link>
-                                  </> : null}
-                                {p.approved ?
-                                  <Link
-                                    className="text-[#1671D9]"
-                                    to={`/partner/dashboard/${p.id}`}
-                                    onClick={() => toggleRevoke(p.id)}
-                                    id="manage"
-                                  >
-                                    <span className="">Manage Partner</span>
-                                  </Link> : <Button
-                                    color="success"
-                                    onClick={() => {
-                                      handleCreateDiscountClick(p);
-                                      setIsApprove(true);
-                                    }}>
-                                    Approve
-                                  </Button>}
+                                    <>
+                                      <Tooltip
+                                          isOpen={editTooltipOpen}
+                                          target="edit"
+                                          toggle={() => setEditTooltipOpen(!editTooltipOpen)}
+                                          placement="top"
+                                          delay={{show: 100, hide: 100}}
+                                      >
+                                        Edit
+                                      </Tooltip>
+                                      <Link
+                                          className="text-success"
+                                          to="#"
+                                          id="edit"
+                                          onMouseEnter={() => setEditTooltipOpen(true)}
+                                          onMouseLeave={() => setEditTooltipOpen(false)}
+                                          onClick={() => {
+                                            handleUpdateDiscountClick(p);
+                                            setIsApprove(false);
+                                            setDiscount(p.discount)
+                                          }}
+                                      >
+                                        <i className="mdi mdi-pencil font-size-18"></i>
+                                      </Link>
+                                    </> : <i className="mdi mdi-pencil font-size-18"></i>}
                                 {p.status ?
-                                  <Link
-                                    className="text-danger"
-                                    onClick={() => {
-                                      if (confirm("Do you really want to DISABLE " + p?.organizationName + " ?")) {
-                                        handleDisablePartner(p.id)
-                                      }
-                                    }}
-                                    id="manage"
-                                  >
-                                    <span className="">Disable</span>
-                                  </Link> : <a href="#"
-                                  className="text-success"
-                                    onClick={() => {
-                                      if (confirm("Do you really want to ENABLE " + p?.organizationName + " ?")) {
-                                        handleEnablePartner(p.id)
-                                      }
-                                    }}>
-                                    Enable</a>}
+                                    <Link
+                                        className="text-danger"
+                                        onClick={() => {
+                                          if (confirm("Do you really want to DISABLE " + p?.organizationName + " ?")) {
+                                            handleDisablePartner(p.id)
+                                          }
+                                        }}
+                                        id="manage"
+                                    >
+                                      <span className="">Restrict Account</span>
+                                    </Link> : <a href="#"
+                                                 className="text-success"
+                                                 onClick={() => {
+                                                   if (confirm("Do you really want to ENABLE " + p?.organizationName + " ?")) {
+                                                     handleEnablePartner(p.id)
+                                                   }
+                                                 }}>
+                                      Remove Restriction</a>}
+                                {p.approved ?
+                                    <Link
+                                        className="text-[#1671D9]"
+                                        to={`/partner/dashboard/${p.id}`}
+                                        onClick={() => toggleRevoke(p.id)}
+                                        id="manage"
+                                    >
+                                      <span className="">Manage Partner</span>
+                                    </Link> : <Link className="text-[#000]"
+                                                    onClick={() => {
+                                                      handleCreateDiscountClick(p);
+                                                      setIsApprove(true);
+                                                    }}>
+                                      Approve
+                                    </Link>}
                               </div>
                             </td>
                           </tr>
@@ -337,12 +338,12 @@ const ManagePartner = () => {
                           <Col>
                             <div className="text-end">
                               {!isApprove ? (
-                                <button
+                                <a
                                   type="submit"
                                   className="btn btn-primary save-user"
                                 >
                                   Update
-                                </button>
+                                </a>
                               ) : (
                                 <button
                                   type="submit"

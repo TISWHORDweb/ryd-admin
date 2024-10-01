@@ -1,26 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import withAuth from '../withAuth';
 import Breadcrumbs from "../../components/Common/Breadcrumb";
-import {
-  Col,
-  Container,
-  Row,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  CardBody,
-  Tooltip,
-  Card,
-  Form,
-  Label,
-  Input,
-  FormFeedback,
-  Button,
-} from "reactstrap";
+import {Card, CardBody, Col, Container, Input, Row,} from "reactstrap";
 import axios from 'axios';
-import { baseUrl } from '../../Network';
-import { Link, useParams } from 'react-router-dom';
-import { newFormatDate, totalCohortChild, totalCohortParent } from '../../utils';
+import {baseUrl} from '../../Network';
+import {useParams} from 'react-router-dom';
+import {newFormatDate, totalCohortChild, totalCohortParent} from '../../utils';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
