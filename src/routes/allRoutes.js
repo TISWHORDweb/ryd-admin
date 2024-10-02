@@ -29,6 +29,7 @@ import ParnerDashboard from "../pages/ManagePartner/PartnerDashboard";
 import PartnerParent from "../pages/ManagePartner/PartnerParent";
 import PartnerChild from "../pages/ManagePartner/PartnerChild";
 import PartnerProgram from "../pages/ManagePartner/PartnerProgram";
+import ManagePartnerProgram from "../pages/managePartnerPrograms/ManagePartnerProgram";
 
 const userRoutes = [
   //dashboard
@@ -63,6 +64,8 @@ const userRoutes = [
   { path: "/manage-testimonial", component: <ManageTestimonial/> },
 
   { path: "/settings", component: <Settings /> },
+
+  { path: "/manage-partner-program", component: <ManagePartnerProgram /> },
 
   //profile
   { path: "/profile", component: <UserProfile /> },

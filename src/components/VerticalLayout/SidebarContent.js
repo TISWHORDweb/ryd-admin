@@ -264,7 +264,16 @@ const SidebarContent = props => {
                 <FeatherIcon
                     icon="user-plus"
                 />{" "}
-                <span>{props.t("Manage Partner")}</span>
+                <span>{props.t("Manage Partners")}</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/manage-partner-program" className="">
+                <FeatherIcon
+                    icon="activity"
+                />{" "}
+                <span>{props.t("Manage Partner Programs")}</span>
               </Link>
             </li>
 
