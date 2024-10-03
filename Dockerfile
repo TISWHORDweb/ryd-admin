@@ -1,5 +1,5 @@
 # Install dependencies only when needed
-FROM node:18.11-slim AS builder
+FROM node:18.17.1 AS builder
 WORKDIR /app
 
 # Copy source code
@@ -17,7 +17,7 @@ RUN ${BUILD_COMMAND}
 FROM nginx:stable-bullseye
 
 # Build args
-ARG BUILD_DIRECTORY="dist"
+ARG BUILD_DIRECTORY="build"
 
 COPY --from=builder /app/${BUILD_DIRECTORY} /usr/share/nginx/html
 # Copying our nginx.conf
