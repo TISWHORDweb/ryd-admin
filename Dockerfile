@@ -6,7 +6,7 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies
-ARG SETUP_COMMAND="npm install"
+ARG SETUP_COMMAND="npm install --force"
 RUN ${SETUP_COMMAND}
 
 # Build command
