@@ -153,7 +153,7 @@ const SidebarContent = props => {
             <li>
               <Link to="/dashboard" className="">
                 <FeatherIcon
-                  icon="home"
+                    icon="home"
                 />{" "}
                 <span>{props.t("Dashboard")}</span>
               </Link>
@@ -260,6 +260,15 @@ const SidebarContent = props => {
             </li>
 
             <li>
+              <Link to="/manage-timetable" className="">
+                <FeatherIcon
+                    icon="clock"
+                />{" "}
+                <span>{props.t("Manage TimeTable")}</span>
+              </Link>
+            </li>
+
+            <li>
               <Link to="/manage-partner" className="">
                 <FeatherIcon
                     icon="user-plus"
@@ -273,7 +282,7 @@ const SidebarContent = props => {
                 <FeatherIcon
                     icon="activity"
                 />{" "}
-                <span>{props.t("Manage Partner Programs")}</span>
+                <span>{props.t("Partner Programs")}</span>
               </Link>
             </li>
 

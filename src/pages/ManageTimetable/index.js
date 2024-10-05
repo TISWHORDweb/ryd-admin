@@ -1,321 +1,498 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, {useEffect, useState} from "react";
+import {Link} from "react-router-dom";
 import DeleteModal from "../../components/Common/DeleteModal";
 import * as Yup from "yup";
-import { useFormik } from "formik";
+import {useFormik} from "formik";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import withAuth from '../withAuth';
 import axios from "axios";
+import {baseUrl} from '../../Network';
 import {
-  Col,
-  Container,
-  Row,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  Form,
-  Label,
-  Input,
-  FormFeedback,
+    Col,
+    Container,
+    Row,
 } from "reactstrap";
-import { toast, ToastContainer } from 'react-toastify';
+import {toast, ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 
 // Define arrays for days and times
-export const Days = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
-export const Times = [
-  "00:00AM", "1:00AM", "2:00AM", "3:00AM", "4:00AM", "5:00AM", "6:00AM", "7:00AM",
-  "8:00AM", "9:00AM", "10:00AM", "11:00AM", "12:00PM", "13:00PM", "14:00PM", "15:00PM",
-  "16:00PM", "17:00PM", "18:00PM", "19:00PM", "20:00PM", "21:00PM", "22:00PM", "23:00PM"
-];
-
+export const WeekDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+export const WeekColors = ["#000", "#028178", "#ff6e00", "#044488", "#FF00A6FF", "#047E00FF", "#6D00B9FF"];
 
 const ManageTimeTable = () => {
-  document.title = "Manage Time Table | RYD Admin";
+    document.title = "Manage Time Table | RYD Admin";
 
-  const [timetables, setTimetables] = useState([]);
-  const [timetable, setTimetable] = useState({});
-  const [modal, setModal] = useState(false);
-  const [isEdit, setIsEdit] = useState(false);
-  const [deleteModal, setDeleteModal] = useState(false);
+    const [timetables, setTimetables] = useState([]);
+    const [groupTime, setGroupTime] = useState([]);
+    const [groupTimeUp, setGroupTimeUp] = useState([]);
+    const [groupTimeMultiple, setGroupTimeMultiple] = useState([]);
+    const [groupTimeMultipleUp, setGroupTimeMultipleUp] = useState([]);
+    const [groupTimeTitle, setGroupTimeTitle] = useState("");
+    const [groupTimeTitleUp, setGroupTimeTitleUp] = useState("");
+    const [weeksDayPicker, setWeeksDayPicker] = useState(0);
+    const [isMultipleGroup, setIsMultipleGroup] = useState(false);
+    const [isMultipleGroupUp, setIsMultipleGroupUp] = useState(false);
+    const [timeGroupData, setTimeGroupData] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isRecentList, setIsRecentList] = useState(false);
+    const [updateSet, setUpdateSet] = useState(0);
+    useEffect(() => {
+        fetchTimetables();
+    }, []); // Fetch timetables once on component mount
 
-  useEffect(() => {
-    fetchTimetables();
-  }, []); // Fetch timetables once on component mount
-
-  const fetchTimetables = async () => {
-    try {
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-      const response = await axios.get(`${apiUrl}/admin/timetable/all`);
-      setTimetables(response.data.data);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
-
-  const validation = useFormik({
-    enableReinitialize: true,
-    initialValues: {
-      dayOfWeek: timetable.dayOfWeek || "",
-      startTime: timetable.startTime || "",
-      endTime: timetable.endTime || "",
-      timezone: timetable.timezone || "",
-      country: timetable.country || "",
-      region: timetable.region || "",
-    },
-    validationSchema: Yup.object({
-      dayOfWeek: Yup.string().required("Please select Day of Week"),
-      startTime: Yup.string().required("Please select Start Time"),
-      endTime: Yup.string().required("Please select End Time"),
-      timezone: Yup.string().required("Please select Timezone"),
-      country: Yup.string().required("Please select Country"),
-      region: Yup.string().required("Please select Region"),
-    }),
-
-    onSubmit: async (values) => {
-      try {
-        const newTimetable = {
-          dayOfWeek: values.dayOfWeek,
-          startTime: values.startTime,
-          endTime: values.endTime,
-          timezone: values.timezone,
-          country: values.country,
-          region: values.region,
-        };
-
-        let apiUrl;
-        let response;
-        if (isEdit) {
-          apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-          response = await axios.put(`${apiUrl}/admin/timetable/edit/${timetable.id}`, newTimetable);
-          toast.success('Timetable updated successfully');
-        } else {
-          apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-          response = await axios.post(`${apiUrl}/admin/timetable/create`, newTimetable);
-          toast.success('Timetable created successfully');
+    const fetchTimetables = async () => {
+        try {
+            const response = await axios.get(`${baseUrl}/admin/timetable/all`);
+            const responseTG = await axios.get(`${baseUrl}/admin/timegroup/all`);
+            setTimetables(response.data.data);
+            setTimeGroupData(responseTG.data.data.reverse());
+        } catch (error) {
+            console.error("Error:", error);
         }
+    };
 
-        fetchTimetables(); // Fetch timetables again to update the list
-
-        toggle();
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    },
-  });
-
-  const toggle = () => {
-    setModal(!modal);
-  };
-
-  const handleTimetableClick = (data) => {
-    setTimetable(data);
-    setIsEdit(true);
-    toggle();
-  };
-
-  const onClickDelete = (data) => {
-    setTimetable(data);
-    setDeleteModal(true);
-  };
-
-  const handleDeleteTimetable = async () => {
-    try {
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000'; 
-      await axios.delete(`${apiUrl}/admin/timetable/${timetable.id}`);
-      fetchTimetables(); // Fetch timetables again to update the list
-      setDeleteModal(false);
-      toast.success('Timetable deleted successfully');
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error('Failed to delete timetable');
+    //days picker
+    const daysPicker = (i) => {
+        setWeeksDayPicker(i)
     }
-  };
 
-  return (
-    <React.Fragment>
-      <DeleteModal
-        show={deleteModal}
-        onDeleteClick={handleDeleteTimetable}
-        onCloseClick={() => setDeleteModal(false)}
-      />
-      <div className="page-content">
-        <Container fluid>
-          <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Timetable" />
-          <Row>
-            <Col lg="12">
-              <Row className="align-items-center">
-                <Col md={6}>
-                  <div className="mb-3">
-                    <h5 className="card-title">
-                      Timetable List{" "}
-                      <span className="text-muted fw-normal ms-2">
+    //add to group list
+    const addToGroupList = (f) => {
+        setGroupTime([...groupTime, f])
+    }
+
+    const addToMultiGroupList = () => {
+        if (groupTime.length > 0) {
+            setGroupTimeMultiple([...groupTimeMultiple, groupTime])
+            setGroupTime([])
+        }
+    }
+
+    const removeTimeGroup = (i) => {
+        if (confirm("Confirm to remove this item")) {
+            setGroupTime(groupTime.filter(x => x.id !== i))
+        }
+    }
+
+    const removeTimeGroupMulti = (i) => {
+        if (confirm("Confirm to remove this item")) {
+            setGroupTimeMultiple(groupTimeMultiple.filter((x, k) => k !== i))
+        }
+    }
+
+    const submitUpdatedTimeSheet = () => {
+
+    }
+
+    const setUpdatePanel=(i)=>{
+        setUpdateSet(timeGroupData[i].id)
+        setGroupTimeTitleUp(timeGroupData[i].title)
+        const isMulti = timeGroupData[i].times[0]?.id
+        if(isMulti){
+            setIsMultipleGroupUp(false)
+            setGroupTimeUp(timeGroupData[i].times)
+            setGroupTimeMultipleUp([])
+        }else {
+            setIsMultipleGroupUp(true)
+            setGroupTimeMultipleUp(timeGroupData[i].times)
+            setGroupTimeUp([])
+        }
+    }
+
+    //submitTask
+    const submitTimeSheet = async () => {
+        setIsLoading(true)
+        //create single time stamp
+        if (groupTimeTitle.length > 0) {
+            if (!isMultipleGroup) {
+                const response = await axios.post(
+                    `${baseUrl}/admin/timegroup/create`,
+                    {title: groupTimeTitle, times: groupTime}
+                );
+                if (response.data.status) {
+                    toast.success("TimeGroup created successfully")
+                    setTimeout(() => {
+                        window.location.reload()
+                    }, 2000)
+                } else {
+                    toast.warn("Unable to create timeGroup")
+                }
+            } else {
+                //create for multiple groups
+                const response = await axios.post(
+                    `${baseUrl}/admin/timegroup/create`,
+                    {title: groupTimeTitle, times: groupTimeMultiple}
+                );
+                if (response.data.status) {
+                    toast.success("Multiple TimeGroup created successfully")
+                    setTimeout(() => {
+                        window.location.reload()
+                    }, 2000)
+                } else {
+                    toast.warn("Unable to create timeGroup")
+                }
+            }
+        } else {
+            toast.warn("Please specify group title")
+        }
+        setIsLoading(false)
+    }
+
+    return (
+        <React.Fragment>
+            <div className="page-content">
+                <Container fluid>
+                    <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Timetable"/>
+                    <Row>
+                        <Col lg="2">
+                            <Row className="align-items-center">
+                                <Col md={6}>
+                                    <div className="mb-3">
+                                        <h5 className="card-title">
+                                            Week Days
+                                        </h5>
+                                    </div>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Row xl="12">
+                                    {WeekDays.map((t, i) => <>
+                                        <button
+                                            className={`btn ${weeksDayPicker === i ? 'btn-primary' : 'btn-outline-secondary'} d-inline-block`}
+                                            onClick={(e) => {
+                                                e.preventDefault()
+                                                daysPicker(i)
+                                            }} style={{height: 50, marginTop: 20}}>{t} <i
+                                            className="bx bx-check-circle font-size-12"
+                                            style={{color: WeekColors[i]}}></i></button>
+                                    </>)}
+
+                                </Row>
+                            </Row>
+                        </Col>
+
+                        <Col lg="6">
+                            <Row className="align-items-center">
+                                <Col md={6}>
+                                    <div className="mb-3">
+                                        <h5 className="card-title">
+                                            Timetable List{" "}
+                                            <span className="text-muted fw-normal ms-2">
                         ({timetables.length})
                       </span>
-                    </h5>
-                  </div>
-                </Col>
-               {/* <Col md={6}>
-                  <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
-                    <div>
-                      <Link
-                        to="#"
-                        className="btn btn-light"
-                        onClick={() => {
-                          setTimetable({});
-                          setIsEdit(false);
-                          toggle();
-                        }}
-                      >
-                        <i className="bx bx-plus me-1"></i> Add New Time Table
-                      </Link>
-                    </div>
-                  </div>
-                </Col>
-                      */}
-              </Row>
-              <Row>
-                <Col xl="12">
-                  {timetables.length === 0 ? (
-                    <p className="text-center">No timetable yet</p>
-                  ) : (
-                    <table className="table align-middle">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Day of Week</th>
-                          <th>Start Time</th>
-                          <th>Timezone</th>
-                          <th>Country</th>
-                          <th>Region</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {timetables.map((data, index) => (
-                          <tr key={index}>
-                            <td>{index + 1}</td>
-                            <td>{data.dayOfWeek}</td>
-                            <td>{data.startTime}</td>
-                            <td>{data.endTime}</td>
-                            <td>{data.timezone}</td>
-                            <td>{data.country}</td>
-                            <td>{data.region}</td>
-                            <td>
-                              <div className="d-flex gap-3">
-                                <Link
-                                  className="text-success"
-                                  to="#"
-                                  onClick={() => {
-                                    handleTimetableClick(data)
-                                    setIsEdit(true);
-                                  }}
-                                >
-                                  <i className="mdi mdi-pencil font-size-18"></i>
-                                </Link>
-                                <Link
-                                  className="text-danger"
-                                  to="#"
-                                  onClick={() => onClickDelete(data)}
-                                >
-                                  <i className="mdi mdi-delete font-size-18"></i>
-                                </Link>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
-                  <Modal isOpen={modal} toggle={toggle}>
-                    <ModalHeader toggle={toggle}>
-                      {isEdit ? "Edit Time Table" : "Add New Time Table"}
-                    </ModalHeader>
-                    <ModalBody>
-                      <Form onSubmit={validation.handleSubmit}>
-                        <Row>
-                          <Col xs={12}>
-                          <div className="mb-3">
-  <Label className="form-label">Day of Week</Label>
-  <Input
-    type="select"
-    name="dayOfWeek"
-    onChange={validation.handleChange}
-    onBlur={validation.handleBlur}
-    value={validation.values.dayOfWeek || ""}
-    invalid={
-      validation.touched.dayOfWeek &&
-      validation.errors.dayOfWeek
-    }
-  >
-    <option value="">Select Day of Week</option>
-    {Days.map((day, index) => (
-      <option key={index} value={day}>{day}</option>
-    ))}
-  </Input>
-  <FormFeedback type="invalid">
-    {validation.errors.dayOfWeek}
-  </FormFeedback>
-</div>
-<div className="mb-3">
-  <Label className="form-label">Start Time</Label>
-  <Input
-    type="select"
-    name="startTime"
-    onChange={validation.handleChange}
-    onBlur={validation.handleBlur}
-    value={validation.values.startTime || ""}
-    invalid={
-      validation.touched.startTime &&
-      validation.errors.startTime
-    }
-  >
-    <option value="">Select Start Time</option>
-    {Times.map((time, index) => (
-      <option key={index} value={time}>{time}</option>
-    ))}
-  </Input>
-  <FormFeedback type="invalid">
-    {validation.errors.startTime}
-  </FormFeedback>
-</div>
-                            {/* Add more form fields here */}
-                          </Col>
-                        </Row>
-                        <Row>
-                          <Col>
-                            <div className="text-end">
-                              {!isEdit ? (
-                                <button
-                                  type="submit"
-                                  className="btn btn-primary save-user"
-                                >
-                                  Create Time Table
-                                </button>
-                              ) : (
-                                <button
-                                  type="submit"
-                                  className="btn btn-primary save-user"
-                                >
-                                  Update Time Table
-                                </button>
-                              )}
-                            </div>
-                          </Col>
-                        </Row>
-                      </Form>
-                    </ModalBody>
-                  </Modal>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        </Container>
-      </div>
-      <ToastContainer />
-    </React.Fragment>
-  );
+                                        </h5>
+                                    </div>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col xl="12">
+                                    {timetables.length === 0 ? (
+                                        <p className="text-center">No timetable yet</p>
+                                    ) : (
+                                        <table className="table align-middle">
+                                            <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Day of Week</th>
+                                                <th>Week Abbr</th>
+                                                <th>Time</th>
+                                                <th>Hour</th>
+                                                <th>Timezone</th>
+                                                <th>Action</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {timetables.filter(f => f.day === weeksDayPicker).map((data, index) => (
+                                                <tr key={index}>
+                                                    <td>{index + 1}</td>
+                                                    <td>{data.weekTitle}</td>
+                                                    <td>{data.weekAbbr}</td>
+                                                    <td>{data.hourText}</td>
+                                                    <td>{data.hour}</td>
+                                                    <td>WAT +1 GMT</td>
+                                                    <td>
+                                                        <Link
+                                                            className="text-success"
+                                                            to="#"
+                                                            onClick={(e) => {
+                                                                e.preventDefault()
+                                                                addToGroupList(data)
+                                                            }}>
+                                                            <i className="bx bx-arrow-to-right font-size-18"></i>
+                                                        </Link>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </Col>
+                            </Row>
+                        </Col>
+
+                        {!isRecentList ?
+                            <Col lg="4">
+                                <Row className="align-items-center">
+                                    <Col md={12}>
+                                        <div className="mb-3">
+                                            <h5 className="card-title">
+                                                <Row xl={12}>
+                                                    <Col xl={8}>
+                                                        Create {isMultipleGroup ? "Multiple" : "Single"} TimeGroup
+                                                    </Col>
+                                                    <Col xl={4}>
+                                                        <a href={'#'} onClick={(e) => {
+                                                            setIsRecentList(true)
+                                                        }}>Recent List</a>
+                                                    </Col>
+                                                </Row>
+                                            </h5>
+                                            <a href={'#'} onClick={(e) => {
+                                                e.preventDefault()
+                                                setIsMultipleGroup(!isMultipleGroup)
+                                            }}>{isMultipleGroup ? "Create Single Group" : "Create Multiple Group"}</a>
+                                        </div>
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col xl="12">
+                                        <div className="col-md-12 mb-3">
+                                            <table style={{width: '100%'}}>
+                                                <tr>
+                                                    <th>Day</th>
+                                                    <th>Abbr</th>
+                                                    <th>Hour</th>
+                                                    <th>Time</th>
+                                                    <th>TimeZone</th>
+                                                    <th></th>
+                                                </tr>
+                                                {groupTime?.map((t, i) => <>
+                                                        <tr>
+                                                            <td style={{color: WeekColors[t.day]}}>{t.weekTitle}</td>
+                                                            <td style={{color: WeekColors[t.day]}}>{t.weekAbbr}</td>
+                                                            <td>{t.hour}</td>
+                                                            <td>{t.hourText}</td>
+                                                            <td>WAT +1 GMT</td>
+                                                            <td><i className="bx bx-x font-size-18"
+                                                                   style={{cursor: 'pointer'}}
+                                                                   onClick={() => {
+                                                                       removeTimeGroup(t.id)
+                                                                   }}></i></td>
+                                                        </tr>
+                                                    </>) ||
+                                                    <p style={{width: '100%', textAlign: 'left', color: '#6e6e6e'}}>No
+                                                        New
+                                                        Group Entries</p>}
+                                            </table>
+                                            <div className={'mt-3 mb-3'}>
+                                                {isMultipleGroup ? <>
+                                                    <a href={'#'} onClick={(e) => {
+                                                        e.preventDefault()
+                                                        addToMultiGroupList()
+                                                    }} className={'d-inline-flex'}><i
+                                                        className="bx bx-arrow-to-bottom font-size-20"></i> Add to
+                                                        Multi-Group</a>
+                                                </> : null}
+                                            </div>
+
+                                            {isMultipleGroup ? <>
+                                                <hr/>
+                                                <table style={{width: '100%'}}>
+                                                    <tr>
+                                                        <th>Group</th>
+                                                        <th>Week Day</th>
+                                                        <th>Hour</th>
+                                                        <th>Time</th>
+                                                        <th></th>
+                                                    </tr>
+                                                    {groupTimeMultiple?.length > 0 && groupTimeMultiple?.map((t, i) => <>
+                                                            <tr style={{backgroundColor: '#f6f5f5'}}>
+                                                                <td style={{fontWeight: 'bold'}}>Group #{i}</td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td>
+                                                                    <a href={'#'} onClick={(e) => {
+                                                                        e.preventDefault()
+                                                                        removeTimeGroupMulti(i)
+                                                                    }} className={'d-inline-flex'}><i
+                                                                        className="bx bx-trash font-size-15"></i></a>
+                                                                </td>
+                                                            </tr>
+                                                            {
+                                                                t.map((c, j) => <>
+                                                                    <tr>
+                                                                        <td>-</td>
+                                                                        <td style={{color: WeekColors[c.day]}}>{c.weekTitle}</td>
+                                                                        <td>{c.hour}</td>
+                                                                        <td>{c.hourText}</td>
+                                                                        <td></td>
+                                                                    </tr>
+                                                                </>)
+                                                            }
+                                                        </>) ||
+                                                        <p style={{
+                                                            width: '100%',
+                                                            textAlign: 'left',
+                                                            color: '#6e6e6e'
+                                                        }}>No
+                                                            New
+                                                            Multi-Group Entries</p>}
+                                                </table>
+                                                <hr/>
+                                            </> : null}
+                                            <input onChange={e => setGroupTimeTitle(e.target.value)}
+                                                   value={groupTimeTitle}
+                                                   placeholder={"Group Name"}
+                                                   className={'w-100 form-control mb-3 mt-3'}/>
+                                            <button disabled={isLoading} onClick={submitTimeSheet}
+                                                    className={'btn btn-primary w-100'}>{isLoading ? "Please wait..." : `Create ${isMultipleGroup ? "Multiple" : "Single"} Group`}</button>
+                                        </div>
+                                    </Col>
+                                </Row>
+                            </Col> :
+                            <Col lg="4">
+                                <Row className="align-items-center">
+                                    <Col md={12}>
+                                    <div className="mb-3">
+                                            <h5 className="card-title">
+                                                <Row xl={12}>
+                                                    <Col xl={8}>
+                                                        View Recent List
+                                                    </Col>
+                                                    <Col xl={4}>
+                                                        <a href={'#'} onClick={(e) => {
+                                                            setIsRecentList(false)
+                                                        }}>Create New Group</a>
+                                                    </Col>
+                                                </Row>
+                                            </h5>
+                                        </div>
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col xl="12">
+                                        <div className="col-md-12 mb-3">
+                                            <table style={{width: '100%'}}>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Title</th>
+                                                    <th>Type</th>
+                                                    <th></th>
+                                                </tr>
+                                                {timeGroupData.map((it, index)=>{
+                                                    return <tr key={index} style={{cursor: 'pointer'}} onClick={()=>setUpdatePanel(index)}>
+                                                        <td>{index+1}</td>
+                                                        <td>{it.title}</td>
+                                                        <td>{it?.times[0]?.id?"Single": "Multiple"}</td>
+                                                        <td>x</td>
+                                                    </tr>
+                                                })}
+                                            </table>
+                                        </div>
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col xl="12">
+                                        <div className="col-md-12 mb-3">
+                                            <table style={{width: '100%', display: updateSet>0?'':'none'}}>
+                                                <tr>
+                                                    <th>Day</th>
+                                                    <th>Abbr</th>
+                                                    <th>Hour</th>
+                                                    <th>Time</th>
+                                                    <th>TimeZone</th>
+                                                    <th></th>
+                                                </tr>
+                                                {groupTimeUp?.map((t, i) => <>
+                                                        <tr>
+                                                            <td style={{color: WeekColors[t.day]}}>{t.weekTitle}</td>
+                                                            <td style={{color: WeekColors[t.day]}}>{t.weekAbbr}</td>
+                                                            <td>{t.hour}</td>
+                                                            <td>{t.hourText}</td>
+                                                            <td>WAT +1 GMT</td>
+                                                            <td><i className="bx bx-x font-size-18"
+                                                                   style={{cursor: 'pointer'}}
+                                                                   onClick={() => {
+                                                                       removeTimeGroup(t.id)
+                                                                   }}></i></td>
+                                                        </tr>
+                                                    </>) ||
+                                                    <p style={{width: '100%', textAlign: 'left', color: '#6e6e6e'}}>No
+                                                        New
+                                                        Group Entries</p>}
+                                            </table>
+                                            <div className={'mt-3 mb-3'}>
+                                                {isMultipleGroupUp ? <>
+                                                    <a href={'#'} onClick={(e) => {
+                                                        e.preventDefault()
+                                                        addToMultiGroupList()
+                                                    }} className={'d-inline-flex'}><i
+                                                        className="bx bx-arrow-to-bottom font-size-20"></i> Add to
+                                                        Multi-Group</a>
+                                                </> : null}
+                                            </div>
+
+                                            {isMultipleGroupUp ? <>
+                                                <hr/>
+                                                <table style={{width: '100%'}}>
+                                                    <tr>
+                                                        <th>Group</th>
+                                                        <th>Week Day</th>
+                                                        <th>Hour</th>
+                                                        <th>Time</th>
+                                                        <th></th>
+                                                    </tr>
+                                                    {groupTimeMultipleUp?.length > 0 && groupTimeMultipleUp?.map((t, i) => <>
+                                                            <tr style={{backgroundColor: '#f6f5f5'}}>
+                                                                <td style={{fontWeight: 'bold'}}>Group #{i}</td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td>
+                                                                    <a href={'#'} onClick={(e) => {
+                                                                        e.preventDefault()
+                                                                        removeTimeGroupMulti(i)
+                                                                    }} className={'d-inline-flex'}><i
+                                                                        className="bx bx-trash font-size-15"></i></a>
+                                                                </td>
+                                                            </tr>
+                                                            {
+                                                                t.map((c, j) => <>
+                                                                    <tr>
+                                                                        <td>-</td>
+                                                                        <td style={{color: WeekColors[c.day]}}>{c.weekTitle}</td>
+                                                                        <td>{c.hour}</td>
+                                                                        <td>{c.hourText}</td>
+                                                                        <td></td>
+                                                                    </tr>
+                                                                </>)
+                                                            }
+                                                        </>) ||
+                                                        <p style={{
+                                                            width: '100%',
+                                                            textAlign: 'left',
+                                                            color: '#6e6e6e'
+                                                        }}>No
+                                                            New
+                                                            Multi-Group Entries</p>}
+                                                </table>
+                                                <hr/>
+                                            </> : null}
+                                            <button style={{display: updateSet>0?'block':'none'}} disabled={isLoading} onClick={submitUpdatedTimeSheet}
+                                                    className={'btn btn-primary w-100'}>Update [{groupTimeTitleUp}]</button>
+                                        </div>
+                                    </Col>
+                                </Row>
+                            </Col>}
+
+                    </Row>
+                </Container>
+            </div>
+            <ToastContainer/>
+        </React.Fragment>
+    );
 };
 
 export default withAuth(ManageTimeTable);

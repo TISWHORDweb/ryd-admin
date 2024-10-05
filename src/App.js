@@ -25,6 +25,7 @@ import "./App.css"
 // import { initFirebaseBackend } from "./helpers/firebase_helper"
 
 import fakeBackend from "./helpers/AuthType/fakeBackend"
+import axios from "axios";
 
 // Activating fake backend
 fakeBackend();

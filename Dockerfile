@@ -1,4 +1,4 @@
-# Install dependencies only when needed
+# Install dependencies only when
 FROM node:18.17.1 AS builder
 WORKDIR /app
 

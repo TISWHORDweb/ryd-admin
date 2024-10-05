@@ -11,7 +11,6 @@ const withAuth = (WrappedComponent) => {
       if (!token) {
         navigate('/login', { replace: true });
       } else {
-        token
         // Set the token in the headers for authorization
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       }
