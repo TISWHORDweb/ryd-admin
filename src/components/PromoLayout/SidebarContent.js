@@ -12,7 +12,7 @@ import SimpleBar from "simplebar-react"
 
 // MetisMenu
 import MetisMenu from "metismenujs"
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useParams } from "react-router-dom"
 import withRouter from "../Common/withRouter"
 
 //i18n
@@ -144,6 +144,7 @@ const SidebarContent = props => {
     }
   }
 
+  const {id} =useParams()
   return (
     <React.Fragment>
       <SimpleBar style={{ maxHeight: "100%" }} ref={ref}>
@@ -151,7 +152,7 @@ const SidebarContent = props => {
           <ul className="metismenu list-unstyled" id="side-menu">
             <li className="menu-title">{props.t("Menu")} </li>
             <li>
-              <Link to="/dashboard" className="">
+              <Link to={`/partner/dashboard/${id}`} className="">
                 <FeatherIcon
                   icon="home"
                 />{" "}
@@ -160,7 +161,7 @@ const SidebarContent = props => {
             </li>
 
             <li>
-              <Link to="/manage-parent" className="">
+              <Link to={`/partner/manage-parent/${id}`} className="">
                 <FeatherIcon
                     icon="user"
                 />{" "}
@@ -169,7 +170,7 @@ const SidebarContent = props => {
             </li>
 
             <li>
-              <Link to="/manage-child" className="">
+              <Link to={`/partner/manage-child/${id}`} className="">
                 <FeatherIcon
                     icon="users"
                 />{" "}
@@ -178,120 +179,11 @@ const SidebarContent = props => {
             </li>
 
             <li>
-              <Link to="/manage-teacher" className="">
-                <FeatherIcon
-                    icon="user-check"
-                />{" "}
-                <span>{props.t("Manage Teacher")}</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/manage-program" className="">
+              <Link to={`/partner/manage-program/${id}`} className="">
                 <FeatherIcon
                     icon="feather"
                 />{" "}
                 <span>{props.t("Manage Program")}</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/manage-cohort" className="">
-                <FeatherIcon
-                    icon="grid"
-                />{" "}
-                <span>{props.t("Manage Cohort")}</span>
-              </Link>
-            </li>
-
-            {/*<li>*/}
-            {/*  <Link to="/manage-program-inactive" className="">*/}
-            {/*    <FeatherIcon*/}
-            {/*        icon="feather"*/}
-            {/*    />{" "}*/}
-            {/*    <span>{props.t("Manage Program Inactive")}</span>*/}
-            {/*  </Link>*/}
-            {/*</li>*/}
-
-
-            <li>
-              <Link to="/manage-package" className="">
-                <FeatherIcon
-                    icon="package"
-                />{" "}
-                <span>{props.t("Manage Package")}</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/manage-swap" className="">
-                <FeatherIcon
-                    icon="refresh-cw"
-                />{" "}
-                <span>{props.t("Manage Swap")}</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/manage-survey" className="">
-                <FeatherIcon
-                    icon="trending-up"
-                />{" "}
-                <span>{props.t("Manage Survey")}</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/manage-coupon" className="">
-                <FeatherIcon
-                    icon="gift"
-                />{" "}
-                <span>{props.t("Manage Coupon")}</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/manage-testimonial" className="">
-                <FeatherIcon
-                    icon="message-circle"
-                />{" "}
-                <span>{props.t("Manage Testimonial")}</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/manage-partner" className="">
-                <FeatherIcon
-                    icon="user-plus"
-                />{" "}
-                <span>{props.t("Manage Partners")}</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/manage-partner-program" className="">
-                <FeatherIcon
-                    icon="activity"
-                />{" "}
-                <span>{props.t("Manage Partner Programs")}</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/manage-promo" className="">
-                <FeatherIcon
-                    icon="award"
-                />{" "}
-                <span>{props.t("Manage Promos")}</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/settings" className="">
-                <FeatherIcon
-                    icon="settings"
-                />{" "}
-                <span>{props.t("Settings")}</span>
               </Link>
             </li>
 
@@ -301,7 +193,7 @@ const SidebarContent = props => {
               <div className="mt-4">
                 <h5 className="alertcard-title font-size-16">Administrator</h5>
                 <p className="font-size-13">Always see live changes while managing the portable.</p>
-                <a target="_blank" href="https://rydlearning.com" className="btn btn-primary mt-2" rel="noreferrer">RYD Website</a>
+                <a href="/" className="btn btn-primary mt-2" rel="noreferrer">Main Admin</a>
               </div>
             </div>
           </div>
