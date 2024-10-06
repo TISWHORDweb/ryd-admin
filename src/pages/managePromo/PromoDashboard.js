@@ -5,56 +5,56 @@ import {Card, CardBody, Col, Container, Input, Row,} from "reactstrap";
 import axios from 'axios';
 import {baseUrl} from '../../Network';
 import {useParams} from 'react-router-dom';
-import {checkPartnerProgram, newFormatDate, totalCohortChild, totalCohortParent} from '../../utils';
+import {checkPromoProgram, newFormatDate, totalCohortChild, totalCohortParent} from '../../utils';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [cohorts, setCohorts] = useState([]);
-  const [partner, setPartner] = useState();
+  const [promo, setPromo] = useState();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterData, setFilterData] = useState([]);
   const [programData, setProgramData] = useState([
     { title: "Total Programs", count: 0, statusColor: "primary" },
     { title: "Teacher Assigned", count: 0, statusColor: "success" },
     { title: "Enrolled", count: 0, statusColor: "danger" },
-    { title: "Total Debt", count: 0, statusColor: "secondary" }
+    // { title: "Total Debt", count: 0, statusColor: "secondary" }
   ]);
 
   const { id } = useParams()
 
   useEffect(() => {
-    document.title = "Partner Dashboard | RYD Admin";
+    document.title = "Promo Dashboard | RYD Admin";
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
       // Fetch parent count
-      const partnerDashboardResponse = await axios.get(`${baseUrl}/admin/partner/dashboard/${id}`);
-      if (partnerDashboardResponse) {
+      const promoDashboardResponse = await axios.get(`${baseUrl}/admin/promo/dashboard/${id}`);
+      if (promoDashboardResponse) {
         setLoading(false)
-        const parentCount = partnerDashboardResponse.data.data.parents?.length;
-        const debtCount = partnerDashboardResponse.data.data.debt;
-        const programCount = partnerDashboardResponse.data.data.programs?.length;
-        const childCount = partnerDashboardResponse.data.data.totalStudent;
+        const parentCount = promoDashboardResponse.data.data.parents?.length;
+        const programCount = promoDashboardResponse.data.data.programs?.length;
+        const childCount = promoDashboardResponse.data.data.totalStudent;
         //filter cohort before my account
-        const pDate = new Date(partnerDashboardResponse.data.data.partner.createdAt)
+        const pDate = new Date(promoDashboardResponse.data.data.promo.createdAt)
         pDate.setHours(0, 0, 0, 0)
         pDate.setDate(1)
-        const cd = partnerDashboardResponse.data.data.cohort.filter(f => {
-          const dd = new Date(f.createdAt)
-          dd.setDate(1)
-          dd.setHours(0, 0, 0, 0)
-          return dd>=pDate
-        })
+        const cd = promoDashboardResponse.data.data.cohort
+        // .filter(f => {
+        //   const dd = new Date(f.createdAt)
+        //   dd.setDate(1)
+        //   dd.setHours(0, 0, 0, 0)
+        //   return dd>=pDate
+        // })
         setCohorts(cd)
         setFilterData(cd);
-        setPartner(partnerDashboardResponse.data.data.partner)
+        setPromo(promoDashboardResponse.data.data.promo)
         setProgramData([
           { title: "Total Programs", count: programCount, statusColor: "primary" },
           { title: "Teacher Child", count: childCount, statusColor: "success" },
           { title: "Total Parents", count: parentCount, statusColor: "danger" },
-          { title: "Total Debt", count: (partnerDashboardResponse.data.data?.rate?.currencyCode || "$") +debtCount, statusColor: "secondary" }
+          // { title: "Total Debt", count: (promoDashboardResponse.data.data?.rate?.currencyCode || "$") +debtCount, statusColor: "secondary" }
         ]);
       }
     } catch (error) {
@@ -84,9 +84,9 @@ const Dashboard = () => {
       <div className="page-content">
         <Container fluid>
           <Row>
-            <Breadcrumbs title="Manage Partner" breadcrumbItem={`${partner ? partner.organizationName : ""} Dashboard`} />
+            <Breadcrumbs title="Manage Promo" breadcrumbItem={`${promo ? promo.title : ""} Dashboard`} />
             {programData.map((card, index) => (
-              <Col key={index} xl={3} md={6}>
+              <Col key={index} xl={4} md={6}>
                 <Card className="card-h-100">
                   <CardBody>
                     <h4 className="mb-3">{card.title}</h4>
@@ -153,8 +153,8 @@ const Dashboard = () => {
                         <td>{p?.title}</td>
                         <td>{newFormatDate(p?.startDate)}</td>
                         <td>{newFormatDate(p?.startDate)}</td>
-                        <td>{totalCohortChild(p.partner_programs, parseInt(id))}</td>
-                        <td>{totalCohortParent(p.partner_programs, parseInt(id))}</td>
+                        <td>{totalCohortChild(p.promo_programs, parseInt(id))}</td>
+                        <td>{totalCohortParent(p.promo_programs, parseInt(id))}</td>
                         <td>{p.status ? (
                           <p className=" bg-custom-yellow  font-normal text-yellow-600 text-center p-1 rounded-2xl" style={{background:"rgba(255, 255, 0, 0.147)",color:"blavk"}}>
                             Ongoing

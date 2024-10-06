@@ -152,7 +152,7 @@ const SidebarContent = props => {
           <ul className="metismenu list-unstyled" id="side-menu">
             <li className="menu-title">{props.t("Menu")} </li>
             <li>
-              <Link to={`/partner/dashboard/${id}`} className="">
+              <Link to={`/promo/dashboard/${id}`} className="">
                 <FeatherIcon
                   icon="home"
                 />{" "}
@@ -161,7 +161,7 @@ const SidebarContent = props => {
             </li>
 
             <li>
-              <Link to={`/partner/manage-parent/${id}`} className="">
+              <Link to={`/promo/manage-parent/${id}`} className="">
                 <FeatherIcon
                     icon="user"
                 />{" "}
@@ -170,7 +170,7 @@ const SidebarContent = props => {
             </li>
 
             <li>
-              <Link to={`/partner/manage-child/${id}`} className="">
+              <Link to={`/promo/manage-child/${id}`} className="">
                 <FeatherIcon
                     icon="users"
                 />{" "}
@@ -179,7 +179,7 @@ const SidebarContent = props => {
             </li>
 
             <li>
-              <Link to={`/partner/manage-program/${id}`} className="">
+              <Link to={`/promo/manage-program/${id}`} className="">
                 <FeatherIcon
                     icon="feather"
                 />{" "}

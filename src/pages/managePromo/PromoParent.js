@@ -50,7 +50,7 @@ const ManageParent = () => {
     const [error, updateError] = useState();
 
     useEffect(() => {
-        document.title = "Partner Parents | RYD Admin";
+        document.title = "Promo Parents | RYD Admin";
         fetchUsers().then(null);
     }, [modal]);
 
@@ -69,7 +69,7 @@ const ManageParent = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get(`${baseUrl}/admin/partner/parents/${id}`);
+            const response = await axios.get(`${baseUrl}/admin/promo/parents/${id}`);
             setUsersRaw(response.data.data);
             setUsers(response.data.data);
             setLoading(false);
@@ -108,7 +108,7 @@ const ManageParent = () => {
     const handleSendEmailAll = async (event) => {
         event.preventDefault();
         try {
-            await axios.post(`${baseUrl}/admin/partner/parent/send/all/${id}`, groupEmailData);
+            await axios.post(`${baseUrl}/admin/promo/parent/send/all/${id}`, groupEmailData);
             toast.success("Email sent to all parents successfully");
             toggle();
         } catch (error) {
@@ -119,7 +119,7 @@ const ManageParent = () => {
     const handleSendEmailSingle = async (event) => {
         event.preventDefault();
         try {
-            await axios.post(`${baseUrl}/admin/partner/parent/send/${selectedUserId}`, {
+            await axios.post(`${baseUrl}/admin/promo/parent/send/${selectedUserId}`, {
                 body: validation.values.message,
                 subject: validation.values.subject,
                 attachmentLink: url
@@ -152,7 +152,7 @@ const ManageParent = () => {
         let _newPass = prompt("Enter new password for " + userData?.firstName + " " + userData?.lastName + ". Warning: This action cannot be undo");
         if (_newPass) {
             //reset parent password
-            await axios.post(`${baseUrl}/admin/partner/parent/reset-password/${userData.id}`, {
+            await axios.post(`${baseUrl}/admin/promo/parent/reset-password/${userData.id}`, {
                 newPassword: _newPass,
             });
             //parent password altered
@@ -221,7 +221,7 @@ const ManageParent = () => {
                                 <Col md={4}>
                                     <div className="mb-3">
                                         <h5 className="card-title">
-                                        Partner Parent List{" "}
+                                        Promo Parent List{" "}
                                             <span className="text-muted fw-normal ms-2">
                         ({users.length})
                       </span>
