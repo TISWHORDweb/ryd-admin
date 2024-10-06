@@ -25,7 +25,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { baseUrl } from '../../Network';
 
 const ManageChild = () => {
-  document.title = "Manage Partner Child | RYD Admin";
+  document.title = "Manage Promo Child | RYD Admin";
 
   const [users, setUsers] = useState([]);
   const [usersData, setUsersData] = useState([]);
@@ -84,7 +84,7 @@ const ManageChild = () => {
         if (isEdit) {
 
           response = await axios.put(
-            `${baseUrl}/admin/partner/child/edit/${contact.id}`,
+            `${baseUrl}/admin/promo/child/edit/${contact.id}`,
             newChild
           );
           toast.success("Child updated successfully");
@@ -116,7 +116,7 @@ const ManageChild = () => {
 
   const fetchChildren = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/admin/partner/child/all/${id}`);
+      const response = await axios.get(`${baseUrl}/admin/promo/child/all/${id}`);
       setUsers(response.data.data);
       setUsersData(response.data.data)
       setLoading(false);
@@ -143,7 +143,7 @@ const ManageChild = () => {
 
   const handleDeleteUser = async () => {
     try {
-      await axios.delete(`${baseUrl}/admin/partner/child/${contact.id}`);
+      await axios.delete(`${baseUrl}/admin/promo/child/${contact.id}`);
       const updatedUsers = users.filter((user) => user.id !== contact.id);
       setUsers(updatedUsers);
       setDeleteModal(false);
@@ -168,7 +168,7 @@ const ManageChild = () => {
             <Col md={6}>
               <div className="mb-3">
                 <h5 className="card-title">
-                  Partner Child List{" "}
+                  Promo Child List{" "}
                   <span className="text-muted fw-normal ms-2">
                     ({users.length})
                   </span>
