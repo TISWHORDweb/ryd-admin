@@ -75,14 +75,60 @@ const ManageTimeTable = () => {
         }
     }
 
+    const removeTimeGroupUp = (i) => {
+        if (confirm("Confirm to remove and update this item")) {
+            setGroupTimeUp(groupTimeUp.filter(x => x.id !== i))
+        }
+    }
+
     const removeTimeGroupMulti = (i) => {
         if (confirm("Confirm to remove this item")) {
             setGroupTimeMultiple(groupTimeMultiple.filter((x, k) => k !== i))
         }
     }
 
-    const submitUpdatedTimeSheet = () => {
+    const removeTimeGroupMultiUp = (i) => {
+        if (confirm("Confirm to remove and update this item")) {
+            setGroupTimeMultipleUp(groupTimeMultipleUp.filter((x, k) => k !== i))
+        }
+    }
 
+    const submitUpdatedTimeSheet = async () => {
+        setIsLoading(true)
+        //create single time stamp
+        if (groupTimeTitleUp.length > 0) {
+            if (!isMultipleGroupUp) {
+                const response = await axios.post(
+                    `${baseUrl}/admin/timegroup/update/${updateSet}`,
+                    {title: groupTimeTitle, times: groupTime}
+                );
+                if (response.data.status) {
+                    toast.success("TimeGroup updated successfully")
+                    setTimeout(() => {
+                        window.location.reload()
+                    }, 2000)
+                } else {
+                    toast.warn("Unable to update timeGroup")
+                }
+            } else {
+                //create for multiple groups
+                const response = await axios.post(
+                    `${baseUrl}/admin/timegroup/update/${updateSet}`,
+                    {title: groupTimeTitle, times: groupTimeMultipleUp}
+                );
+                if (response.data.status) {
+                    toast.success("Multiple TimeGroup updated successfully")
+                    setTimeout(() => {
+                        window.location.reload()
+                    }, 2000)
+                } else {
+                    toast.warn("Unable to create timeGroup")
+                }
+            }
+        } else {
+            toast.warn("Please specify group title")
+        }
+        setIsLoading(false)
     }
 
     const setUpdatePanel=(i)=>{
@@ -396,6 +442,7 @@ const ManageTimeTable = () => {
                                 <Row>
                                     <Col xl="12">
                                         <div className="col-md-12 mb-3">
+                                            {!isMultipleGroupUp ? <>
                                             <table style={{width: '100%', display: updateSet>0?'':'none'}}>
                                                 <tr>
                                                     <th>Day</th>
@@ -415,7 +462,7 @@ const ManageTimeTable = () => {
                                                             <td><i className="bx bx-x font-size-18"
                                                                    style={{cursor: 'pointer'}}
                                                                    onClick={() => {
-                                                                       removeTimeGroup(t.id)
+                                                                       removeTimeGroupUp(t.id)
                                                                    }}></i></td>
                                                         </tr>
                                                     </>) ||
@@ -423,17 +470,7 @@ const ManageTimeTable = () => {
                                                         New
                                                         Group Entries</p>}
                                             </table>
-                                            <div className={'mt-3 mb-3'}>
-                                                {isMultipleGroupUp ? <>
-                                                    <a href={'#'} onClick={(e) => {
-                                                        e.preventDefault()
-                                                        addToMultiGroupList()
-                                                    }} className={'d-inline-flex'}><i
-                                                        className="bx bx-arrow-to-bottom font-size-20"></i> Add to
-                                                        Multi-Group</a>
-                                                </> : null}
-                                            </div>
-
+                                            </>:null}
                                             {isMultipleGroupUp ? <>
                                                 <hr/>
                                                 <table style={{width: '100%'}}>
@@ -453,7 +490,7 @@ const ManageTimeTable = () => {
                                                                 <td>
                                                                     <a href={'#'} onClick={(e) => {
                                                                         e.preventDefault()
-                                                                        removeTimeGroupMulti(i)
+                                                                        removeTimeGroupMultiUp(i)
                                                                     }} className={'d-inline-flex'}><i
                                                                         className="bx bx-trash font-size-15"></i></a>
                                                                 </td>
