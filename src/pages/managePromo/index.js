@@ -43,7 +43,6 @@ const ManagePromo = () => {
   const [address, setAddress] = useState("");
   const [country, setCountry] = useState("");
   const [countryList, setCountryList] = useState([]);
-  const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [editTooltipOpen, setEditTooltipOpen] = useState(false);
@@ -76,7 +75,6 @@ const ManagePromo = () => {
       address: promo.address || "",
       country: promo.country || "",
       phone: promo.phone || "",
-      password: promo.value || "",
     },
     validationSchema: Yup.object({
       title: Yup.string().required("Please Enter Promo Tile"),
@@ -85,14 +83,7 @@ const ManagePromo = () => {
       firstName: Yup.string(),
       lastName: Yup.string(),
       email: Yup.string().email("Invalid email address"),
-      phone: Yup.number(),
-     password: Yup.string().min(8, "Password must be at least 8 characters")
-      .max(20, "Password must not exceed 20 characters")
-      .required("Password is required")
-      .matches(
-        /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/,
-        "Password must contain at least one letter and one number"
-      )
+      phone: Yup.number()
     }),
 
     onSubmit: async (values) => {
@@ -480,24 +471,6 @@ const ManagePromo = () => {
                                 {validation.errors.phone}
                               </FormFeedback>
                             </div>
-                              <div className="mb-3">
-                                <Label className="form-label">Password</Label>
-                                <Input
-                                  name="password"
-                                  type="password"
-                                  placeholder="**********"
-                                  onChange={validation.handleChange}
-                                  onBlur={validation.handleBlur}
-                                  value={validation.values.password || password}
-                                  invalid={
-                                    validation.touched.password &&
-                                    validation.errors.password
-                                  }
-                                />
-                                <FormFeedback type="invalid">
-                                  {validation.errors.password}
-                                </FormFeedback>
-                              </div>
                           </Col>
                         </Row>
                         <Row>

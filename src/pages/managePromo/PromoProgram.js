@@ -64,7 +64,7 @@ const formatDay = (day) => {
 };
 
 const ManageProgram = () => {
-    document.title = "Manage Partner Program | RYD Admin";
+    document.title = "Manage Promo Program | RYD Admin";
 
     const [programs, setPrograms] = useState([]);
     const [programsList, setProgramsList] = useState([]);
@@ -139,7 +139,7 @@ const ManageProgram = () => {
         try {
             const packages = await axios.get(`${baseUrl}/admin/package/all`);
             const cohorts = await axios.get(`${baseUrl}/admin/cohort/all`);
-            const response = await axios.get(`${baseUrl}/admin/partner/program/all/${id}`);
+            const response = await axios.get(`${baseUrl}/admin/promo/program/all/${id}`);
             setPrograms(response?.data?.data);
             setCohorts(cohorts?.data?.data);
             setPackages(packages?.data?.data)
@@ -172,7 +172,7 @@ const ManageProgram = () => {
 
     const handleTeacherAssignClick = async () => {
         try {
-            await axios.post(`${baseUrl}/admin/partner/program/assign/teacher`, {
+            await axios.post(`${baseUrl}/admin/promo/program/assign/teacher`, {
                 programIds: selectedProgram.id,
                 teacherId: selectedTeacher
             });
@@ -199,7 +199,7 @@ const ManageProgram = () => {
             return;
         }
         //check and push to server
-        await axios.put(`${baseUrl}/admin/partner/program/edit/${selectedProgram.id}`, programMData);
+        await axios.put(`${baseUrl}/admin/promo/program/edit/${selectedProgram.id}`, programMData);
         toast.success("Program data altered changes");
         await fetchPrograms()
     }
@@ -212,7 +212,7 @@ const ManageProgram = () => {
             }
             const updatedProgram = {...programData, isPaid: !programData.isPaid};
             await axios.put(
-                `${baseUrl}/admin/partner/program/edit/${programData.id}`,
+                `${baseUrl}/admin/promo/program/edit/${programData.id}`,
                 updatedProgram
             );
 
@@ -242,7 +242,7 @@ const ManageProgram = () => {
         //performing group actions
         try{
             if (multiIDs.length > 0 && Object.keys(multiTargetIDs).length > 0) {
-                await axios.post(`${baseUrl}/admin/partner/program/batch-update`, {ids: multiIDs, ...multiTargetIDs});
+                await axios.post(`${baseUrl}/admin/promo/program/batch-update`, {ids: multiIDs, ...multiTargetIDs});
                 toast.success("Program data altered changes");
                 await fetchPrograms()
             } else {
