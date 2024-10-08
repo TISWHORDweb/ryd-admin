@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Link, useParams} from "react-router-dom";
+import {Link} from "react-router-dom";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import axios from "axios";
 import {Col, Container, Form, Input, Label, Modal, ModalBody, ModalHeader, Row,} from "reactstrap";
@@ -63,8 +63,8 @@ const formatDay = (day) => {
     return days[day];
 };
 
-const ManageProgram = () => {
-    document.title = "Manage Promo Program | RYD Admin";
+const ManagePartnerProgram = () => {
+    document.title = "Manage Partner Programs | RYD Admin";
 
     const [programs, setPrograms] = useState([]);
     const [programsList, setProgramsList] = useState([]);
@@ -81,11 +81,11 @@ const ManageProgram = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [coupons, setCoupons] = useState([]);
     const [cohorts, setCohorts] = useState([]);
+    const [adhoc, setAdhoc] = useState();
     const [packages, setPackages] = useState([]);
     const [filteredProgramList0, setFilteredProgramList0] = useState([]);
     const [filteredProgramList2, setFilteredProgramList2] = useState([]);
     const [displayProgramList, setDisplayProgramList] = useState([]);
-    const { id } = useParams()
 
     useEffect(() => {
         fetchPrograms().then(r => null);
@@ -139,7 +139,7 @@ const ManageProgram = () => {
         try {
             const packages = await axios.get(`${baseUrl}/admin/package/all`);
             const cohorts = await axios.get(`${baseUrl}/admin/cohort/all`);
-            const response = await axios.get(`${baseUrl}/admin/promo/program/all/${id}`);
+            const response = await axios.get(`${baseUrl}/admin/promo/program/all`);
             setPrograms(response?.data?.data);
             setCohorts(cohorts?.data?.data);
             setPackages(packages?.data?.data)
@@ -149,6 +149,7 @@ const ManageProgram = () => {
                 const xdata = response?.data?.data;
                 //setProgramsList(xdata.sort(compareFn))
                 const __xdata = xdata.sort(compareFn)
+               
                 setProgramsList(__xdata)
                 setDisplayProgramList(__xdata)
                 setFilteredProgramList0(__xdata)
@@ -161,6 +162,11 @@ const ManageProgram = () => {
         }
     };
 
+    useEffect(()=>{
+        const org = [...new Set(programs.map(item => item.promo.title))];
+        setAdhoc(org)
+    },[programs])
+    
     const fetchTeachers = async () => {
         try {
             const response = await axios.get(`${baseUrl}/admin/teacher/all`);
@@ -171,6 +177,7 @@ const ManageProgram = () => {
     };
 
     const handleTeacherAssignClick = async () => {
+        toast.warn("Processing.....");
         try {
             await axios.post(`${baseUrl}/admin/promo/program/assign/teacher`, {
                 programIds: selectedProgram.id,
@@ -188,6 +195,7 @@ const ManageProgram = () => {
     };
 
     const handleProgramClickSubmit = async () => {
+        toast.warn("Processing.....");
         if (!selectedProgram || !selectedProgram?.id) {
             //console.error("Invalid program data.");
             toast.warn("Reload this page and try again")
@@ -206,6 +214,7 @@ const ManageProgram = () => {
 
     const handleToggleIsPaid = async (programData) => {
         try {
+            toast.warn("Processing.....");
             if (!programData || !programData.id) {
                 //console.error("Invalid program data.");
                 return;
@@ -241,6 +250,7 @@ const ManageProgram = () => {
     const processBatchOperations = async () => {
         //performing group actions
         try{
+            toast.warn("Processing.....");
             if (multiIDs.length > 0 && Object.keys(multiTargetIDs).length > 0) {
                 await axios.post(`${baseUrl}/admin/promo/program/batch-update`, {ids: multiIDs, ...multiTargetIDs});
                 toast.success("Program data altered changes");
@@ -252,19 +262,20 @@ const ManageProgram = () => {
             toast.error("Reload this page and try again")
         }
     }
+
     return (
         <React.Fragment>
             <ToastContainer/>
             <div className="page-content">
                 <Container fluid>
-                    <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Program"/>
+                    <Breadcrumbs title="Dashboard" breadcrumbItem="Manage All Partners Program"/>
                     <Row>
                         <Col lg="12">
                             <Row className="align-items-center me-2">
                                 <Col md={4}>
                                     <div className="mb-3">
                                         <h5 className="card-title">
-                                            Manage Promo Program List {" "}
+                                            All Adhoc Program List {" "}
                                             <span className="text-muted fw-normal ms-2">({displayProgramList.length})</span>
                                         </h5>
                                     </div>
@@ -299,6 +310,23 @@ const ManageProgram = () => {
                                                 <option value={0}>All Cohorts</option>
                                                 {cohorts && cohorts.map((d, i) => <option key={i}
                                                                                           value={d.id}>{d.title}</option>)}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <select className={'form-control'} onChange={(e) => {
+                                                //filter based on cohorts
+                                                if (Number(e.target.value) === 0) {
+                                                    window.location.reload()
+                                                } else {
+                                                    const __cohortFilter = programs.filter(r => r.promo.title === e.target.value);
+                                                    setDisplayProgramList(__cohortFilter)
+                                                    setFilteredProgramList0(__cohortFilter)
+                                                    setFilteredProgramList2(__cohortFilter)
+                                                }
+                                            }}>
+                                                <option value={0}>All Adhoc</option>
+                                                {adhoc && adhoc.map((o, i) => <option key={i}
+                                                value={o}>{o}</option>)}
                                             </select>
                                         </div>
                                         <div>
@@ -399,6 +427,7 @@ const ManageProgram = () => {
                                             <thead>
                                             <tr>
                                                 <th>#{multiIDs.length || ""}</th>
+                                                <th>Adhoc</th>
                                                 <th>P.Name</th>
                                                 <th>C.Name</th>
                                                 <th>Phone</th>
@@ -427,15 +456,16 @@ const ManageProgram = () => {
                                                                        if (multiIDs.includes(program.id)) {
                                                                            //remove from array
                                                                            setMultiIDs(multiIDs.filter(i => i !== program.id))
-                                                                           toast.error(program?.child?.firstName + " removed is been from the action list.")
+                                                                           toast.error(program?.promo?.title + " have been removed from the action list.")
                                                                        } else {
                                                                            setMultiIDs([...multiIDs, program.id])
-                                                                           toast.warn(program?.child?.firstName + " has been added to action list.")
+                                                                           toast.warn(program?.promo?.title + " has been added to action list.")
                                                                        }
                                                                    }}/>
                                                             {index + 1}
                                                         </div>
                                                     </td>
+                                                    <td>{program?.promo?.title}</td>
                                                     <td>{program?.child?.parent?.firstName + " " + program?.child?.parent?.lastName}</td>
                                                     <td>{program?.child?.firstName + " " + program?.child?.lastName}
                                                     <br/>
@@ -736,4 +766,4 @@ const ManageProgram = () => {
     );
 };
 
-export default withAuth(ManageProgram);
+export default withAuth(ManagePartnerProgram);

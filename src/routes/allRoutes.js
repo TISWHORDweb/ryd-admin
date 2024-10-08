@@ -35,6 +35,7 @@ import PromoParent from "../pages/managePromo/PromoParent";
 import PromoDashboard from "../pages/managePromo/PromoDashboard";
 import ManagePartnerProgram from "../pages/managePartnerPrograms/ManagePartnerProgram";
 import ManagePromo from "../pages/managePromo";
+import ManagePromoProgram from "../pages/managePromoProgram/ManagePromoProgram";
 
 const userRoutes = [
   //dashboard
@@ -73,6 +74,8 @@ const userRoutes = [
   { path: "/settings", component: <Settings /> },
 
   { path: "/manage-partner-program", component: <ManagePartnerProgram /> },
+
+  { path: "/manage-promo-program", component: <ManagePromoProgram /> },
 
   //profile
   { path: "/profile", component: <UserProfile /> },

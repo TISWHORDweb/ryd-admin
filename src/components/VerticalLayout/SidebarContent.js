@@ -282,10 +282,17 @@ const SidebarContent = props => {
                 <FeatherIcon
                     icon="award"
                 />{" "}
-                <span>{props.t("Manage Promos")}</span>
+                <span>{props.t("Manage Adhoc")}</span>
               </Link>
             </li>
-
+            <li>
+              <Link to="/manage-promo-program" className="">
+                <FeatherIcon
+                    icon="aperture"
+                />{" "}
+                <span>{props.t("Manage Adhoc Programs")}</span>
+              </Link>
+            </li>
             <li>
               <Link to="/settings" className="">
                 <FeatherIcon
