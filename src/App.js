@@ -5,7 +5,7 @@ import { Routes, Route } from "react-router-dom"
 import { connect } from "react-redux"
 
 // Import Routes all
-import { userRoutes, authRoutes, partnerRoutes } from "./routes/allRoutes"
+import { userRoutes, authRoutes, partnerRoutes, promoRoutes } from "./routes/allRoutes"
 
 // Import all middleware
 import Authmiddleware from "./routes/middleware/Authmiddleware"
@@ -15,6 +15,7 @@ import VerticalLayout from "./components/VerticalLayout/"
 import HorizontalLayout from "./components/HorizontalLayout/"
 import NonAuthLayout from "./components/NonAuthLayout"
 import PartnerLayout from "./components/PartnerLayout"
+import PromoLayout from "./components/PromoLayout"
 
 // Import scss
 import "./assets/scss/theme.scss"
@@ -85,6 +86,20 @@ const App = props => {
               <PartnerLayout>
                 {route.component}
               </PartnerLayout>
+            }
+            key={idx}
+            exact={true}
+          />
+
+        ))}
+
+        {promoRoutes.map((route, idx) => (
+          <Route
+            path={route.path}
+            element={
+              <PromoLayout>
+                {route.component}
+              </PromoLayout>
             }
             key={idx}
             exact={true}

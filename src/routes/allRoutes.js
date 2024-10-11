@@ -29,7 +29,13 @@ import ParnerDashboard from "../pages/ManagePartner/PartnerDashboard";
 import PartnerParent from "../pages/ManagePartner/PartnerParent";
 import PartnerChild from "../pages/ManagePartner/PartnerChild";
 import PartnerProgram from "../pages/ManagePartner/PartnerProgram";
+import PromoProgram from "../pages/managePromo/PromoProgram";
+import PromoChild from "../pages/managePromo/PromoChild";
+import PromoParent from "../pages/managePromo/PromoParent";
+import PromoDashboard from "../pages/managePromo/PromoDashboard";
 import ManagePartnerProgram from "../pages/managePartnerPrograms/ManagePartnerProgram";
+import ManagePromo from "../pages/managePromo";
+import ManagePromoProgram from "../pages/managePromoProgram/ManagePromoProgram";
 
 const userRoutes = [
   //dashboard
@@ -60,12 +66,16 @@ const userRoutes = [
   { path: "/manage-coupon", component: <ManageCoupon/> },
 
   { path: "/manage-partner", component: <ManagePartner/> },
+
+  { path: "/manage-promo", component: <ManagePromo/> },
   
   { path: "/manage-testimonial", component: <ManageTestimonial/> },
 
   { path: "/settings", component: <Settings /> },
 
   { path: "/manage-partner-program", component: <ManagePartnerProgram /> },
+
+  { path: "/manage-promo-program", component: <ManagePromoProgram /> },
 
   //profile
   { path: "/profile", component: <UserProfile /> },
@@ -82,11 +92,19 @@ const authRoutes = [
 ];
 
 const partnerRoutes = [
-  //authencation page
+  //partner page
   { path: "/partner/dashboard/:id", component: <ParnerDashboard /> },
   { path: "/partner/manage-parent/:id", component: <PartnerParent /> },
   { path: "/partner/manage-child/:id", component: <PartnerChild /> },
   { path: "/partner/manage-program/:id", component: <PartnerProgram /> },
 ];
 
-export { userRoutes, authRoutes, partnerRoutes };
+const promoRoutes = [
+  //promo page
+  { path: "/promo/dashboard/:id", component: <PromoDashboard /> },
+  { path: "/promo/manage-parent/:id", component: <PromoParent /> },
+  { path: "/promo/manage-child/:id", component: <PromoChild /> },
+  { path: "/promo/manage-program/:id", component: <PromoProgram /> },
+];
+
+export { userRoutes, authRoutes, partnerRoutes, promoRoutes };
