@@ -7,11 +7,7 @@ import Breadcrumbs from "../../components/Common/Breadcrumb";
 import withAuth from '../withAuth';
 import axios from "axios";
 import {baseUrl} from '../../Network';
-import {
-    Col,
-    Container,
-    Row,
-} from "reactstrap";
+import {Col, Container, Row} from "reactstrap";
 import {toast, ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -22,7 +18,6 @@ export const WeekColors = ["#000", "#028178", "#ff6e00", "#044488", "#FF00A6FF",
 
 const ManageTimeTable = () => {
     document.title = "Manage Time Table | RYD Admin";
-
     const [timetables, setTimetables] = useState([]);
     const [groupTime, setGroupTime] = useState([]);
     const [groupTimeUp, setGroupTimeUp] = useState([]);
@@ -36,6 +31,7 @@ const ManageTimeTable = () => {
     const [timeGroupData, setTimeGroupData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isRecentList, setIsRecentList] = useState(false);
+    const [isMultiUp, setIsMultiUpd] = useState(false);
     const [updateSet, setUpdateSet] = useState(0);
     useEffect(() => {
         fetchTimetables();
@@ -59,7 +55,16 @@ const ManageTimeTable = () => {
 
     //add to group list
     const addToGroupList = (f) => {
-        setGroupTime([...groupTime, f])
+        if(updateSet){
+            if(!isMultiUp){
+                //show single
+               setGroupTimeUp([...groupTimeUp, f])
+            }else{
+                setGroupTimeMultipleUp([...groupTimeMultipleUp, f])
+            }
+        }else{
+            setGroupTime([...groupTime, f])
+        }
     }
 
     const addToMultiGroupList = () => {
@@ -100,7 +105,7 @@ const ManageTimeTable = () => {
             if (!isMultipleGroupUp) {
                 const response = await axios.post(
                     `${baseUrl}/admin/timegroup/update/${updateSet}`,
-                    {title: groupTimeTitle, times: groupTime}
+                    {times: groupTimeUp}
                 );
                 if (response.data.status) {
                     toast.success("TimeGroup updated successfully")
@@ -114,7 +119,7 @@ const ManageTimeTable = () => {
                 //create for multiple groups
                 const response = await axios.post(
                     `${baseUrl}/admin/timegroup/update/${updateSet}`,
-                    {title: groupTimeTitle, times: groupTimeMultipleUp}
+                    {times: groupTimeMultipleUp}
                 );
                 if (response.data.status) {
                     toast.success("Multiple TimeGroup updated successfully")
@@ -122,11 +127,11 @@ const ManageTimeTable = () => {
                         window.location.reload()
                     }, 2000)
                 } else {
-                    toast.warn("Unable to create timeGroup")
+                    toast.warn("Unable to update timeGroup")
                 }
             }
         } else {
-            toast.warn("Please specify group title")
+            toast.warn("Please specify group to update")
         }
         setIsLoading(false)
     }
@@ -136,10 +141,12 @@ const ManageTimeTable = () => {
         setGroupTimeTitleUp(timeGroupData[i].title)
         const isMulti = timeGroupData[i].times[0]?.id
         if(isMulti){
+            setIsMultiUpd(false)
             setIsMultipleGroupUp(false)
             setGroupTimeUp(timeGroupData[i].times)
             setGroupTimeMultipleUp([])
         }else {
+            setIsMultiUpd(true)
             setIsMultipleGroupUp(true)
             setGroupTimeMultipleUp(timeGroupData[i].times)
             setGroupTimeUp([])
@@ -160,7 +167,7 @@ const ManageTimeTable = () => {
                     toast.success("TimeGroup created successfully")
                     setTimeout(() => {
                         window.location.reload()
-                    }, 2000)
+                    }, 1000)
                 } else {
                     toast.warn("Unable to create timeGroup")
                 }
@@ -174,7 +181,7 @@ const ManageTimeTable = () => {
                     toast.success("Multiple TimeGroup created successfully")
                     setTimeout(() => {
                         window.location.reload()
-                    }, 2000)
+                    }, 1000)
                 } else {
                     toast.warn("Unable to create timeGroup")
                 }
@@ -252,10 +259,10 @@ const ManageTimeTable = () => {
                                             {timetables.filter(f => f.day === weeksDayPicker).map((data, index) => (
                                                 <tr key={index}>
                                                     <td>{index + 1}</td>
-                                                    <td>{data.weekTitle}</td>
-                                                    <td>{data.weekAbbr}</td>
-                                                    <td>{data.hourText}</td>
-                                                    <td>{data.hour}</td>
+                                                    <td>{data.dayText}</td>
+                                                    <td>{data.dayAbbr}</td>
+                                                    <td>{data.timeText}</td>
+                                                    <td>{data.timex}</td>
                                                     <td>WAT +1 GMT</td>
                                                     <td>
                                                         <Link
@@ -315,10 +322,10 @@ const ManageTimeTable = () => {
                                                 </tr>
                                                 {groupTime?.map((t, i) => <>
                                                         <tr>
-                                                            <td style={{color: WeekColors[t.day]}}>{t.weekTitle}</td>
-                                                            <td style={{color: WeekColors[t.day]}}>{t.weekAbbr}</td>
-                                                            <td>{t.hour}</td>
-                                                            <td>{t.hourText}</td>
+                                                            <td style={{color: WeekColors[t.day]}}>{t.dayText}</td>
+                                                            <td style={{color: WeekColors[t.day]}}>{t.dayAbbr}</td>
+                                                            <td>{t.timex}</td>
+                                                            <td>{t.timeText}</td>
                                                             <td>WAT +1 GMT</td>
                                                             <td><i className="bx bx-x font-size-18"
                                                                    style={{cursor: 'pointer'}}
@@ -370,9 +377,9 @@ const ManageTimeTable = () => {
                                                                 t.map((c, j) => <>
                                                                     <tr>
                                                                         <td>-</td>
-                                                                        <td style={{color: WeekColors[c.day]}}>{c.weekTitle}</td>
-                                                                        <td>{c.hour}</td>
-                                                                        <td>{c.hourText}</td>
+                                                                        <td style={{color: WeekColors[c.day]}}>{c.dayText}</td>
+                                                                        <td>{c.timex}</td>
+                                                                        <td>{c.timeText}</td>
                                                                         <td></td>
                                                                     </tr>
                                                                 </>)
@@ -432,7 +439,7 @@ const ManageTimeTable = () => {
                                                         <td>{index+1}</td>
                                                         <td>{it.title}</td>
                                                         <td>{it?.times[0]?.id?"Single": "Multiple"}</td>
-                                                        <td>x</td>
+                                                        <td>-</td>
                                                     </tr>
                                                 })}
                                             </table>
@@ -454,10 +461,10 @@ const ManageTimeTable = () => {
                                                 </tr>
                                                 {groupTimeUp?.map((t, i) => <>
                                                         <tr>
-                                                            <td style={{color: WeekColors[t.day]}}>{t.weekTitle}</td>
-                                                            <td style={{color: WeekColors[t.day]}}>{t.weekAbbr}</td>
-                                                            <td>{t.hour}</td>
-                                                            <td>{t.hourText}</td>
+                                                            <td style={{color: WeekColors[t.day]}}>{t.dayText}</td>
+                                                            <td style={{color: WeekColors[t.day]}}>{t.dayAbbr}</td>
+                                                            <td>{t.timex}</td>
+                                                            <td>{t.timeText}</td>
                                                             <td>WAT +1 GMT</td>
                                                             <td><i className="bx bx-x font-size-18"
                                                                    style={{cursor: 'pointer'}}
@@ -499,9 +506,9 @@ const ManageTimeTable = () => {
                                                                 t.map((c, j) => <>
                                                                     <tr>
                                                                         <td>-</td>
-                                                                        <td style={{color: WeekColors[c.day]}}>{c.weekTitle}</td>
-                                                                        <td>{c.hour}</td>
-                                                                        <td>{c.hourText}</td>
+                                                                        <td style={{color: WeekColors[c.day]}}>{c.dayText}</td>
+                                                                        <td>{c.timex}</td>
+                                                                        <td>{c.timeText}</td>
                                                                         <td></td>
                                                                     </tr>
                                                                 </>)

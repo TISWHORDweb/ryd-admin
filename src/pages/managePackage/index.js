@@ -66,7 +66,7 @@ const ManagePackage = () => {
         initialValues: {
             title: packageData.title || "",
             description: packageData.description || "",
-            timegroupId: packageData.timegroupId || "",
+            timeGroupId: packageData.timeGroupId || "",
             level: packageData.level || "",
             imageUrl: packageData.imageUrl || "",
             weekDuration: packageData.weekDuration || "",
@@ -78,7 +78,7 @@ const ManagePackage = () => {
         validationSchema: Yup.object({
             title: Yup.string().required("Please enter the Title"),
             description: Yup.string().required("Please enter a description"),
-            timegroupId: Yup.number().required("Choose time group"),
+            timeGroupId: Yup.number().required("Choose time group"),
             level: Yup.string().required("Please enter a level"),
             imageUrl: Yup.string().required("Please enter an image URL"),
             weekDuration: Yup.number().required("Please enter the program duration number of weeks"),
@@ -92,7 +92,7 @@ const ManagePackage = () => {
                 const newPackage = {
                     title: values.title,
                     description: values.description,
-                    timegroupId: Number(values.timegroupId),
+                    timeGroupId: Number(values.timeGroupId),
                     subClass: subPackages,
                     level: values.level,
                     imageUrl: values.imageUrl,
@@ -340,21 +340,21 @@ const ManagePackage = () => {
                                                     <div className="mb-3 col-md-6">
                                                         <Label className="form-label">Choose Time Group</Label>
                                                         <Input
-                                                            name="timegroupId"
+                                                            name="timeGroupId"
                                                             type="select"
                                                             placeholder="Time Group"
                                                             onChange={validation.handleChange}
                                                             onBlur={validation.handleBlur}
-                                                            value={validation.values.timegroupId || null}
+                                                            value={validation.values.timeGroupId || null}
                                                             invalid={
-                                                                validation.touched.timegroupId &&
-                                                                validation.errors.timegroupId
+                                                                validation.touched.timeGroupId &&
+                                                                validation.errors.timeGroupId
                                                             }>
                                                             <option value={null}>--Choose--</option>
                                                             {timeGroup.map((t, i)=><option key={i} value={Number(t.id)}>{t.title}</option>)}
                                                         </Input>
                                                         <FormFeedback type="invalid">
-                                                            {validation.errors.timegroupId}
+                                                            {validation.errors.timeGroupId}
                                                         </FormFeedback>
                                                     </div>
                                                 </Row>
