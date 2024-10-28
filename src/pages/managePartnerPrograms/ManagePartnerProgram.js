@@ -163,7 +163,7 @@ const ManagePartnerProgram = () => {
     };
 
     useEffect(()=>{
-        const org = [...new Set(programs.map(item => item.partner.organizationName))];
+        const org = [...new Set(programs.map(item => item?.partner?.organizationName))];
         setOrganizations(org)
     },[programs])
     

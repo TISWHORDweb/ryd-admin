@@ -44,6 +44,7 @@ const ManagePromo = () => {
   const [country, setCountry] = useState("");
   const [countryList, setCountryList] = useState([]);
   const [email, setEmail] = useState("");
+  const [timeGroup, setTimeGroup] = useState([]);
   const [phone, setPhone] = useState("");
   const [editTooltipOpen, setEditTooltipOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -75,28 +76,41 @@ const ManagePromo = () => {
       address: promo.address || "",
       country: promo.country || "",
       phone: promo.phone || "",
+      timeGroupId: promo.timeGroupId || "",
     },
     validationSchema: Yup.object({
       title: Yup.string().required("Please Enter Promo Tile"),
-      address: Yup.string(),
+      address: Yup.string().required("Please enter address"),
       country: Yup.string().required("Country is required"),
-      firstName: Yup.string(),
-      lastName: Yup.string(),
+      firstName: Yup.string().required("Please enter first name"),
+      lastName: Yup.string().required("Please enter last name"),
       email: Yup.string().email("Invalid email address"),
-      phone: Yup.number()
+      phone: Yup.number().required("please enter phone numner"),
+      timeGroupId: Yup.number().required("Choose time group"),
     }),
 
     onSubmit: async (values) => {
+      const newPromo ={
+        title: values.title,
+        address: values.address,
+        country: values.country,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        phone: values.phone,
+        timeGroupId: Number(values.timeGroupId),
+      }
+      console.log(newPromo)
       let response;
-        response = await axios.post(
-          `${baseUrl}/admin/promo/create`,
-          values
-        );
-        toast.success("Promo created successfully");
-      
+      response = await axios.post(
+        `${baseUrl}/admin/promo/create`,
+        newPromo
+      );
+      toast.success("Promo created successfully");
+
 
       const responseData = response.data;
-        setPromos([...promos, responseData]);
+      setPromos([...promos, responseData]);
 
       toggle();
     },
@@ -112,6 +126,9 @@ const ManagePromo = () => {
   const fetchPromos = async () => {
     try {
       const response = await axios.get(`${baseUrl}/admin/promo/all`);
+      const responseTG = await axios.get(`${baseUrl}/admin/timegroup/all`);
+
+      setTimeGroup(responseTG.data.data);
       setPromos(response.data.data);
       setLoading(false); // Update loading state after data fetch
     } catch (error) {
@@ -365,7 +382,8 @@ const ManagePromo = () => {
                                 {validation.errors.address}
                               </FormFeedback>
                             </div>
-                              <div className="mb-3">
+                            <Row>
+                              <div className="mb-3 col-md-6">
                                 <Label className="form-label">Country Or Registration</Label>
                                 <Input
                                   type="select"
@@ -391,6 +409,27 @@ const ManagePromo = () => {
                                   {validation.errors.country}
                                 </FormFeedback>
                               </div>
+                              <div className="mb-3 col-md-6">
+                                <Label className="form-label">Choose Time Group</Label>
+                                <Input
+                                  name="timeGroupId"
+                                  type="select"
+                                  placeholder="Time Group"
+                                  onChange={validation.handleChange}
+                                  onBlur={validation.handleBlur}
+                                  value={validation.values.timeGroupId || null}
+                                  invalid={
+                                    validation.touched.timeGroupId &&
+                                    validation.errors.timeGroupId
+                                  }>
+                                  <option value={null}>--Choose--</option>
+                                  {timeGroup.map((t, i) => <option key={i} value={Number(t.id)}>{t.title}</option>)}
+                                </Input>
+                                <FormFeedback type="invalid">
+                                  {validation.errors.timeGroupId}
+                                </FormFeedback>
+                              </div>
+                            </Row>
                             <h5 className="my-4">Head of Promo Info </h5>
                             <div className="row">
                               <div className="col-md-6">
@@ -434,25 +473,25 @@ const ManagePromo = () => {
                                 </div>
                               </div>
                             </div>
-                              <div className="mb-3">
-                                <Label className="form-label">Email Address</Label>
-                                <Input
-                                  name="email"
-                                  type="email"
-                                  disabled={isEdit? true:false}
-                                  placeholder="Enter email address"
-                                  onChange={validation.handleChange}
-                                  onBlur={validation.handleBlur}
-                                  value={validation.values.email || email}
-                                  invalid={
-                                    validation.touched.email &&
-                                    validation.errors.email
-                                  }
-                                />
-                                <FormFeedback type="invalid">
-                                  {validation.errors.email}
-                                </FormFeedback>
-                              </div>
+                            <div className="mb-3">
+                              <Label className="form-label">Email Address</Label>
+                              <Input
+                                name="email"
+                                type="email"
+                                disabled={isEdit ? true : false}
+                                placeholder="Enter email address"
+                                onChange={validation.handleChange}
+                                onBlur={validation.handleBlur}
+                                value={validation.values.email || email}
+                                invalid={
+                                  validation.touched.email &&
+                                  validation.errors.email
+                                }
+                              />
+                              <FormFeedback type="invalid">
+                                {validation.errors.email}
+                              </FormFeedback>
+                            </div>
                             <div className="mb-3">
                               <Label className="form-label">Phone Number</Label>
                               <Input
@@ -480,7 +519,7 @@ const ManagePromo = () => {
                                 type="submit"
                                 className="btn btn-primary save-user"
                               >
-                               Add Promo
+                                Add Promo
                               </button>
                             </div>
                           </Col>

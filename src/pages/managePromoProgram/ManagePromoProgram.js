@@ -1,12 +1,12 @@
-import React, {useEffect, useState} from "react";
-import {Link} from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import axios from "axios";
-import {Col, Container, Form, Input, Label, Modal, ModalBody, ModalHeader, Row,} from "reactstrap";
+import { Col, Container, Form, Input, Label, Modal, ModalBody, ModalHeader, Row, } from "reactstrap";
 import withAuth from "../withAuth";
-import {toast, ToastContainer} from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {baseUrl} from '../../Network';
+import { baseUrl } from '../../Network';
 import Moment from 'react-moment';
 import moment from 'moment-timezone';
 import 'moment-timezone';
@@ -149,7 +149,7 @@ const ManagePartnerProgram = () => {
                 const xdata = response?.data?.data;
                 //setProgramsList(xdata.sort(compareFn))
                 const __xdata = xdata.sort(compareFn)
-               
+
                 setProgramsList(__xdata)
                 setDisplayProgramList(__xdata)
                 setFilteredProgramList0(__xdata)
@@ -162,11 +162,11 @@ const ManagePartnerProgram = () => {
         }
     };
 
-    useEffect(()=>{
+    useEffect(() => {
         const org = [...new Set(programs.map(item => item.promo.title))];
         setAdhoc(org)
-    },[programs])
-    
+    }, [programs])
+
     const fetchTeachers = async () => {
         try {
             const response = await axios.get(`${baseUrl}/admin/teacher/all`);
@@ -219,7 +219,7 @@ const ManagePartnerProgram = () => {
                 //console.error("Invalid program data.");
                 return;
             }
-            const updatedProgram = {...programData, isPaid: !programData.isPaid};
+            const updatedProgram = { ...programData, isPaid: !programData.isPaid };
             await axios.put(
                 `${baseUrl}/admin/promo/program/edit/${programData.id}`,
                 updatedProgram
@@ -249,26 +249,35 @@ const ManagePartnerProgram = () => {
 
     const processBatchOperations = async () => {
         //performing group actions
-        try{
+        try {
             toast.warn("Processing.....");
             if (multiIDs.length > 0 && Object.keys(multiTargetIDs).length > 0) {
-                await axios.post(`${baseUrl}/admin/promo/program/batch-update`, {ids: multiIDs, ...multiTargetIDs});
+                await axios.post(`${baseUrl}/admin/promo/program/batch-update`, { ids: multiIDs, ...multiTargetIDs });
                 toast.success("Program data altered changes");
                 await fetchPrograms()
             } else {
                 toast.error("Please, select at least 1 child/program to perform action")
             }
-        }catch (e) {
+        } catch (e) {
             toast.error("Reload this page and try again")
         }
     }
 
+    const FormatDate = (data, i) => {
+        const parsedTimeSlots = JSON.parse(data);
+        if (parsedTimeSlots[i]) {
+            return parsedTimeSlots[i].map(({ dayText, timeText }) => `${dayText} ${timeText}`).join(' - ');
+        }
+        return ''; 
+    };
+    
+
     return (
         <React.Fragment>
-            <ToastContainer/>
+            <ToastContainer />
             <div className="page-content">
                 <Container fluid>
-                    <Breadcrumbs title="Dashboard" breadcrumbItem="Manage All Partners Program"/>
+                    <Breadcrumbs title="Dashboard" breadcrumbItem="Manage All Partners Program" />
                     <Row>
                         <Col lg="12">
                             <Row className="align-items-center me-2">
@@ -309,7 +318,7 @@ const ManagePartnerProgram = () => {
                                             }}>
                                                 <option value={0}>All Cohorts</option>
                                                 {cohorts && cohorts.map((d, i) => <option key={i}
-                                                                                          value={d.id}>{d.title}</option>)}
+                                                    value={d.id}>{d.title}</option>)}
                                             </select>
                                         </div>
                                         <div>
@@ -326,7 +335,7 @@ const ManagePartnerProgram = () => {
                                             }}>
                                                 <option value={0}>All Adhoc</option>
                                                 {adhoc && adhoc.map((o, i) => <option key={i}
-                                                value={o}>{o}</option>)}
+                                                    value={o}>{o}</option>)}
                                             </select>
                                         </div>
                                         <div>
@@ -348,7 +357,7 @@ const ManagePartnerProgram = () => {
                                             </select>
                                         </div>
                                         <div>
-                                            <select style={{width: 150}} className={'form-control'} onChange={(e) => {
+                                            <select style={{ width: 150 }} className={'form-control'} onChange={(e) => {
                                                 //filter based on coupon
                                                 const packageID = Number(e.target.value)
                                                 if (Number(packageID) === 0) {
@@ -361,11 +370,11 @@ const ManagePartnerProgram = () => {
                                             }}>
                                                 <option value={0}>All Packages</option>
                                                 {packages.map((p, i) => <option key={i}
-                                                                                value={p.id}>{p.title}</option>)}
+                                                    value={p.id}>{p.title}</option>)}
                                             </select>
                                         </div>
                                         <div>
-                                            <select style={{width: 150}} className={'form-control'} onChange={(e) => {
+                                            <select style={{ width: 150 }} className={'form-control'} onChange={(e) => {
                                                 //filter based on coupon
                                                 const couponID = Number(e.target.value)
                                                 if (Number(couponID) === 0) {
@@ -378,7 +387,7 @@ const ManagePartnerProgram = () => {
                                             }}>
                                                 <option value={0}>All Coupon</option>
                                                 {coupons.map((c, i) => <option key={i}
-                                                                               value={c.id}>{c.code} [{c.value}]</option>)}
+                                                    value={c.id}>{c.code} [{c.value}]</option>)}
                                             </select>
                                         </div>
                                         <div>
@@ -400,7 +409,7 @@ const ManagePartnerProgram = () => {
                                                 <option value={2}>With No Teacher</option>
                                             </select>
                                         </div>
-                                        <div style={{marginRight: 20}}>
+                                        <div style={{ marginRight: 20 }}>
                                             <button onClick={handleActionAssignClick}>
                                                 <i className="mdi mdi-run-fast font-size-20"></i>
                                                 <span className={'m-2'}></span>
@@ -411,7 +420,7 @@ const ManagePartnerProgram = () => {
                                 </Col>
                             </Row>
                             <Row>
-                                <Col xl="12" style={{overflow: 'scroll', width: '98%'}}>
+                                <Col xl="12" style={{ overflow: 'scroll', width: '98%' }}>
                                     {loading ? (
                                         <div className="text-center mt-5">
                                             <div className="spinner-border text-primary" role="status">
@@ -425,120 +434,120 @@ const ManagePartnerProgram = () => {
                                     ) : (
                                         <table className="table align-middle table-hover">
                                             <thead>
-                                            <tr>
-                                                <th>#{multiIDs.length || ""}</th>
-                                                <th>Adhoc</th>
-                                                <th>P.Name</th>
-                                                <th>C.Name</th>
-                                                <th>Phone</th>
-                                                <th>Email</th>
-                                                <th>Age</th>
-                                                <th>Gender</th>
-                                                <th>T.Name</th>
-                                                <th>P.Title</th>
-                                                <th>Level</th>
-                                                <th>Time</th>
-                                                <th>(WAT)</th>
-                                                <th>Day</th>
-                                                <th>Status</th>
-                                                <th></th>
-                                            </tr>
+                                                <tr>
+                                                    <th>#{multiIDs.length || ""}</th>
+                                                    <th>Adhoc</th>
+                                                    <th>P.Name</th>
+                                                    <th>C.Name</th>
+                                                    <th>Phone</th>
+                                                    <th>Email</th>
+                                                    <th>Age</th>
+                                                    <th>Gender</th>
+                                                    <th>T.Name</th>
+                                                    <th>P.Title</th>
+                                                    <th>Level</th>
+                                                    <th>T.Group</th>
+                                                    <th>(WAT)</th>
+                                                    <th>Duration</th>
+                                                    <th>Status</th>
+                                                    <th></th>
+                                                </tr>
                                             </thead>
                                             <tbody>
-                                            {displayProgramList.map((program, index) => (
-                                                <tr key={index}
-                                                    style={{backgroundColor: (program.isPaid) ? '#f1fdf4' : '#fff'}}>
-                                                    <td>
-                                                        <div style={{width: 50}} className={'align-middle'}>
-                                                            <input style={{marginRight: 5}} type={'checkbox'}
-                                                                   onChange={(d) => {
-                                                                       //multiple selection push to array
-                                                                       if (multiIDs.includes(program.id)) {
-                                                                           //remove from array
-                                                                           setMultiIDs(multiIDs.filter(i => i !== program.id))
-                                                                           toast.error(program?.promo?.title + " have been removed from the action list.")
-                                                                       } else {
-                                                                           setMultiIDs([...multiIDs, program.id])
-                                                                           toast.warn(program?.promo?.title + " has been added to action list.")
-                                                                       }
-                                                                   }}/>
-                                                            {index + 1}
-                                                        </div>
-                                                    </td>
-                                                    <td>{program?.promo?.title}</td>
-                                                    <td>{program?.child?.parent?.firstName + " " + program?.child?.parent?.lastName}</td>
-                                                    <td>{program?.child?.firstName + " " + program?.child?.lastName}
-                                                    <br/>
-                                                        [{program?.child?.parent?.country}]
-                                                    </td>
-                                                    <td>{program?.child?.parent?.phone}</td>
-                                                    <td>{program?.child?.parent?.email}</td>
-                                                    <td>{program?.child?.age}</td>
-                                                    <td>{program?.child?.gender}</td>
-                                                    <td>{program?.promo_teacher?.firstName}</td>
-                                                    <td>{program?.promo_package?.title}<br/><small
-                                                        style={{color: 'red'}}>[{program?.promo_cohort?.title || "No Cohort"}]</small>
-                                                    </td>
-                                                    {/*<td>*/}
-                                                    {/*  {program?.package?.status ? "Active" : "Inactive"}*/}
-                                                    {/*</td>*/}
-                                                    <td>{program?.promo_package?.level}</td>
-                                                    <td>{formatTime(program.time)}</td>
-                                                    <td><Moment format='hh:mm A'
-                                                                date={formatTimeZone(program?.child?.parent?.timeOffset, program.day, program.time).toISOString()}
-                                                                tz={"Africa/Lagos"}></Moment></td>
-                                                    <td>{formatDay(program.day)}</td>
-                                                    <td>
-                                                        <div style={{width: 50}}>
-                                                            {program.isPaid ? (
-                                                                <a rel={'noreferrer'}
-                                                                   href={'#' + program.trxId}
-                                                                   onClick={(e) => {
-                                                                       e.preventDefault()
-                                                                       handleToggleIsPaid(program).then(r => null)
-                                                                   }}
-                                                                >Paid</a>
-                                                            ) : (
-                                                                <a rel={'noreferrer'} href={'#'} onClick={(e) => {
-                                                                    e.preventDefault()
-                                                                    handleToggleIsPaid(program).then(r => null)
-                                                                }}
-                                                                   disabled={program.isPaid}>
-                                                                    Unpaid
-                                                                </a>
-                                                            )}
-                                                            {!program.isPaid && (
-                                                                <Link
-                                                                    className="ms-1 text-primary"
-                                                                    to="#"
-                                                                    onClick={(e) => e.preventDefault()}
-                                                                ></Link>
-                                                            )}
-                                                            <br/>
-                                                            <small style={{fontSize: 10, backgroundColor: "#e3e3e3", padding:2, display: program?.promo_coupon?.code?"block":"none"}}>{program?.promo_coupon?.code}</small>
-                                                            <small style={{fontSize: 10}}><Moment format={'DD-MM-YY'} date={program?.createdAt}/></small>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <Link
-                                                            className="text-danger"
-                                                            to="#"
-                                                            id="edit"
-                                                            onClick={() => handleProgramClick(program)}>
-                                                            <i className="mdi mdi-clock-outline font-size-12"></i>
-                                                        </Link>
+                                                {displayProgramList.map((program, index) => (
+                                                    <tr key={index}
+                                                        style={{ backgroundColor: (program.isPaid) ? '#f1fdf4' : '#fff' }}>
+                                                        <td>
+                                                            <div style={{ width: 50 }} className={'align-middle'}>
+                                                                <input style={{ marginRight: 5 }} type={'checkbox'}
+                                                                    onChange={(d) => {
+                                                                        //multiple selection push to array
+                                                                        if (multiIDs.includes(program.id)) {
+                                                                            //remove from array
+                                                                            setMultiIDs(multiIDs.filter(i => i !== program.id))
+                                                                            toast.error(program?.promo?.title + " have been removed from the action list.")
+                                                                        } else {
+                                                                            setMultiIDs([...multiIDs, program.id])
+                                                                            toast.warn(program?.promo?.title + " has been added to action list.")
+                                                                        }
+                                                                    }} />
+                                                                {index + 1}
+                                                            </div>
+                                                        </td>
+                                                        <td>{program?.promo?.title}</td>
+                                                        <td>{program?.child?.parent?.firstName + " " + program?.child?.parent?.lastName}</td>
+                                                        <td>{program?.child?.firstName + " " + program?.child?.lastName}
+                                                            <br />
+                                                            [{program?.child?.parent?.country}]
+                                                        </td>
+                                                        <td>{program?.child?.parent?.phone}</td>
+                                                        <td>{program?.child?.parent?.email}</td>
+                                                        <td>{program?.child?.age}</td>
+                                                        <td>{program?.child?.gender}</td>
+                                                        <td>{program?.promo_teacher?.firstName}</td>
+                                                        <td>{program?.promo_package?.title}<br /><small
+                                                            style={{ color: 'red' }}>[{program?.promo_cohort?.title || "No Cohort"}]</small>
+                                                        </td>
+                                                        {/*<td>*/}
+                                                        {/*  {program?.package?.status ? "Active" : "Inactive"}*/}
+                                                        {/*</td>*/}
+                                                        <td>{program?.promo_package?.level}</td>
+                                                        <td>{program.timeGroup.title}</td>
+                                                        <td><Moment format='hh:mm A'
+                                                            date={formatTimeZone(program?.child?.parent?.timeOffset, program.day, program.time).toISOString()}
+                                                            tz={"Africa/Lagos"}></Moment></td>
+                                                        <td>{FormatDate(program.timeGroup.times, program.timeGroupIndex)}</td>
+                                                        <td>
+                                                            <div style={{ width: 50 }}>
+                                                                {program.isPaid ? (
+                                                                    <a rel={'noreferrer'}
+                                                                        href={'#' + program.trxId}
+                                                                        onClick={(e) => {
+                                                                            e.preventDefault()
+                                                                            handleToggleIsPaid(program).then(r => null)
+                                                                        }}
+                                                                    >Paid</a>
+                                                                ) : (
+                                                                    <a rel={'noreferrer'} href={'#'} onClick={(e) => {
+                                                                        e.preventDefault()
+                                                                        handleToggleIsPaid(program).then(r => null)
+                                                                    }}
+                                                                        disabled={program.isPaid}>
+                                                                        Unpaid
+                                                                    </a>
+                                                                )}
+                                                                {!program.isPaid && (
+                                                                    <Link
+                                                                        className="ms-1 text-primary"
+                                                                        to="#"
+                                                                        onClick={(e) => e.preventDefault()}
+                                                                    ></Link>
+                                                                )}
+                                                                <br />
+                                                                <small style={{ fontSize: 10, backgroundColor: "#e3e3e3", padding: 2, display: program?.promo_coupon?.code ? "block" : "none" }}>{program?.promo_coupon?.code}</small>
+                                                                <small style={{ fontSize: 10 }}><Moment format={'DD-MM-YY'} date={program?.createdAt} /></small>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <Link
+                                                                className="text-danger"
+                                                                to="#"
+                                                                id="edit"
+                                                                onClick={() => handleProgramClick(program)}>
+                                                                <i className="mdi mdi-clock-outline font-size-12"></i>
+                                                            </Link>
 
-                                                        <Link
-                                                            className="text-primary"
-                                                            to="#"
-                                                            id="assign"
-                                                            onClick={() => handleAssignClick(program)}>
-                                                            <i className="mdi mdi-clipboard-account font-size-12"></i>
-                                                        </Link>
+                                                            <Link
+                                                                className="text-primary"
+                                                                to="#"
+                                                                id="assign"
+                                                                onClick={() => handleAssignClick(program)}>
+                                                                <i className="mdi mdi-clipboard-account font-size-12"></i>
+                                                            </Link>
 
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                                        </td>
+                                                    </tr>
+                                                ))}
                                             </tbody>
                                         </table>
                                     )}
@@ -556,10 +565,10 @@ const ManagePartnerProgram = () => {
                                                             <div className="mb-3">
                                                                 <Label>Cohort</Label>
                                                                 <select className={'form-control'}
-                                                                        onChange={e => setProgramMData({
-                                                                            ...programMData,
-                                                                            cohortId: e.target.value
-                                                                        })}>
+                                                                    onChange={e => setProgramMData({
+                                                                        ...programMData,
+                                                                        cohortId: e.target.value
+                                                                    })}>
                                                                     <option value="">Select Cohort</option>
                                                                     {cohorts && cohorts.map((d, i) => <option
                                                                         key={i} value={d.id}>{d.title}</option>)}
@@ -570,10 +579,10 @@ const ManagePartnerProgram = () => {
                                                             <div className="mb-3">
                                                                 <Label>Packages</Label>
                                                                 <select className={'form-control'}
-                                                                        onChange={e => setProgramMData({
-                                                                            ...programMData,
-                                                                            packageId: e.target.value
-                                                                        })}>
+                                                                    onChange={e => setProgramMData({
+                                                                        ...programMData,
+                                                                        packageId: e.target.value
+                                                                    })}>
                                                                     <option value="">Select Package</option>
                                                                     {packages && packages.map((d, i) => <option
                                                                         key={i} value={d.id}>{d.title}</option>)}
@@ -584,10 +593,10 @@ const ManagePartnerProgram = () => {
                                                             <div className="mb-3">
                                                                 <Label>Level</Label>
                                                                 <select className={'form-control'}
-                                                                        onChange={e => setProgramMData({
-                                                                            ...programMData,
-                                                                            level: e.target.value
-                                                                        })}>
+                                                                    onChange={e => setProgramMData({
+                                                                        ...programMData,
+                                                                        level: e.target.value
+                                                                    })}>
                                                                     <option value="">Select Level</option>
                                                                     <option value="4">4</option>
                                                                     <option value="3">3</option>
@@ -600,10 +609,10 @@ const ManagePartnerProgram = () => {
                                                             <div className="mb-3">
                                                                 <Label>Day</Label>
                                                                 <select className={'form-control'}
-                                                                        onChange={e => setProgramMData({
-                                                                            ...programMData,
-                                                                            day: e.target.value
-                                                                        })}>
+                                                                    onChange={e => setProgramMData({
+                                                                        ...programMData,
+                                                                        day: e.target.value
+                                                                    })}>
                                                                     <option value="">Select Day</option>
                                                                     {days.map((d, i) => <option
                                                                         key={i} value={i}>{d}</option>)}
@@ -614,10 +623,10 @@ const ManagePartnerProgram = () => {
                                                             <div className="mb-3">
                                                                 <Label>Time</Label>
                                                                 <select className={'form-control'}
-                                                                        onChange={e => setProgramMData({
-                                                                            ...programMData,
-                                                                            time: e.target.value
-                                                                        })}>
+                                                                    onChange={e => setProgramMData({
+                                                                        ...programMData,
+                                                                        time: e.target.value
+                                                                    })}>
                                                                     <option value="">Select Time</option>
                                                                     {TIMES_.map((d, i) => <option
                                                                         key={i} value={i}>{d}</option>)}
@@ -663,7 +672,7 @@ const ManagePartnerProgram = () => {
                                                                         {teachers?.length > 0 &&
                                                                             teachers?.map((teacher) => (
                                                                                 <option key={teacher?.id}
-                                                                                        value={teacher?.id}>
+                                                                                    value={teacher?.id}>
                                                                                     {teacher.firstName} {teacher.lastName}
                                                                                 </option>
                                                                             ))}
@@ -675,7 +684,7 @@ const ManagePartnerProgram = () => {
                                                 </Row>
                                                 <Row>
                                                     <Col>
-                                                        <br/>
+                                                        <br />
                                                         <div className="text-end">
                                                             <button
                                                                 type="submit"
@@ -690,7 +699,7 @@ const ManagePartnerProgram = () => {
                                     </Modal>
 
                                     <Modal isOpen={assignActionModal}
-                                           toggle={() => setAssignActionModal(!assignActionModal)}>
+                                        toggle={() => setAssignActionModal(!assignActionModal)}>
                                         <ModalHeader toggle={() => setAssignActionModal(!assignActionModal)}>
                                             Perform Group Action</ModalHeader>
                                         <ModalBody>
@@ -711,7 +720,7 @@ const ManagePartnerProgram = () => {
                                                                     {cohorts?.length > 0 &&
                                                                         cohorts?.map((c, i) => (
                                                                             <option key={i}
-                                                                                    value={c.id}>
+                                                                                value={c.id}>
                                                                                 {c.title}
                                                                             </option>
                                                                         ))}
@@ -730,7 +739,7 @@ const ManagePartnerProgram = () => {
                                                                     {teachers?.length > 0 &&
                                                                         teachers?.map((teacher) => (
                                                                             <option key={teacher?.id}
-                                                                                    value={teacher?.id}>
+                                                                                value={teacher?.id}>
                                                                                 {teacher.firstName} {teacher.lastName}
                                                                             </option>
                                                                         ))}
@@ -742,7 +751,7 @@ const ManagePartnerProgram = () => {
                                             </Row>
                                             <Row>
                                                 <Col>
-                                                    <br/>
+                                                    <br />
                                                     <div className="text-end">
                                                         <button
                                                             onClick={processBatchOperations}

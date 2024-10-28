@@ -252,6 +252,16 @@ const ManageProgram = () => {
             toast.error("Reload this page and try again")
         }
     }
+
+
+    const FormatDate = (data, i) => {
+        const parsedTimeSlots = JSON.parse(data);
+        if (parsedTimeSlots[i]) {
+            return parsedTimeSlots[i].map(({ dayText, timeText }) => `${dayText} ${timeText}`).join(' - ');
+        }
+        return ''; 
+    };
+
     return (
         <React.Fragment>
             <ToastContainer/>
@@ -408,9 +418,9 @@ const ManageProgram = () => {
                                                 <th>T.Name</th>
                                                 <th>P.Title</th>
                                                 <th>Level</th>
-                                                <th>Time</th>
+                                                <th>Time Group</th>
                                                 <th>(WAT)</th>
-                                                <th>Day</th>
+                                                <th>Time & Day</th>
                                                 <th>Status</th>
                                                 <th></th>
                                             </tr>
@@ -453,11 +463,11 @@ const ManageProgram = () => {
                                                     {/*  {program?.package?.status ? "Active" : "Inactive"}*/}
                                                     {/*</td>*/}
                                                     <td>{program?.promo_package?.level}</td>
-                                                    <td>{formatTime(program.time)}</td>
+                                                    <td>{program.timeGroup.title}</td>
                                                     <td><Moment format='hh:mm A'
                                                                 date={formatTimeZone(program?.child?.parent?.timeOffset, program.day, program.time).toISOString()}
                                                                 tz={"Africa/Lagos"}></Moment></td>
-                                                    <td>{formatDay(program.day)}</td>
+                                                    <td>{FormatDate(program.timeGroup.times, program.timeGroupIndex)}</td>
                                                     <td>
                                                         <div style={{width: 50}}>
                                                             {program.isPaid ? (

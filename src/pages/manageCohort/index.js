@@ -87,13 +87,13 @@ const ManageProgram = () => {
             if (t === "u") {
                 //delete records if there is no students
                 if (confirm("Are you sure to toggle the current state")) {
-                    //deleting....
+                    //updating....
                     toast.warn("Updating, please wait...")
                     const response = await axios.post(`${baseUrl}/admin/cohort/update/${id}`, d);
                     if (response.data.status) {
-                        setTimeout(() => {
-                            window.location.reload()
-                        }, 1000)
+                        // setTimeout(() => {
+                        //     window.location.reload()
+                        // }, 1000)
                     }
                 }
             }
