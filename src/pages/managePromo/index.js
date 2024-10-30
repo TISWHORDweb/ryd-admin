@@ -27,6 +27,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { calculateDebt } from "../../utils";
+import FeatherIcon from "feather-icons-react";
 
 const ManagePromo = () => {
   const [promos, setPromos] = useState([]);
@@ -48,6 +49,9 @@ const ManagePromo = () => {
   const [phone, setPhone] = useState("");
   const [editTooltipOpen, setEditTooltipOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [additionalFields, setadditionalFields] = useState();
+  const [fields, setFields] = useState([]);
+  const [checked, setChecked] = useState(false);
 
 
   const getCountries = async () => {
@@ -90,7 +94,7 @@ const ManagePromo = () => {
     }),
 
     onSubmit: async (values) => {
-      const newPromo ={
+      const newPromo = {
         title: values.title,
         address: values.address,
         country: values.country,
@@ -99,6 +103,7 @@ const ManagePromo = () => {
         email: values.email,
         phone: values.phone,
         timeGroupId: Number(values.timeGroupId),
+        additionalFields: additionalFields.length !== 0 ? additionalFields : []
       }
       console.log(newPromo)
       let response;
@@ -194,11 +199,35 @@ const ManagePromo = () => {
   };
 
 
-  // const handleCountryChange = (e) => {
-  //   const countryName = e.target.value;
-  //   setFieldValue("country", countryName)
-  // };
+  const addField = () => {
+    setFields([...fields, {
+      id: Date.now(),
+      label: '',
+      type: 'text',
+      required: checked
+    }]);
+  };
 
+  const removeField = (id) => {
+    setFields(fields.filter(field => field.id !== id));
+    setadditionalFields(fields.filter(field => field.id !== id));
+  };
+
+  const updateField = (id, updates) => {
+    const updatedFields = fields.map(field =>
+      field.id === id ? { ...field, ...updates } : field
+    );
+    setFields(updatedFields);
+    setadditionalFields(updatedFields);
+  };
+
+  function getLabels(data) {
+    if (Array.isArray(data)) {
+      return data.map(item => item.label).join(',\n');
+    }
+    return "none"; // or any other default value you'd like
+  }
+console.log(additionalFields)
   return (
     <React.Fragment>
       <div className="page-content">
@@ -264,24 +293,33 @@ const ManagePromo = () => {
                           <th>Address</th>
                           <th>email</th>
                           <th>Phone</th>
+                          <th>A-Fields</th>
                           <th>Status</th>
                           <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredPromos.map((p, index) => (
-                          <tr key={index}>
-                            <td>{index + 1}</td>
-                            <td>{p?.title}</td>
-                            <td>{p?.firstName + " " + p?.lastName}</td>
-                            <td>{p?.address}</td>
-                            <td>{p?.email}</td>
-                            <td>{p.phone}</td>
-                            <td>{p.status ? "Active" : "InActive"}</td>
-                            <td>
-                              <div className="d-flex gap-3">
-                                <>
-                                  {/* <Tooltip
+                        {filteredPromos.map((p, index) => {
+                          let additionalFields;
+                          try {
+                            additionalFields = typeof p.additionalFields === 'string' ? JSON.parse(p.additionalFields) : p.additionalFields;
+                          } catch (e) {
+                            additionalFields = []; // Handle parsing error
+                          }
+                          return (
+                            <tr key={index}>
+                              <td>{index + 1}</td>
+                              <td>{p?.title}</td>
+                              <td>{p?.firstName + " " + p?.lastName}</td>
+                              <td>{p?.address}</td>
+                              <td>{p?.email}</td>
+                              <td>{p.phone}</td>
+                              <td>{getLabels(additionalFields)}</td>
+                              <td>{p.status ? "Active" : "InActive"}</td>
+                              <td>
+                                <div className="d-flex gap-3">
+                                  <>
+                                    {/* <Tooltip
                                     isOpen={editTooltipOpen}
                                     target="edit"
                                     toggle={() => setEditTooltipOpen(!editTooltipOpen)}
@@ -302,37 +340,38 @@ const ManagePromo = () => {
                                   >
                                     <i className="mdi mdi-pencil font-size-18"></i>
                                   </Link> */}
-                                  {p.status ?
+                                    {p.status ?
+                                      <Link
+                                        className="text-danger"
+                                        onClick={() => {
+                                          if (confirm("Do you really want to DISABLE " + p?.title + " ?")) {
+                                            handleDisablePromo(p.id)
+                                          }
+                                        }}
+                                        id="manage"
+                                      >
+                                        <span className="">Disable</span>
+                                      </Link> : <a href="#"
+                                        className="text-success"
+                                        onClick={() => {
+                                          if (confirm("Do you really want to ENABLE " + p?.title + " ?")) {
+                                            handleEnablePromo(p.id)
+                                          }
+                                        }}>
+                                        Enable</a>}
                                     <Link
-                                      className="text-danger"
-                                      onClick={() => {
-                                        if (confirm("Do you really want to DISABLE " + p?.title + " ?")) {
-                                          handleDisablePromo(p.id)
-                                        }
-                                      }}
+                                      className="text-[#1671D9]"
+                                      to={`/promo/dashboard/${p.id}`}
                                       id="manage"
                                     >
-                                      <span className="">Disable</span>
-                                    </Link> : <a href="#"
-                                      className="text-success"
-                                      onClick={() => {
-                                        if (confirm("Do you really want to ENABLE " + p?.title + " ?")) {
-                                          handleEnablePromo(p.id)
-                                        }
-                                      }}>
-                                      Enable</a>}
-                                  <Link
-                                    className="text-[#1671D9]"
-                                    to={`/promo/dashboard/${p.id}`}
-                                    id="manage"
-                                  >
-                                    <span className="">Manage Promo</span>
-                                  </Link>
-                                </>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
+                                      <span className="">Manage Promo</span>
+                                    </Link>
+                                  </>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })}
                       </tbody>
                     </table>
 
@@ -512,6 +551,80 @@ const ManagePromo = () => {
                             </div>
                           </Col>
                         </Row>
+
+                        <div className="my-3">
+                          <div className="flex items-center justify-between mb-4">
+                            <h5 className="text-lg font-medium">Additional Information Fields</h5>
+                            <button
+                              type="button"
+                              onClick={addField}
+                              className="flex items-center gap-3 btn btn-primary"
+                            >
+                              <FeatherIcon
+                                icon="plus"
+                              />
+                              <span className="mx-3">Add Field</span>
+                            </button>
+                          </div>
+
+                          <div className="space-y-4">
+                            {fields.map((field) => (
+                              <div key={field.id} className="flex gap-4 mb-3 items-start p-4 border rounded bg-gray-50">
+                                <div className="flex-1">
+                                  <div className="mb-3">
+                                    <Input
+                                      type="text"
+                                      placeholder="Field Label"
+                                      value={field.label}
+                                      onChange={(e) => updateField(field.id, { label: e.target.value })}
+                                    />
+                                  </div>
+
+                                  <div className="flex gap-4">
+                                    <Input
+                                      value={field.type}
+                                      type="select"
+                                      onChange={(e) => updateField(field.id, { type: e.target.value })}
+                                      className="mb-3"
+                                    >
+                                      <option value="text">Text</option>
+                                      <option value="number">Number</option>
+                                      <option value="email">Email</option>
+                                      {/* <option value="tel">Phone</option>
+                                      <option value="date">Date</option>
+                                      <option value="file">File Upload</option> */}
+                                    </Input>
+                                  </div>
+                                  <div className="d-flex align-items-center  justify-content-between ">
+                                    <div className="form-check form-switch ">
+                                      <input
+                                        className="form-check-input"
+                                        onChange={(e) => updateField(field.id, { required: e.target.checked })}
+                                        type="checkbox"
+                                        id="flexSwitchCheckReverse" />
+                                      <label className="form-check-label" htmlFor="flexSwitchCheckReverse">Required</label>
+                                    </div>
+                                    <span
+                                      type="button"
+                                      onClick={() => removeField(field.id)}
+                                      className="p-2 text-red-500 hover:text-red-700 text-danger o"
+                                    >
+                                      <FeatherIcon
+                                        icon="trash-2"
+                                      />
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {fields.length === 0 && (
+                            <div className="text-center py-8 text-gray-500 border-2 border-dashed rounded">
+                              No additional fields added yet. Click "Add Field" to create custom fields.
+                            </div>
+                          )}
+                        </div>
                         <Row>
                           <Col>
                             <div className="text-end">
