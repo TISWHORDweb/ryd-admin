@@ -1,11 +1,13 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import withAuth from '../withAuth';
 import Breadcrumbs from "../../components/Common/Breadcrumb";
-import {Card, CardBody, Col, Container, Input, Row,} from "reactstrap";
+import { Card, CardBody, Col, Container, Input, Row, } from "reactstrap";
 import axios from 'axios';
-import {baseUrl} from '../../Network';
-import {useParams} from 'react-router-dom';
-import {checkPromoProgram, newFormatDate, totalCohortChild, totalCohortParent} from '../../utils';
+import { baseUrl, promoUrl } from '../../Network';
+import { useParams } from 'react-router-dom';
+import { checkPromoProgram, newFormatDate, totalCohortChild, totalCohortParent } from '../../utils';
+import FeatherIcon from 'feather-icons-react/build/FeatherIcon';
+import { ToastContainer, toast } from 'react-toastify';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -21,6 +23,9 @@ const Dashboard = () => {
   ]);
 
   const { id } = useParams()
+  const WEB_APP_USER_URL = window.location.host;
+  const inputRef = useRef(null);
+
 
   useEffect(() => {
     document.title = "Promo Dashboard | RYD Admin";
@@ -79,8 +84,17 @@ const Dashboard = () => {
     }
   }, [searchQuery]);
 
+  const handleCopy = () => {
+    if (inputRef.current) {
+      inputRef.current.select();
+      document.execCommand("copy");
+    }
+    toast.success("Promo link copied successfully!");
+  };
+
   return (
     <React.Fragment>
+       <ToastContainer/>
       <div className="page-content">
         <Container fluid>
           <Row>
@@ -98,29 +112,65 @@ const Dashboard = () => {
               </Col>
             ))}
           </Row>
-          <Row className="align-items-center">
-                <Col md={6}>
-                  <div className="mb-3">
-                    <h5 className="card-title">
-                      Cohort List{" "}
-                      <span className="text-muted fw-normal ms-2">
-                        ({cohorts.length})
-                      </span>
-                    </h5>
-                  </div>
-                </Col>
-                <Col md={6}>
-                  <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
-                    <div>
-                      <Input
+          <div className="my-5">
+            <p>Promo Link</p>
+            <Col>
+              <form className="mt-3">
+                <Row>
+                  <Col>
+                    <div className="promo">
+                      <input
                         type="text"
-                        placeholder="Search"
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        readOnly
+                        ref={inputRef}
+                        value={`${promoUrl ===""? WEB_APP_USER_URL : promoUrl}/promo/parent/register?promoID=${id ? id + 100 : ""
+                          }`}
+                        className="text-[#000] placeholder:text-[#000] border-[0.5px] border-[#000] rounded-md mr-2 px-2 w-600px text-xs py-2"
                       />
+                      <div
+                        className="absolute right-3 top-[0.1px] cursor-pointer"
+                        onClick={handleCopy}
+                        
+                      >
+                        <FeatherIcon
+                          icon="copy"
+                        />{" "}
+                      </div>
                     </div>
-                  </div>
-                </Col>
-              </Row>
+                  </Col>
+                  <Col>
+                    <button
+                      className="text-[#0B1B2B] text-xs bg-white rounded-md border border-[#0B1B2B] py-2 px-3 ">
+                      Disable Link
+                    </button>
+                  </Col>
+                </Row>
+              </form>
+            </Col>
+          </div>
+          <Row className="align-items-center">
+            <Col md={6}>
+              <div className="mb-3">
+                <h5 className="card-title">
+                  Cohort List{" "}
+                  <span className="text-muted fw-normal ms-2">
+                    ({cohorts.length})
+                  </span>
+                </h5>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
+                <div>
+                  <Input
+                    type="text"
+                    placeholder="Search"
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+            </Col>
+          </Row>
           <Row>
             <Col xl="12">
               {loading ? (
@@ -156,11 +206,11 @@ const Dashboard = () => {
                         <td>{totalCohortChild(p.promo_programs, parseInt(id))}</td>
                         <td>{totalCohortParent(p.promo_programs, parseInt(id))}</td>
                         <td>{p.status ? (
-                          <p className=" bg-custom-yellow  font-normal text-yellow-600 text-center p-1 rounded-2xl" style={{background:"rgba(255, 255, 0, 0.147)",color:"blavk"}}>
+                          <p className=" bg-custom-yellow  font-normal text-yellow-600 text-center p-1 rounded-2xl" style={{ background: "rgba(255, 255, 0, 0.147)", color: "blavk" }}>
                             Ongoing
                           </p>
                         ) : (
-                          <p className=" bg-[#E7F6EC] font-normal text-[#0F973D] text-center p-1 rounded-2xl" style={{background:"#E7F6EC",color:"#0F973D"}}>
+                          <p className=" bg-[#E7F6EC] font-normal text-[#0F973D] text-center p-1 rounded-2xl" style={{ background: "#E7F6EC", color: "#0F973D" }}>
                             Completed
                           </p>
                         )}</td>

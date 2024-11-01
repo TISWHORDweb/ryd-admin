@@ -26,3 +26,19 @@ tr:hover {
         visibility: hidden;
     }
 }
+
+.promo{
+    display:flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    padding: 0 10px;
+    border-radius: 5px;
+}
+.promo input{
+    width: 100%;
+    border: none;
+}
+
+.promo svg{
+    cursor: pointer;
+}
