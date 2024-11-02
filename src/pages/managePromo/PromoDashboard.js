@@ -140,7 +140,7 @@ const Dashboard = () => {
                   </Col>
                   <Col>
                     <button
-                      className="text-[#0B1B2B] text-xs bg-white rounded-md border border-[#0B1B2B] py-2 px-3 ">
+                      className="btn btn-danger">
                       Disable Link
                     </button>
                   </Col>

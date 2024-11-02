@@ -46,12 +46,15 @@ const ManagePromo = () => {
   const [countryList, setCountryList] = useState([]);
   const [email, setEmail] = useState("");
   const [timeGroup, setTimeGroup] = useState([]);
+  const [slot, setSlot] = useState([]);
   const [phone, setPhone] = useState("");
   const [editTooltipOpen, setEditTooltipOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [additionalFields, setadditionalFields] = useState();
   const [fields, setFields] = useState([]);
   const [checked, setChecked] = useState(false);
+  const [timeGroups, setTimeGroups] = useState([]);
+  const [kidInputs, setKidInputs] = useState([]);
 
 
   const getCountries = async () => {
@@ -103,7 +106,8 @@ const ManagePromo = () => {
         email: values.email,
         phone: values.phone,
         timeGroupId: Number(values.timeGroupId),
-        additionalFields: additionalFields.length !== 0 ? additionalFields : []
+        additionalFields: additionalFields.length !== 0 ? additionalFields : [],
+        slot: slot.length !== 0 ? slot : []
       }
       console.log(newPromo)
       let response;
@@ -227,7 +231,59 @@ const ManagePromo = () => {
     }
     return "none"; // or any other default value you'd like
   }
-console.log(additionalFields)
+
+  useEffect(() => {
+    if (validation.values.timeGroupId) {
+      const selectedGroup = timeGroup.find(t => t.id === Number(validation.values.timeGroupId));
+      if (selectedGroup) {
+        try {
+          // Parse the times string
+          const parsedTimes = JSON.parse(selectedGroup.times);
+
+          // Handle both array formats
+          const formattedTimes = Array.isArray(parsedTimes[0])
+            ? parsedTimes  // Already in grouped format
+            : [parsedTimes]; // Single time or ungrouped times - wrap in array
+
+          setTimeGroups(formattedTimes);
+          // Initialize kid inputs with empty values for each group
+          setKidInputs(new Array(formattedTimes.length).fill(0));
+        } catch (error) {
+          console.error('Error parsing times:', error);
+          setTimeGroups([]);
+          setKidInputs([]);
+        }
+      }
+    } else {
+      setTimeGroups([]);
+      setKidInputs([]);
+    }
+  }, [validation.values.timeGroupId, timeGroup]);
+
+  const handleKidInputChange = (index, value) => {
+    const newKidInputs = [...kidInputs];
+    newKidInputs[index] = Number(value);
+    setKidInputs(newKidInputs);
+
+    // Create the formatted data for backend
+    const formattedData = timeGroups.map((_, idx) => ({
+      index: idx,
+      numberOfKid: newKidInputs[idx]
+    }));
+
+    setSlot(formattedData);
+    
+  };
+
+  const formatTimeSlotGroup = (timeSlotGroup) => {
+    return Array.isArray(timeSlotGroup)
+      ? timeSlotGroup
+        .map(slot => `${slot.dayText} ${slot.timeText}`)
+        .join(', ')
+      : `${timeSlotGroup.dayText} ${timeSlotGroup.timeText}`;
+  };
+
+
   return (
     <React.Fragment>
       <div className="page-content">
@@ -448,26 +504,55 @@ console.log(additionalFields)
                                   {validation.errors.country}
                                 </FormFeedback>
                               </div>
-                              <div className="mb-3 col-md-6">
-                                <Label className="form-label">Choose Time Group</Label>
-                                <Input
-                                  name="timeGroupId"
-                                  type="select"
-                                  placeholder="Time Group"
-                                  onChange={validation.handleChange}
-                                  onBlur={validation.handleBlur}
-                                  value={validation.values.timeGroupId || null}
-                                  invalid={
-                                    validation.touched.timeGroupId &&
-                                    validation.errors.timeGroupId
-                                  }>
-                                  <option value={null}>--Choose--</option>
-                                  {timeGroup.map((t, i) => <option key={i} value={Number(t.id)}>{t.title}</option>)}
-                                </Input>
-                                <FormFeedback type="invalid">
-                                  {validation.errors.timeGroupId}
-                                </FormFeedback>
-                              </div>
+                                {/* Time Group Selection */}
+                                <div className="mb-3 col-md-6">
+                                  <Label className="form-label">Choose Time Group</Label>
+                                  <Input
+                                    name="timeGroupId"
+                                    type="select"
+                                    placeholder="Time Group"
+                                    onChange={validation.handleChange}
+                                    onBlur={validation.handleBlur}
+                                    value={validation.values.timeGroupId || ''}
+                                    invalid={validation.touched.timeGroupId && validation.errors.timeGroupId}
+                                  >
+                                    <option value="">--Choose--</option>
+                                    {timeGroup.map((t, i) => (
+                                      <option key={i} value={Number(t.id)}>
+                                        {t.title}
+                                      </option>
+                                    ))}
+                                  </Input>
+                                  {validation.touched.timeGroupId && validation.errors.timeGroupId && (
+                                    <FormFeedback type="invalid">
+                                      {validation.errors.timeGroupId}
+                                    </FormFeedback>
+                                  )}
+                                </div>
+
+                                {/* Time Slots with Kid Inputs */}
+                                {timeGroups.length > 0 && (
+                                  <div className="mt-4">
+                                    <Label className="form-label ">Specify Number of Kids for Each Time Slot</Label>
+                                    <div className="space-y-2">
+                                      {timeGroups.map((timeSlotGroup, index) => (
+                                        <div key={index} className="flex items-center gap-4">
+                                          <div className="flex-1">
+                                            {formatTimeSlotGroup(timeSlotGroup)}
+                                          </div>
+                                          <Input
+                                            type="number"
+                                            min="0"
+                                            value={kidInputs[index]}
+                                            onChange={(e) => handleKidInputChange(index, e.target.value)}
+                                            className="w-24"
+                                            placeholder="Kids"
+                                          />
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
                             </Row>
                             <h5 className="my-4">Head of Promo Info </h5>
                             <div className="row">
