@@ -187,6 +187,15 @@ const SidebarContent = props => {
               </Link>
             </li>
 
+            <li>
+              <Link to={`/promo/manage-time/${id}`} className="">
+                <FeatherIcon
+                    icon="clock"
+                />{" "}
+                <span>{props.t("Manage Time slot")}</span>
+              </Link>
+            </li>
+
           </ul>
           <div className="card sidebar-alert border-0 text-center mx-4 mb-0 mt-5">
             <div className="card-body">

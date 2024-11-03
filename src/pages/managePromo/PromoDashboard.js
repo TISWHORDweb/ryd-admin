@@ -11,7 +11,8 @@ import { ToastContainer, toast } from 'react-toastify';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
-  const [cohorts, setCohorts] = useState([]);
+  const [programs, setPrograms] = useState([]);
+  
   const [promo, setPromo] = useState();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterData, setFilterData] = useState([]);
@@ -45,14 +46,14 @@ const Dashboard = () => {
         const pDate = new Date(promoDashboardResponse.data.data.promo.createdAt)
         pDate.setHours(0, 0, 0, 0)
         pDate.setDate(1)
-        const cd = promoDashboardResponse.data.data.cohort
+        const cd = promoDashboardResponse.data.data.programs
         // .filter(f => {
         //   const dd = new Date(f.createdAt)
         //   dd.setDate(1)
         //   dd.setHours(0, 0, 0, 0)
         //   return dd>=pDate
         // })
-        setCohorts(cd)
+        setPrograms(cd)
         setFilterData(cd);
         setPromo(promoDashboardResponse.data.data.promo)
         setProgramData([
@@ -78,9 +79,9 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (searchQuery) {
-      setFilterData(filterTableData(cohorts, searchQuery));
+      setFilterData(filterTableData(programs, searchQuery));
     } else {
-      setFilterData(cohorts);
+      setFilterData(programs);
     }
   }, [searchQuery]);
 
@@ -123,7 +124,7 @@ const Dashboard = () => {
                         type="text"
                         readOnly
                         ref={inputRef}
-                        value={`${promoUrl ===""? WEB_APP_USER_URL : promoUrl}/promo/parent/register?promoID=${id ? id + 100 : ""
+                        value={`${promoUrl === ""? WEB_APP_USER_URL : promoUrl}/promo/parent/register?promoID=${id ? parseInt(id) + 100 : ""
                           }`}
                         className="text-[#000] placeholder:text-[#000] border-[0.5px] border-[#000] rounded-md mr-2 px-2 w-600px text-xs py-2"
                       />
@@ -152,9 +153,9 @@ const Dashboard = () => {
             <Col md={6}>
               <div className="mb-3">
                 <h5 className="card-title">
-                  Cohort List{" "}
+                  Programs List{" "}
                   <span className="text-muted fw-normal ms-2">
-                    ({cohorts.length})
+                    ({programs.length})
                   </span>
                 </h5>
               </div>
@@ -188,24 +189,27 @@ const Dashboard = () => {
                   <thead>
                     <tr>
                       <th>#</th>
-                      <th>Cohort Name</th>
-                      <th>Start Date	</th>
-                      <th>End Date</th>
-                      <th>Enrolled Students</th>
-                      <th>No of parents	</th>
-                      <th>Status</th>
+                      <th>Parent Name</th>
+                      <th>Child Name	</th>
+                      <th>Country</th>
+                      <th>Gender</th>
+                      {/* <th>N</th>
+                      <th>Status</th> */}
                     </tr>
                   </thead>
                   <tbody>
                     {filterData.map((p, index) => (
                       <tr key={index}>
                         <td>{index + 1}</td>
-                        <td>{p?.title}</td>
-                        <td>{newFormatDate(p?.startDate)}</td>
-                        <td>{newFormatDate(p?.startDate)}</td>
-                        <td>{totalCohortChild(p.promo_programs, parseInt(id))}</td>
-                        <td>{totalCohortParent(p.promo_programs, parseInt(id))}</td>
-                        <td>{p.status ? (
+                        <td>{p?.child.parent.firstName+ " "+ p?.child.parent.lastName}</td>
+                        <td>{p?.child.firstName+ " "+ p?.child.lastName}</td>
+                        <td>{p?.child.parent.country}</td>
+                        <td>{p?.child.gender}</td>
+                        {/* <td>{newFormatDate(p?.startDate)}</td>
+                        <td>{newFormatDate(p?.startDate)}</td> */}
+                        {/* <td>{totalCohortChild(p.promo_programs, parseInt(id))}</td>
+                        <td>{totalCohortParent(p.promo_programs, parseInt(id))}</td> */}
+                        {/* <td>{p.status ? (
                           <p className=" bg-custom-yellow  font-normal text-yellow-600 text-center p-1 rounded-2xl" style={{ background: "rgba(255, 255, 0, 0.147)", color: "blavk" }}>
                             Ongoing
                           </p>
@@ -213,7 +217,7 @@ const Dashboard = () => {
                           <p className=" bg-[#E7F6EC] font-normal text-[#0F973D] text-center p-1 rounded-2xl" style={{ background: "#E7F6EC", color: "#0F973D" }}>
                             Completed
                           </p>
-                        )}</td>
+                        )}</td> */}
                       </tr>
                     ))}
                   </tbody>

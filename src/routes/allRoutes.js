@@ -36,6 +36,7 @@ import PromoDashboard from "../pages/managePromo/PromoDashboard";
 import ManagePartnerProgram from "../pages/managePartnerPrograms/ManagePartnerProgram";
 import ManagePromo from "../pages/managePromo";
 import ManagePromoProgram from "../pages/managePromoProgram/ManagePromoProgram";
+import PromoTimeSlot from "../pages/managePromo/PromoTimeSlot";
 
 const userRoutes = [
   //dashboard
@@ -105,6 +106,7 @@ const promoRoutes = [
   { path: "/promo/manage-parent/:id", component: <PromoParent /> },
   { path: "/promo/manage-child/:id", component: <PromoChild /> },
   { path: "/promo/manage-program/:id", component: <PromoProgram /> },
+  { path: "/promo/manage-time/:id", component: <PromoTimeSlot /> },
 ];
 
 export { userRoutes, authRoutes, partnerRoutes, promoRoutes };
