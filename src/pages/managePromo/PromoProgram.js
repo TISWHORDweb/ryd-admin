@@ -416,8 +416,6 @@ const ManageProgram = () => {
                                                 <th>Age</th>
                                                 <th>Gender</th>
                                                 <th>T.Name</th>
-                                                <th>P.Title</th>
-                                                <th>Level</th>
                                                 <th>Time Group</th>
                                                 <th>(WAT)</th>
                                                 <th>Time & Day</th>
@@ -456,13 +454,6 @@ const ManageProgram = () => {
                                                     <td>{program?.child?.age}</td>
                                                     <td>{program?.child?.gender}</td>
                                                     <td>{program?.promo_teacher?.firstName}</td>
-                                                    <td>{program?.promo_package?.title}<br/><small
-                                                        style={{color: 'red'}}>[{program?.promo_cohort?.title || "No Cohort"}]</small>
-                                                    </td>
-                                                    {/*<td>*/}
-                                                    {/*  {program?.package?.status ? "Active" : "Inactive"}*/}
-                                                    {/*</td>*/}
-                                                    <td>{program?.promo_package?.level}</td>
                                                     <td>{program.timeGroup.title}</td>
                                                     <td><Moment format='hh:mm A'
                                                                 date={formatTimeZone(program?.child?.parent?.timeOffset, program.day, program.time).toISOString()}

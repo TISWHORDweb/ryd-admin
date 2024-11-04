@@ -33,31 +33,20 @@ const ManageTimeSlot = () => {
     const [contact, setContact] = useState({});
     const [modal, setModal] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
-    const [deleteModal, setDeleteModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [timeGroup, setTimeGroup] = useState([]);
     const [slot, setSlot] = useState();
     const [slotIndex, setSlotIndex] = useState();
+    const [filterData, setFilterData] = useState([]);
     const [title, setTitle] = useState("");
     const [formattedData, setFormattedData] = useState([]);
 
     useEffect(() => {
-        // fetchParents();
-        fetchChildren();
         fetchImeSlot()
     }, []);
 
     const { id } = useParams()
-
-    //   const fetchParents = async () => {
-    //     try {
-    //       const response = await axios.get(`${baseUrl}/admin/parent/all`);
-    //       setParentOptions(response.data.data);
-    //     } catch (error) {
-    //       console.error(error);
-    //     }
-    //   };
 
     const validation = useFormik({
         enableReinitialize: true,
@@ -100,7 +89,6 @@ const ManageTimeSlot = () => {
     useEffect(() => {
         if (timeGroup.times) {
             try {
-                console.log(timeGroup.times)
                 const parsedTimeSlots = JSON.parse(timeGroup.times);
                 let formatted = [];
                 if (Array.isArray(parsedTimeSlots[0]) && Array.isArray(parsedTimeSlots)) {
@@ -121,6 +109,7 @@ const ManageTimeSlot = () => {
                 }
 
                 setFormattedData(formatted);
+                setFilterData(formatted)
             } catch (error) {
                 console.error('Error parsing time slots:', error);
                 setFormattedData([]);
@@ -128,24 +117,12 @@ const ManageTimeSlot = () => {
         }
     }, [timeGroup]);
 
-    const fetchChildren = async () => {
-        try {
-            const response = await axios.get(`${baseUrl}/admin/promo/child/all/${id}`);
-            setUsers(response.data.data);
-            setUsersData(response.data.data)
-            setLoading(false);
-        } catch (error) {
-            setLoading(false);
-            console.error(error);
-        }
-    };
-
     const getNumberOfKidsByIndex = (index) => {
         const parsedSlots = JSON.parse(timeSlotData.slot);
         const slotConfig = parsedSlots.find(config => config.index === index);
         return slotConfig ? slotConfig.numberOfKid : 0;
     };
-    console.log(timeSlotData)
+    
     const getFilteredValue = (key) => {
         if (timeSlotData.slotChilds.hasOwnProperty(key)) {
             return timeSlotData.slotChilds[key];
@@ -167,7 +144,6 @@ const ManageTimeSlot = () => {
         }
     };
 
-    console.log(timeGroup)
 
     const toggle = () => {
         setModal(!modal);
@@ -180,31 +156,26 @@ const ManageTimeSlot = () => {
         toggle();
     };
 
-    const onClickDelete = (userData) => {
-        setContact(userData);
-        setDeleteModal(true);
-    };
-
-    const handleDeleteUser = async () => {
-        try {
-            await axios.delete(`${baseUrl}/admin/promo/child/${contact.id}`);
-            const updatedUsers = users.filter((user) => user.id !== contact.id);
-            setUsers(updatedUsers);
-            setDeleteModal(false);
-            toast.success("Child deleted successfully");
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to delete child");
+    function filterTableData(data, searchQuery) {
+        return data.filter((slot) => {
+          const searchText = searchQuery.toLowerCase();
+          return (
+            slot.name.toLowerCase().includes(searchText)
+          );
+        });
+      }
+    
+      useEffect(() => {
+        if (searchQuery) {
+          setFilterData(filterTableData(formattedData, searchQuery));
+        } else {
+          setFilterData(formattedData);
         }
-    };
+      }, [searchQuery]);
+
 
     return (
         <React.Fragment>
-            <DeleteModal
-                show={deleteModal}
-                onDeleteClick={handleDeleteUser}
-                onCloseClick={() => setDeleteModal(false)}
-            />
             <div className="page-content">
                 <Container fluid>
                     <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Time Slot" />
@@ -223,11 +194,7 @@ const ManageTimeSlot = () => {
                                         type="text"
                                         placeholder="Search"
                                         value={searchQuery}
-                                        onChange={(e) => {
-                                            setUsersData(users.filter((user) =>
-                                                `${user.firstName} ${user.lastName} ${user?.parent?.firstName} ${user?.parent?.lastName}`.toLowerCase().includes(e.target.value)
-                                            ))
-                                        }}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
                             </div>
@@ -243,7 +210,7 @@ const ManageTimeSlot = () => {
                                                 <span className="visually-hidden">Loading...</span>
                                             </div>
                                         </div>
-                                    ) : usersData.length === 0 ? (
+                                    ) : filterData.length === 0 ? (
                                         <div className="text-center mt-5">
                                             <h3>No data available</h3>
                                         </div>
@@ -260,7 +227,7 @@ const ManageTimeSlot = () => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {formattedData.map((time, index) => (
+                                                {filterData.map((time, index) => (
                                                     <tr key={index} style={{ backgroundColor: '#ffeff2' }}>
                                                         <td>{index + 1}</td>
                                                         <td>{time?.name}</td>
