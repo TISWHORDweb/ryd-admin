@@ -89,7 +89,7 @@ const ManageTimeSlot = () => {
     useEffect(() => {
         if (timeGroup.times) {
             try {
-                const parsedTimeSlots = JSON.parse(timeGroup.times);
+                const parsedTimeSlots = timeGroup.times;
                 let formatted = [];
                 if (Array.isArray(parsedTimeSlots[0]) && Array.isArray(parsedTimeSlots)) {
                     formatted = parsedTimeSlots.map((slotPair, index) => {
