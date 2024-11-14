@@ -1,14 +1,14 @@
-import React, {useEffect, useState} from "react";
-import {Link, useParams} from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import DeleteModal from "../../components/Common/DeleteModal";
 import * as Yup from "yup";
-import {useFormik} from "formik";
+import { useFormik } from "formik";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import axios from "axios";
 import withAuth from "../withAuth";
-import {baseUrl} from "../../Network";
-import {Col, Container, Form, Input, Label, Modal, ModalBody, ModalHeader, Row,} from "reactstrap";
-import {toast, ToastContainer} from "react-toastify";
+import { baseUrl } from "../../Network";
+import { Col, Container, Form, Input, Label, Modal, ModalBody, ModalHeader, Row, } from "reactstrap";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
     BtnBold,
@@ -36,6 +36,7 @@ const ManageParent = () => {
     const [contact, setContact] = useState({});
     const [modal, setModal] = useState(false);
     const [modalSingle, setModalSingle] = useState(false);
+    const [reminderModal, setReminderModal] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
     const [deleteModal, setDeleteModal] = useState(false);
     const [country, setCountry] = useState({});
@@ -45,9 +46,11 @@ const ManageParent = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedUserId, setSelectedUserId] = useState(null);
-    const [groupEmailData, SetGroupEmailData] = useState({t: 0, s: "", b: ""});
+    const [groupEmailData, SetGroupEmailData] = useState({ t: 0, s: "", b: "" });
     const [url, updateUrl] = useState(null);
-    const [error, updateError] = useState();
+    const [teachers, setTeachers] = useState([]);
+    const [selectedTeacher, setSelectedTeachers] = useState("")
+    const [link, setLink] = useState("")
 
     useEffect(() => {
         document.title = "Promo Parents | RYD Admin";
@@ -67,6 +70,23 @@ const ManageParent = () => {
         updateUrl(result?.info?.secure_url);
     }
 
+    const handleTeacherChange = (e) => {
+        setSelectedTeacher(e.target.value);
+    };
+
+    useEffect(() => {
+        fetchTeachers().then(r => null)
+    }, []);
+
+    const fetchTeachers = async () => {
+        try {
+            const response = await axios.get(`${baseUrl}/admin/teacher/all`);
+            setTeachers(response.data.data);
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    };
+
     const fetchUsers = async () => {
         try {
             const response = await axios.get(`${baseUrl}/admin/promo/parents/${id}`);
@@ -85,6 +105,10 @@ const ManageParent = () => {
 
     const toggleSingle = () => {
         setModalSingle(!modalSingle);
+    };
+
+    const toggleReminder = () => {
+        setReminderModal(!reminderModal);
     };
 
     const handleUserClick = (userData) => {
@@ -113,6 +137,26 @@ const ManageParent = () => {
             toggle();
         } catch (error) {
             toast.error("Failed to send email to parents");
+        }
+    };
+
+    const handleReminder = async (event) => {
+        event.preventDefault();
+        if ( link && selectedTeacher) {
+            const body = {
+                id: id,
+                teacher: selectedTeacher,
+                link: link
+            }
+            try {
+                await axios.post(`${baseUrl}/admin/promo/parent/send/reminder`, body);
+                toast.success("Reminder sent to all parents successfully");
+                toggleReminder();
+            } catch (error) {
+                toast.error("Failed to send email to parents");
+            }
+        } else {
+            toast.error("All fieds required");
         }
     };
 
@@ -189,7 +233,7 @@ const ManageParent = () => {
     }
 
     const groupEmail = (t, e) => {
-        SetGroupEmailData({...groupEmailData, [t]: e.target.value})
+        SetGroupEmailData({ ...groupEmailData, [t]: e.target.value })
     }
 
     //resolve all child names for parents
@@ -214,24 +258,24 @@ const ManageParent = () => {
             /> */}
             <div className="page-content">
                 <Container fluid>
-                    <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Parent"/>
+                    <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Parent" />
                     <Row>
                         <Col lg="12">
                             <Row className="align-items-center">
                                 <Col md={4}>
                                     <div className="mb-3">
                                         <h5 className="card-title">
-                                        Promo Parent List{" "}
+                                            Promo Parent List{" "}
                                             <span className="text-muted fw-normal ms-2">
-                        ({users.length})
-                      </span>
+                                                ({users.length})
+                                            </span>
                                         </h5>
                                     </div>
                                 </Col>
 
                                 <Col md={8}>
                                     <div className="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
-                                        <div style={{width: 200}}>
+                                        <div style={{ width: 200 }}>
                                             <select className={'form-control'} onChange={(e) => {
                                                 //search for parent with cohort
                                                 if (Number(e.target.value) === 0) {
@@ -264,7 +308,7 @@ const ManageParent = () => {
                                                 <option value={3}>All Alumni</option>
                                             </select>
                                         </div>
-                                        <div style={{width: 200, display: 'none'}}>
+                                        <div style={{ width: 200, display: 'none' }}>
                                             <select className={'form-control'} onChange={(e) => {
                                                 //switch mode
                                                 setPrivateParentOnly(Number(e.target.value))
@@ -292,6 +336,14 @@ const ManageParent = () => {
                                                 Parents
                                             </button>
                                         </div>
+                                        <div>
+                                            <button
+                                                type="button"
+                                                className="btn btn-light"
+                                                onClick={() => toggleReminder()}>
+                                                <i className="mdi mdi-email-variant"></i> Reminder
+                                            </button>
+                                        </div>
                                     </div>
                                 </Col>
                                 <p>
@@ -316,82 +368,82 @@ const ManageParent = () => {
                                     ) : (
                                         <table className="table">
                                             <thead>
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Parent Name</th>
-                                                <th>Children Name(s)</th>
-                                                <th>Email</th>
-                                                <th>Phone</th>
-                                                <th>State</th>
-                                                {/*<th>Data Privacy</th>*/}
-                                                <th>Country</th>
-                                                <th>Timezone</th>
-                                                <th>No.Child</th>
-                                                <th>Action</th>
-                                            </tr>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Parent Name</th>
+                                                    <th>Children Name(s)</th>
+                                                    <th>Email</th>
+                                                    <th>Phone</th>
+                                                    <th>State</th>
+                                                    {/*<th>Data Privacy</th>*/}
+                                                    <th>Country</th>
+                                                    <th>Timezone</th>
+                                                    <th>No.Child</th>
+                                                    <th>Action</th>
+                                                </tr>
                                             </thead>
                                             <tbody>
-                                            {Array.isArray(users) &&
-                                                users
-                                                    .filter((user) =>
-                                                        `${user.firstName} ${user.lastName}`
-                                                            .toLowerCase()
-                                                            .includes(searchQuery.toLowerCase())
-                                                    )
-                                                    .map((user, index) => (
-                                                        <tr key={index}
-                                                            style={{backgroundColor: user?.privacyMode ? '#ffeff2' : '#fff'}}>
-                                                            <td>{index + 1}</td>
-                                                            <td>{user.firstName} {user.lastName}</td>
-                                                            <td style={{width: 200}}>
-                                                                <div
-                                                                    style={{whiteSpace: 'nowrap'}}>{(user?.children?.length > 0 && getAllChildName(user).map((x, i) =>
-                                                                        <li style={{fontWeight: !x.isActive ? 'normal' : 'bold'}}
-                                                                            key={i}>{x.childNames}</li>)) ||
-                                                                    <li>No Child</li>}</div>
-                                                            </td>
-                                                            <td>{user.email}</td>
-                                                            <td>{user.phone}</td>
-                                                            <td style={{width: 20}}>{user.state}</td>
-                                                            {/*<td>{user.privacyMode ? "Private" : "Not Private"}</td>*/}
-                                                            <td>{user.country}</td>
-                                                            <td>{user.timezone}</td>
-                                                            <td>{user?.children?.length}</td>
-                                                            <td>
-                                                                <div className="d-flex gap-3">
-                                                                    <Link
-                                                                        className="text-primary"
-                                                                        to="#"
-                                                                        onClick={() =>
-                                                                            handleSingleSendEmail(user.id)
-                                                                        }>
-                                                                        <i className="mdi mdi-email-variant font-size-18"></i>
-                                                                    </Link>
-                                                                    {/*<Link*/}
-                                                                    {/*    className="text-success"*/}
-                                                                    {/*    to="#"*/}
-                                                                    {/*    onClick={() => {*/}
-                                                                    {/*        handleUserClick(user);*/}
-                                                                    {/*        setIsEdit(true);*/}
-                                                                    {/*    }}>*/}
-                                                                    {/*    <i className="mdi mdi-pencil font-size-18"></i>*/}
-                                                                    {/*</Link>*/}
-                                                                    {/* <Link
+                                                {Array.isArray(users) &&
+                                                    users
+                                                        .filter((user) =>
+                                                            `${user.firstName} ${user.lastName}`
+                                                                .toLowerCase()
+                                                                .includes(searchQuery.toLowerCase())
+                                                        )
+                                                        .map((user, index) => (
+                                                            <tr key={index}
+                                                                style={{ backgroundColor: user?.privacyMode ? '#ffeff2' : '#fff' }}>
+                                                                <td>{index + 1}</td>
+                                                                <td>{user.firstName} {user.lastName}</td>
+                                                                <td style={{ width: 200 }}>
+                                                                    <div
+                                                                        style={{ whiteSpace: 'nowrap' }}>{(user?.children?.length > 0 && getAllChildName(user).map((x, i) =>
+                                                                            <li style={{ fontWeight: !x.isActive ? 'normal' : 'bold' }}
+                                                                                key={i}>{x.childNames}</li>)) ||
+                                                                            <li>No Child</li>}</div>
+                                                                </td>
+                                                                <td>{user.email}</td>
+                                                                <td>{user.phone}</td>
+                                                                <td style={{ width: 20 }}>{user.state}</td>
+                                                                {/*<td>{user.privacyMode ? "Private" : "Not Private"}</td>*/}
+                                                                <td>{user.country}</td>
+                                                                <td>{user.timezone}</td>
+                                                                <td>{user?.children?.length}</td>
+                                                                <td>
+                                                                    <div className="d-flex gap-3">
+                                                                        <Link
+                                                                            className="text-primary"
+                                                                            to="#"
+                                                                            onClick={() =>
+                                                                                handleSingleSendEmail(user.id)
+                                                                            }>
+                                                                            <i className="mdi mdi-email-variant font-size-18"></i>
+                                                                        </Link>
+                                                                        {/*<Link*/}
+                                                                        {/*    className="text-success"*/}
+                                                                        {/*    to="#"*/}
+                                                                        {/*    onClick={() => {*/}
+                                                                        {/*        handleUserClick(user);*/}
+                                                                        {/*        setIsEdit(true);*/}
+                                                                        {/*    }}>*/}
+                                                                        {/*    <i className="mdi mdi-pencil font-size-18"></i>*/}
+                                                                        {/*</Link>*/}
+                                                                        {/* <Link
                                                                         className="text-danger d-none"
                                                                         to="#"
                                                                         onClick={() => onClickDelete(user)}>
                                                                         <i className="mdi mdi-delete font-size-18"></i>
                                                                     </Link> */}
-                                                                    <Link
-                                                                        className="text-danger"
-                                                                        to="#"
-                                                                        onClick={() => onClickResetPassword(user)}>
-                                                                        <i className="mdi mdi-key font-size-18"></i>
-                                                                    </Link>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
+                                                                        <Link
+                                                                            className="text-danger"
+                                                                            to="#"
+                                                                            onClick={() => onClickResetPassword(user)}>
+                                                                            <i className="mdi mdi-key font-size-18"></i>
+                                                                        </Link>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
                                             </tbody>
                                         </table>
                                     )}
@@ -410,7 +462,7 @@ const ManageParent = () => {
                                 <div className={'mb-3'}>
                                     <Label className="form-label">Email Target</Label>
                                     <select value={groupEmailData.t} className={'form-control'}
-                                            onChange={(e) => groupEmail("t", e)}>
+                                        onChange={(e) => groupEmail("t", e)}>
                                         <option value={0}>With All Cohort Status</option>
                                         <option value={1}>With Active Cohort</option>
                                         <option value={2}>With No Active Cohort</option>
@@ -431,31 +483,31 @@ const ManageParent = () => {
                                     <Label className="form-label">Email Body</Label>
                                     <EditorProvider>
                                         <Editor value={groupEmailData.b} onChange={(e) => groupEmail("b", e)}
-                                                containerProps={{style: {resize: 'vertical', height: 200}}}>
+                                            containerProps={{ style: { resize: 'vertical', height: 200 } }}>
                                             <Toolbar>
-                                                <BtnBold/>
-                                                <BtnItalic/>
-                                                <BtnLink/>
-                                                <BtnBulletList/>
-                                                <BtnClearFormatting/>
-                                                <BtnNumberedList/>
-                                                <BtnStyles/>
-                                                <BtnUndo/>
-                                                <BtnRedo/>
-                                                <BtnStrikeThrough/>
-                                                <BtnUnderline/>
+                                                <BtnBold />
+                                                <BtnItalic />
+                                                <BtnLink />
+                                                <BtnBulletList />
+                                                <BtnClearFormatting />
+                                                <BtnNumberedList />
+                                                <BtnStyles />
+                                                <BtnUndo />
+                                                <BtnRedo />
+                                                <BtnStrikeThrough />
+                                                <BtnUnderline />
                                             </Toolbar>
                                         </Editor>
                                     </EditorProvider>
                                     <UploadWidget onUpload={handleOnUpload}>
-                                        {({open}) => {
+                                        {({ open }) => {
                                             function handleOnClick(e) {
                                                 e.preventDefault();
                                                 open();
                                             }
 
                                             return (
-                                                <a style={{marginTop: 5}} href={'#'} onClick={handleOnClick}>
+                                                <a style={{ marginTop: 5 }} href={'#'} onClick={handleOnClick}>
                                                     {(url) ? "Override attachment" : "Add attachment"}
                                                 </a>
                                             )
@@ -507,32 +559,32 @@ const ManageParent = () => {
                                     <Label className="form-label">Email Body</Label>
                                     <EditorProvider>
                                         <Editor name="message" onChange={validation.handleChange}
-                                                value={validation.values.message}
-                                                containerProps={{style: {resize: 'vertical', height: 200}}}>
+                                            value={validation.values.message}
+                                            containerProps={{ style: { resize: 'vertical', height: 200 } }}>
                                             <Toolbar>
-                                                <BtnBold/>
-                                                <BtnItalic/>
-                                                <BtnLink/>
-                                                <BtnBulletList/>
-                                                <BtnClearFormatting/>
-                                                <BtnNumberedList/>
-                                                <BtnStyles/>
-                                                <BtnUndo/>
-                                                <BtnRedo/>
-                                                <BtnStrikeThrough/>
-                                                <BtnUnderline/>
+                                                <BtnBold />
+                                                <BtnItalic />
+                                                <BtnLink />
+                                                <BtnBulletList />
+                                                <BtnClearFormatting />
+                                                <BtnNumberedList />
+                                                <BtnStyles />
+                                                <BtnUndo />
+                                                <BtnRedo />
+                                                <BtnStrikeThrough />
+                                                <BtnUnderline />
                                             </Toolbar>
                                         </Editor>
                                     </EditorProvider>
                                     <UploadWidget onUpload={handleOnUpload}>
-                                        {({open}) => {
+                                        {({ open }) => {
                                             function handleOnClick(e) {
                                                 e.preventDefault();
                                                 open();
                                             }
 
                                             return (
-                                                <a style={{marginTop: 5}} href={'#'} onClick={handleOnClick}>
+                                                <a style={{ marginTop: 5 }} href={'#'} onClick={handleOnClick}>
                                                     {(url) ? "Override attachment" : "Add attachment"}
                                                 </a>
                                             )
@@ -562,7 +614,60 @@ const ManageParent = () => {
                     </Form>
                 </ModalBody>
             </Modal>
-            <ToastContainer/>
+            <Modal isOpen={reminderModal} toggle={() => setReminderModal(!reminderModal)}>
+                <ModalHeader toggle={() => setReminderModal(!reminderModal)}>Reminder
+                </ModalHeader>
+                <ModalBody>
+                    <Form>
+                        <Row>
+                            <Col xs={12}>
+                                <div className="row">
+                                    <div className="col-md-12">
+                                        <div className="mb-3">
+                                            <Input
+                                                name="teacherId"
+                                                type="select"
+                                                onChange={(e) => setSelectedTeachers(e.target.value)}>
+                                                <option value="">Select teacher</option>
+                                                {teachers?.length > 0 &&
+                                                    teachers?.map((teacher) => (
+                                                        <option key={teacher?.id}
+                                                            value={teacher.firstName + " " + teacher.lastName}>
+                                                            {teacher.firstName} {teacher.lastName}
+                                                        </option>
+                                                    ))}
+                                            </Input>
+                                        </div>
+                                        <div className="mb-3">
+                                            <Label className="form-label">Class link</Label>
+                                            <Input
+                                                name="subject"
+                                                type="text"
+                                                placeholder="http://meet.google.com/paj-iqzh-kvr"
+                                                onChange={(e) => setLink(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                <br />
+                                <div className="text-end">
+                                    <button
+                                        type="submit"
+                                        onClick={handleReminder}
+                                        className="btn btn-primary save-user">
+                                        Send Reminder
+                                    </button>
+                                </div>
+                            </Col>
+                        </Row>
+                    </Form>
+                </ModalBody>
+            </Modal>
+            <ToastContainer />
         </React.Fragment>
     );
 };
