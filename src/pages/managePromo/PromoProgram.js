@@ -1,15 +1,16 @@
-import React, {useEffect, useState} from "react";
-import {Link, useParams} from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import axios from "axios";
-import {Col, Container, Form, Input, Label, Modal, ModalBody, ModalHeader, Row,} from "reactstrap";
+import { Col, Container, Form, Input, Label, Modal, ModalBody, ModalHeader, Row, } from "reactstrap";
 import withAuth from "../withAuth";
-import {toast, ToastContainer} from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {baseUrl} from '../../Network';
+import { baseUrl } from '../../Network';
 import Moment from 'react-moment';
 import moment from 'moment-timezone';
 import 'moment-timezone';
+import { convertLessonTimes } from "../../utils";
 
 const TIMES_ = [
     "12:00AM",
@@ -73,6 +74,7 @@ const ManageProgram = () => {
     const [assignActionModal, setAssignActionModal] = useState(false);
     const [teachers, setTeachers] = useState([]);
     const [selectedTeacher, setSelectedTeacher] = useState("");
+    const [selectedDay, setSelectedDay] = useState("");
     const [selectedProgram, setSelectedProgram] = useState(null);
     const [loading, setLoading] = useState(true);
     const [multiIDs, setMultiIDs] = useState([]);
@@ -105,6 +107,7 @@ const ManageProgram = () => {
     const handleTeacherChange = (e) => {
         setSelectedTeacher(e.target.value);
     };
+
 
     useEffect(() => {
         fetchPrograms().then(r => null)
@@ -174,7 +177,8 @@ const ManageProgram = () => {
         try {
             await axios.post(`${baseUrl}/admin/promo/program/assign/teacher`, {
                 programIds: selectedProgram.id,
-                teacherId: selectedTeacher
+                teacherId: selectedTeacher,
+                day: selectedDay
             });
             // Fetch the updated programs after successful assignment
             await fetchPrograms(); // Assuming fetchPrograms function updates the programs state
@@ -210,7 +214,7 @@ const ManageProgram = () => {
                 //console.error("Invalid program data.");
                 return;
             }
-            const updatedProgram = {...programData, isPaid: !programData.isPaid};
+            const updatedProgram = { ...programData, isPaid: !programData.isPaid };
             await axios.put(
                 `${baseUrl}/admin/promo/program/edit/${programData.id}`,
                 updatedProgram
@@ -240,34 +244,55 @@ const ManageProgram = () => {
 
     const processBatchOperations = async () => {
         //performing group actions
-        try{
+        try {
             if (multiIDs.length > 0 && Object.keys(multiTargetIDs).length > 0) {
-                await axios.post(`${baseUrl}/admin/promo/program/batch-update`, {ids: multiIDs, ...multiTargetIDs});
+                await axios.post(`${baseUrl}/admin/promo/program/batch-update`, { ids: multiIDs, ...multiTargetIDs });
                 toast.success("Program data altered changes");
                 await fetchPrograms()
             } else {
                 toast.error("Please, select at least 1 child/program to perform action")
             }
-        }catch (e) {
+        } catch (e) {
             toast.error("Reload this page and try again")
         }
     }
 
+    const processReminder = async () => {
+        //performing group actions
+        try {
+            if (multiIDs.length > 0) {
+                await axios.post(`${baseUrl}/admin/promo/parent/send/reminder`, { ids: multiIDs, ...multiTargetIDs });
+                toast.success("Class reminder sent successfully");
+                await fetchPrograms()
+            } else {
+                toast.error("Please, select at least 1 child/program to perform action")
+            }
+        } catch (e) {
+            toast.error("Reload this page and try again")
+        }
+    }
 
     const FormatDate = (data, i) => {
         const parsedTimeSlots = JSON.parse(data);
         if (parsedTimeSlots[i]) {
             return parsedTimeSlots[i].map(({ dayText, timeText }) => `${dayText} ${timeText}`).join(' - ');
         }
-        return ''; 
+        return '';
     };
 
+    const parentTimeZone = (times, index, timezone) => {
+        const parsedTimes = JSON.parse(times)
+        const timeGroup = parsedTimes[index];
+        const time = convertLessonTimes(timeGroup, timezone)
+        return time
+    }
+console.log(multiIDs)
     return (
         <React.Fragment>
-            <ToastContainer/>
+            <ToastContainer />
             <div className="page-content">
                 <Container fluid>
-                    <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Program"/>
+                    <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Program" />
                     <Row>
                         <Col lg="12">
                             <Row className="align-items-center me-2">
@@ -294,7 +319,7 @@ const ManageProgram = () => {
                                                 }}
                                             />
                                         </div>
-                                        <div>
+                                        {/* <div>
                                             <select className={'form-control'} onChange={(e) => {
                                                 //filter based on cohorts
                                                 if (Number(e.target.value) === 0) {
@@ -308,9 +333,9 @@ const ManageProgram = () => {
                                             }}>
                                                 <option value={0}>All Cohorts</option>
                                                 {cohorts && cohorts.map((d, i) => <option key={i}
-                                                                                          value={d.id}>{d.title}</option>)}
+                                                    value={d.id}>{d.title}</option>)}
                                             </select>
-                                        </div>
+                                        </div> */}
                                         <div>
                                             <select className={'form-control'} onChange={(e) => {
                                                 //filter based on status
@@ -330,7 +355,7 @@ const ManageProgram = () => {
                                             </select>
                                         </div>
                                         <div>
-                                            <select style={{width: 150}} className={'form-control'} onChange={(e) => {
+                                            <select style={{ width: 150 }} className={'form-control'} onChange={(e) => {
                                                 //filter based on coupon
                                                 const packageID = Number(e.target.value)
                                                 if (Number(packageID) === 0) {
@@ -343,11 +368,11 @@ const ManageProgram = () => {
                                             }}>
                                                 <option value={0}>All Packages</option>
                                                 {packages.map((p, i) => <option key={i}
-                                                                                value={p.id}>{p.title}</option>)}
+                                                    value={p.id}>{p.title}</option>)}
                                             </select>
                                         </div>
                                         <div>
-                                            <select style={{width: 150}} className={'form-control'} onChange={(e) => {
+                                            <select style={{ width: 150 }} className={'form-control'} onChange={(e) => {
                                                 //filter based on coupon
                                                 const couponID = Number(e.target.value)
                                                 if (Number(couponID) === 0) {
@@ -360,7 +385,7 @@ const ManageProgram = () => {
                                             }}>
                                                 <option value={0}>All Coupon</option>
                                                 {coupons.map((c, i) => <option key={i}
-                                                                               value={c.id}>{c.code} [{c.value}]</option>)}
+                                                    value={c.id}>{c.code} [{c.value}]</option>)}
                                             </select>
                                         </div>
                                         <div>
@@ -382,18 +407,25 @@ const ManageProgram = () => {
                                                 <option value={2}>With No Teacher</option>
                                             </select>
                                         </div>
-                                        <div style={{marginRight: 20}}>
+                                        <div style={{ marginRight: 10 }}>
                                             <button onClick={handleActionAssignClick}>
-                                                <i className="mdi mdi-run-fast font-size-20"></i>
-                                                <span className={'m-2'}></span>
                                                 <i className="mdi mdi-clipboard-account font-size-20"></i>
+                                            </button>
+                                        </div>
+                                        <div style={{ marginRight: 10 }}>
+                                            <button onClick={() => {
+                                                if (confirm("You're about to send a class reminder to parent, will you like to proceed ?")) {
+                                                    processReminder();
+                                                }
+                                            }}>
+                                                <i className="mdi mdi-bell font-size-20"></i>
                                             </button>
                                         </div>
                                     </div>
                                 </Col>
                             </Row>
                             <Row>
-                                <Col xl="12" style={{overflow: 'scroll', width: '98%'}}>
+                                <Col xl="12" style={{ overflow: 'scroll', width: '98%' }}>
                                     {loading ? (
                                         <div className="text-center mt-5">
                                             <div className="spinner-border text-primary" role="status">
@@ -407,109 +439,109 @@ const ManageProgram = () => {
                                     ) : (
                                         <table className="table align-middle table-hover">
                                             <thead>
-                                            <tr>
-                                                <th>#{multiIDs.length || ""}</th>
-                                                <th>P.Name</th>
-                                                <th>C.Name</th>
-                                                <th>Phone</th>
-                                                <th>Email</th>
-                                                <th>Age</th>
-                                                <th>Gender</th>
-                                                <th>T.Name</th>
-                                                <th>Time Group</th>
-                                                <th>(WAT)</th>
-                                                <th>Time & Day</th>
-                                                <th>Status</th>
-                                                <th></th>
-                                            </tr>
+                                                <tr>
+                                                    <th>#{multiIDs.length || ""}</th>
+                                                    <th>P.Name</th>
+                                                    <th>C.Name</th>
+                                                    <th>Phone</th>
+                                                    <th>Email</th>
+                                                    <th>Age</th>
+                                                    <th>Gender</th>
+                                                    <th>T.Name</th>
+                                                    <th>T.Group</th>
+                                                    <th>P.Time</th>
+                                                    <th>Time(WAT)</th>
+                                                    <th>Day</th>
+                                                    <th>Status</th>
+                                                    <th></th>
+                                                </tr>
                                             </thead>
                                             <tbody>
-                                            {displayProgramList.map((program, index) => (
-                                                <tr key={index}
-                                                    style={{backgroundColor: (program.isPaid) ? '#f1fdf4' : '#fff'}}>
-                                                    <td>
-                                                        <div style={{width: 50}} className={'align-middle'}>
-                                                            <input style={{marginRight: 5}} type={'checkbox'}
-                                                                   onChange={(d) => {
-                                                                       //multiple selection push to array
-                                                                       if (multiIDs.includes(program.id)) {
-                                                                           //remove from array
-                                                                           setMultiIDs(multiIDs.filter(i => i !== program.id))
-                                                                           toast.error(program?.child?.firstName + " removed is been from the action list.")
-                                                                       } else {
-                                                                           setMultiIDs([...multiIDs, program.id])
-                                                                           toast.warn(program?.child?.firstName + " has been added to action list.")
-                                                                       }
-                                                                   }}/>
-                                                            {index + 1}
-                                                        </div>
-                                                    </td>
-                                                    <td>{program?.child?.parent?.firstName + " " + program?.child?.parent?.lastName}</td>
-                                                    <td>{program?.child?.firstName + " " + program?.child?.lastName}
-                                                    <br/>
-                                                        [{program?.child?.parent?.country}]
-                                                    </td>
-                                                    <td>{program?.child?.parent?.phone}</td>
-                                                    <td>{program?.child?.parent?.email}</td>
-                                                    <td>{program?.child?.age}</td>
-                                                    <td>{program?.child?.gender}</td>
-                                                    <td>{program?.promo_teacher?.firstName}</td>
-                                                    <td>{program.timeGroup.title}</td>
-                                                    <td><Moment format='hh:mm A'
-                                                                date={formatTimeZone(program?.child?.parent?.timeOffset, program.day, program.time).toISOString()}
-                                                                tz={"Africa/Lagos"}></Moment></td>
-                                                    <td>{FormatDate(program.timeGroup.times, program.timeGroupIndex)}</td>
-                                                    <td>
-                                                        <div style={{width: 50}}>
-                                                            {program.isPaid ? (
-                                                                <a rel={'noreferrer'}
-                                                                   href={'#' + program.trxId}
-                                                                   onClick={(e) => {
-                                                                       e.preventDefault()
-                                                                       handleToggleIsPaid(program).then(r => null)
-                                                                   }}
-                                                                >Paid</a>
-                                                            ) : (
-                                                                <a rel={'noreferrer'} href={'#'} onClick={(e) => {
-                                                                    e.preventDefault()
-                                                                    handleToggleIsPaid(program).then(r => null)
-                                                                }}
-                                                                   disabled={program.isPaid}>
-                                                                    Unpaid
-                                                                </a>
-                                                            )}
-                                                            {!program.isPaid && (
-                                                                <Link
-                                                                    className="ms-1 text-primary"
-                                                                    to="#"
-                                                                    onClick={(e) => e.preventDefault()}
-                                                                ></Link>
-                                                            )}
-                                                            <br/>
-                                                            <small style={{fontSize: 10, backgroundColor: "#e3e3e3", padding:2, display: program?.promo_coupon?.code?"block":"none"}}>{program?.promo_coupon?.code}</small>
-                                                            <small style={{fontSize: 10}}><Moment format={'DD-MM-YY'} date={program?.createdAt}/></small>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <Link
-                                                            className="text-danger"
-                                                            to="#"
-                                                            id="edit"
-                                                            onClick={() => handleProgramClick(program)}>
-                                                            <i className="mdi mdi-clock-outline font-size-12"></i>
-                                                        </Link>
+                                                {displayProgramList.map((program, index) => (
+                                                    <tr key={index}
+                                                        style={{ backgroundColor: (program.isPaid) ? '#f1fdf4' : '#fff' }}>
+                                                        <td>
+                                                            <div style={{ width: 50 }} className={'align-middle'}>
+                                                                <input style={{ marginRight: 5 }} type={'checkbox'}
+                                                                    onChange={(d) => {
+                                                                        //multiple selection push to array
+                                                                        if (multiIDs.includes(program.id)) {
+                                                                            //remove from array
+                                                                            setMultiIDs(multiIDs.filter(i => i !== program.id))
+                                                                            toast.error(program?.child?.firstName + " removed is been from the action list.")
+                                                                        } else {
+                                                                            setMultiIDs([...multiIDs, program.id])
+                                                                            toast.warn(program?.child?.firstName + " has been added to action list.")
+                                                                        }
+                                                                    }} />
+                                                                {index + 1}
+                                                            </div>
+                                                        </td>
+                                                        <td>{program?.child?.parent?.firstName + " " + program?.child?.parent?.lastName}</td>
+                                                        <td>{program?.child?.firstName + " " + program?.child?.lastName}
+                                                            <br />
+                                                            [{program?.child?.parent?.country}]
+                                                        </td>
+                                                        <td>{program?.child?.parent?.phone}</td>
+                                                        <td>{program?.child?.parent?.email}</td>
+                                                        <td>{program?.child?.age}</td>
+                                                        <td>{program?.child?.gender}</td>
+                                                        <td>{program?.promo_teacher?.firstName}</td>
+                                                        <td>{program.timeGroup.title}</td>
+                                                        <td>{parentTimeZone(program.timeGroup.times, program?.timeGroupIndex, program?.child?.parent?.timezone)}</td>
+                                                        <td>{FormatDate(program.timeGroup.times, program.timeGroupIndex)}</td>
+                                                        <td>{program?.day}</td>
+                                                        <td>
+                                                            <div style={{ width: 50 }}>
+                                                                {program.isPaid ? (
+                                                                    <a rel={'noreferrer'}
+                                                                        href={'#' + program.trxId}
+                                                                        onClick={(e) => {
+                                                                            e.preventDefault()
+                                                                            handleToggleIsPaid(program).then(r => null)
+                                                                        }}
+                                                                    >Paid</a>
+                                                                ) : (
+                                                                    <a rel={'noreferrer'} href={'#'} onClick={(e) => {
+                                                                        e.preventDefault()
+                                                                        handleToggleIsPaid(program).then(r => null)
+                                                                    }}
+                                                                        disabled={program.isPaid}>
+                                                                        Unpaid
+                                                                    </a>
+                                                                )}
+                                                                {!program.isPaid && (
+                                                                    <Link
+                                                                        className="ms-1 text-primary"
+                                                                        to="#"
+                                                                        onClick={(e) => e.preventDefault()}
+                                                                    ></Link>
+                                                                )}
+                                                                <br />
+                                                                <small style={{ fontSize: 10, backgroundColor: "#e3e3e3", padding: 2, display: program?.promo_coupon?.code ? "block" : "none" }}>{program?.promo_coupon?.code}</small>
+                                                                <small style={{ fontSize: 10 }}><Moment format={'DD-MM-YY'} date={program?.createdAt} /></small>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <Link
+                                                                className="text-danger"
+                                                                to="#"
+                                                                id="edit"
+                                                                onClick={() => handleProgramClick(program)}>
+                                                                <i className="mdi mdi-clock-outline font-size-12"></i>
+                                                            </Link>
 
-                                                        <Link
-                                                            className="text-primary"
-                                                            to="#"
-                                                            id="assign"
-                                                            onClick={() => handleAssignClick(program)}>
-                                                            <i className="mdi mdi-clipboard-account font-size-12"></i>
-                                                        </Link>
+                                                            <Link
+                                                                className="text-primary"
+                                                                to="#"
+                                                                id="assign"
+                                                                onClick={() => handleAssignClick(program)}>
+                                                                <i className="mdi mdi-clipboard-account font-size-12"></i>
+                                                            </Link>
 
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                                        </td>
+                                                    </tr>
+                                                ))}
                                             </tbody>
                                         </table>
                                     )}
@@ -527,10 +559,10 @@ const ManageProgram = () => {
                                                             <div className="mb-3">
                                                                 <Label>Cohort</Label>
                                                                 <select className={'form-control'}
-                                                                        onChange={e => setProgramMData({
-                                                                            ...programMData,
-                                                                            cohortId: e.target.value
-                                                                        })}>
+                                                                    onChange={e => setProgramMData({
+                                                                        ...programMData,
+                                                                        cohortId: e.target.value
+                                                                    })}>
                                                                     <option value="">Select Cohort</option>
                                                                     {cohorts && cohorts.map((d, i) => <option
                                                                         key={i} value={d.id}>{d.title}</option>)}
@@ -541,10 +573,10 @@ const ManageProgram = () => {
                                                             <div className="mb-3">
                                                                 <Label>Packages</Label>
                                                                 <select className={'form-control'}
-                                                                        onChange={e => setProgramMData({
-                                                                            ...programMData,
-                                                                            packageId: e.target.value
-                                                                        })}>
+                                                                    onChange={e => setProgramMData({
+                                                                        ...programMData,
+                                                                        packageId: e.target.value
+                                                                    })}>
                                                                     <option value="">Select Package</option>
                                                                     {packages && packages.map((d, i) => <option
                                                                         key={i} value={d.id}>{d.title}</option>)}
@@ -555,10 +587,10 @@ const ManageProgram = () => {
                                                             <div className="mb-3">
                                                                 <Label>Level</Label>
                                                                 <select className={'form-control'}
-                                                                        onChange={e => setProgramMData({
-                                                                            ...programMData,
-                                                                            level: e.target.value
-                                                                        })}>
+                                                                    onChange={e => setProgramMData({
+                                                                        ...programMData,
+                                                                        level: e.target.value
+                                                                    })}>
                                                                     <option value="">Select Level</option>
                                                                     <option value="4">4</option>
                                                                     <option value="3">3</option>
@@ -571,10 +603,10 @@ const ManageProgram = () => {
                                                             <div className="mb-3">
                                                                 <Label>Day</Label>
                                                                 <select className={'form-control'}
-                                                                        onChange={e => setProgramMData({
-                                                                            ...programMData,
-                                                                            day: e.target.value
-                                                                        })}>
+                                                                    onChange={e => setProgramMData({
+                                                                        ...programMData,
+                                                                        day: e.target.value
+                                                                    })}>
                                                                     <option value="">Select Day</option>
                                                                     {days.map((d, i) => <option
                                                                         key={i} value={i}>{d}</option>)}
@@ -585,10 +617,10 @@ const ManageProgram = () => {
                                                             <div className="mb-3">
                                                                 <Label>Time</Label>
                                                                 <select className={'form-control'}
-                                                                        onChange={e => setProgramMData({
-                                                                            ...programMData,
-                                                                            time: e.target.value
-                                                                        })}>
+                                                                    onChange={e => setProgramMData({
+                                                                        ...programMData,
+                                                                        time: e.target.value
+                                                                    })}>
                                                                     <option value="">Select Time</option>
                                                                     {TIMES_.map((d, i) => <option
                                                                         key={i} value={i}>{d}</option>)}
@@ -624,7 +656,7 @@ const ManageProgram = () => {
                                                 <Row>
                                                     <Col xs={12}>
                                                         <div className="row">
-                                                            <div className="col-md-12">
+                                                            <div className="col-md-6">
                                                                 <div className="mb-6">
                                                                     <Input
                                                                         name="teacherId"
@@ -634,11 +666,28 @@ const ManageProgram = () => {
                                                                         {teachers?.length > 0 &&
                                                                             teachers?.map((teacher) => (
                                                                                 <option key={teacher?.id}
-                                                                                        value={teacher?.id}>
+                                                                                    value={teacher?.id}>
                                                                                     {teacher.firstName} {teacher.lastName}
                                                                                 </option>
                                                                             ))}
                                                                     </Input>
+                                                                </div>
+                                                            </div>
+                                                            <div className="col-md-6">
+                                                                <div className="mb-6 ">
+                                                                    <input
+                                                                        type="date"
+                                                                        className="form-control"
+                                                                        onChange={e => {
+                                                                            // Convert the date to "Month Day" format
+                                                                            const date = new Date(e.target.value);
+                                                                            const formattedDate = date.toLocaleDateString('en-US', {
+                                                                                month: 'long',
+                                                                                day: 'numeric'
+                                                                            });
+                                                                            setSelectedDay(formattedDate)
+                                                                        }}
+                                                                    />
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -646,7 +695,7 @@ const ManageProgram = () => {
                                                 </Row>
                                                 <Row>
                                                     <Col>
-                                                        <br/>
+                                                        <br />
                                                         <div className="text-end">
                                                             <button
                                                                 type="submit"
@@ -661,7 +710,7 @@ const ManageProgram = () => {
                                     </Modal>
 
                                     <Modal isOpen={assignActionModal}
-                                           toggle={() => setAssignActionModal(!assignActionModal)}>
+                                        toggle={() => setAssignActionModal(!assignActionModal)}>
                                         <ModalHeader toggle={() => setAssignActionModal(!assignActionModal)}>
                                             Perform Group Action</ModalHeader>
                                         <ModalBody>
@@ -676,36 +725,37 @@ const ManageProgram = () => {
                                                                     className={'form-control'}
                                                                     onChange={e => setMultiTargetIDs({
                                                                         ...multiTargetIDs,
-                                                                        cohortId: e.target.value
-                                                                    })}>
-                                                                    <option value="">Select Cohort</option>
-                                                                    {cohorts?.length > 0 &&
-                                                                        cohorts?.map((c, i) => (
-                                                                            <option key={i}
-                                                                                    value={c.id}>
-                                                                                {c.title}
-                                                                            </option>
-                                                                        ))}
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div className="col-md-6">
-                                                            <div className="mb-6">
-                                                                <select
-                                                                    className={'form-control'}
-                                                                    onChange={e => setMultiTargetIDs({
-                                                                        ...multiTargetIDs,
                                                                         teacherId: e.target.value
                                                                     })}>
                                                                     <option value="">Select Teacher</option>
                                                                     {teachers?.length > 0 &&
                                                                         teachers?.map((teacher) => (
                                                                             <option key={teacher?.id}
-                                                                                    value={teacher?.id}>
+                                                                                value={teacher?.id}>
                                                                                 {teacher.firstName} {teacher.lastName}
                                                                             </option>
                                                                         ))}
                                                                 </select>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-md-6">
+                                                            <div className="mb-6 ">
+                                                                <input
+                                                                    type="date"
+                                                                    className="form-control"
+                                                                    onChange={e => {
+                                                                        // Convert the date to "Month Day" format
+                                                                        const date = new Date(e.target.value);
+                                                                        const formattedDate = date.toLocaleDateString('en-US', {
+                                                                            month: 'long',
+                                                                            day: 'numeric'
+                                                                        });
+                                                                        setMultiTargetIDs({
+                                                                            ...multiTargetIDs,
+                                                                            day: formattedDate
+                                                                        });
+                                                                    }}
+                                                                />
                                                             </div>
                                                         </div>
                                                     </div>
@@ -713,7 +763,7 @@ const ManageProgram = () => {
                                             </Row>
                                             <Row>
                                                 <Col>
-                                                    <br/>
+                                                    <br />
                                                     <div className="text-end">
                                                         <button
                                                             onClick={processBatchOperations}

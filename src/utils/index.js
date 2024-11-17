@@ -1,3 +1,4 @@
+import moment from 'moment-timezone';
 
 export const totalCohortChild = (programs,id) => {
   const filteredPrograms = programs.filter((program) => program.partnerId === id);
@@ -40,4 +41,24 @@ export function calculateDebt(programs) {
   const debt = programs.filter((program) => program.partner_package && !program.isPaid)
     .reduce((total, program) => total + program.partner_package.amount, 0);
   return debt
+}
+
+export function convertLessonTimes(times, parentTimezone) {
+  const defaultTimezone = "Africa/Lagos";
+  
+  const convertedTimes = times.map(slot => {
+    const time = moment.tz(
+      `${slot.timeText} ${slot.dayText}`, 
+      "hA dddd", 
+      defaultTimezone
+    );
+    
+    const convertedTime = defaultTimezone === parentTimezone 
+      ? time 
+      : time.clone().tz(parentTimezone);
+    
+    return `${slot.dayText} ${convertedTime.format('h:mmA')}`;
+  });
+
+  return convertedTimes.join(', ');
 }

@@ -140,26 +140,6 @@ const ManageParent = () => {
         }
     };
 
-    const handleReminder = async (event) => {
-        event.preventDefault();
-        if ( link && selectedTeacher) {
-            const body = {
-                id: id,
-                teacher: selectedTeacher,
-                link: link
-            }
-            try {
-                await axios.post(`${baseUrl}/admin/promo/parent/send/reminder`, body);
-                toast.success("Reminder sent to all parents successfully");
-                toggleReminder();
-            } catch (error) {
-                toast.error("Failed to send email to parents");
-            }
-        } else {
-            toast.error("All fieds required");
-        }
-    };
-
     const handleSendEmailSingle = async (event) => {
         event.preventDefault();
         try {
@@ -334,14 +314,6 @@ const ManageParent = () => {
                                                 onClick={() => toggle()}>
                                                 <i className="mdi mdi-email-variant"></i> Message All
                                                 Parents
-                                            </button>
-                                        </div>
-                                        <div>
-                                            <button
-                                                type="button"
-                                                className="btn btn-light"
-                                                onClick={() => toggleReminder()}>
-                                                <i className="mdi mdi-email-variant"></i> Reminder
                                             </button>
                                         </div>
                                     </div>
@@ -607,59 +579,6 @@ const ManageParent = () => {
                                         className="ms-2 btn btn-primary ml-2"
                                         onClick={handleSendEmailSingle}>
                                         Send Email
-                                    </button>
-                                </div>
-                            </Col>
-                        </Row>
-                    </Form>
-                </ModalBody>
-            </Modal>
-            <Modal isOpen={reminderModal} toggle={() => setReminderModal(!reminderModal)}>
-                <ModalHeader toggle={() => setReminderModal(!reminderModal)}>Reminder
-                </ModalHeader>
-                <ModalBody>
-                    <Form>
-                        <Row>
-                            <Col xs={12}>
-                                <div className="row">
-                                    <div className="col-md-12">
-                                        <div className="mb-3">
-                                            <Input
-                                                name="teacherId"
-                                                type="select"
-                                                onChange={(e) => setSelectedTeachers(e.target.value)}>
-                                                <option value="">Select teacher</option>
-                                                {teachers?.length > 0 &&
-                                                    teachers?.map((teacher) => (
-                                                        <option key={teacher?.id}
-                                                            value={teacher.firstName + " " + teacher.lastName}>
-                                                            {teacher.firstName} {teacher.lastName}
-                                                        </option>
-                                                    ))}
-                                            </Input>
-                                        </div>
-                                        <div className="mb-3">
-                                            <Label className="form-label">Class link</Label>
-                                            <Input
-                                                name="subject"
-                                                type="text"
-                                                placeholder="http://meet.google.com/paj-iqzh-kvr"
-                                                onChange={(e) => setLink(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col>
-                                <br />
-                                <div className="text-end">
-                                    <button
-                                        type="submit"
-                                        onClick={handleReminder}
-                                        className="btn btn-primary save-user">
-                                        Send Reminder
                                     </button>
                                 </div>
                             </Col>
