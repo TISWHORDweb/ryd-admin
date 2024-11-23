@@ -10,7 +10,7 @@ import { baseUrl } from '../../Network';
 import Moment from 'react-moment';
 import moment from 'moment-timezone';
 import 'moment-timezone';
-import { convertLessonTimes } from "../../utils";
+import { convertLessonTimes, convertTimeGroup, convertTimegroupToParentTimezone } from "../../utils";
 
 const TIMES_ = [
     "12:00AM",
@@ -71,6 +71,7 @@ const ManageProgram = () => {
     const [programsList, setProgramsList] = useState([]);
     const [modal, setModal] = useState(false);
     const [assignModal, setAssignModal] = useState(false);
+    const [timeModal, setTimeModal] = useState(false);
     const [assignActionModal, setAssignActionModal] = useState(false);
     const [teachers, setTeachers] = useState([]);
     const [selectedTeacher, setSelectedTeacher] = useState("");
@@ -82,21 +83,68 @@ const ManageProgram = () => {
     const [programMData, setProgramMData] = useState({});
     const [searchQuery, setSearchQuery] = useState("");
     const [coupons, setCoupons] = useState([]);
+    const [timeGroup, setTimeGroup] = useState([]);
     const [cohorts, setCohorts] = useState([]);
     const [packages, setPackages] = useState([]);
     const [filteredProgramList0, setFilteredProgramList0] = useState([]);
     const [filteredProgramList2, setFilteredProgramList2] = useState([]);
     const [displayProgramList, setDisplayProgramList] = useState([]);
     const { id } = useParams()
+    const [selectedTimeGroup, setSelectedTimeGroup] = useState('');
+    const [selectedTimeGroupId, setSelectedTimeGroupId] = useState();
+    const [selectedDates, setSelectedDates] = useState({});
 
+
+    const splitTimeSlots = (timeString) => {
+        if (!timeString) return [];
+        return timeString.includes(',') ?
+            timeString.split(',').map(time => time.trim()) :
+            [timeString.trim()];
+    };
+
+    const handleTimeGroupSelection = (timeValue) => {
+        const data = JSON.parse(timeValue)
+        setSelectedTimeGroupId(data.value)
+        setSelectedTimeGroup(data.name);
+        setSelectedDates({});
+    };
+
+    const handleDateSelection = (timeSlot, date) => {
+        setSelectedDates(prev => ({
+            ...prev,
+            [timeSlot]: date
+        }));
+    };
+
+    const getFormattedData = () => {
+        return Object.entries(selectedDates).map(([timeSlot, date], index) => ({
+            id: index,
+            name: timeSlot,
+            value: new Date(date).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric'
+            })
+        }));
+    };
+
+    const formattedData = getFormattedData();
     useEffect(() => {
         fetchPrograms().then(r => null);
     }, [modal]);
+
+    useEffect(() => {
+        fetchTimeGroup(id)
+    }, [id]);
 
 
     const handleAssignClick = (programData) => {
         setSelectedProgram(programData);
         setAssignModal(true)
+    };
+    const handleTimeClick = (programData) => {
+        setMultiTargetIDs({})
+        setTimeModal(true)
+        setSelectedTimeGroup('')
     };
 
     const handleActionAssignClick = (programData) => {
@@ -173,18 +221,28 @@ const ManageProgram = () => {
         }
     };
 
+    const fetchTimeGroup = async (id) => {
+        try {
+            const response = await axios.get(`${baseUrl}/admin/promo/timegroup/${id}`);
+            setTimeGroup(response.data.data);
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    };
+
     const handleTeacherAssignClick = async () => {
         try {
             await axios.post(`${baseUrl}/admin/promo/program/assign/teacher`, {
                 programIds: selectedProgram.id,
-                teacherId: selectedTeacher,
-                day: selectedDay
+                teacherId: selectedTeacher
             });
             // Fetch the updated programs after successful assignment
             await fetchPrograms(); // Assuming fetchPrograms function updates the programs state
 
             toast.success("Teacher assigned successfully.");
             setAssignModal(false);
+            setMultiTargetIDs({})
+            setSelectedTimeGroup('')
         } catch (error) {
             console.error("Error:", error);
             toast.error("Failed to assign teacher.");
@@ -197,14 +255,12 @@ const ManageProgram = () => {
             toast.warn("Reload this page and try again")
             return;
         }
-        //if nothing was picked
-        if (Object.keys(programMData).length < 1) {
-            toast.dark("No changes were made...")
-            return;
-        }
         //check and push to server
-        await axios.put(`${baseUrl}/admin/promo/program/edit/${selectedProgram.id}`, programMData);
+        await axios.put(`${baseUrl}/admin/promo/program/edit/${selectedProgram.id}`, {day: formattedData, timeGroupIndex: selectedTimeGroupId});
         toast.success("Program data altered changes");
+        setSelectedTimeGroup('')
+        setSelectedTimeGroupId(null)
+        setModal(false)
         await fetchPrograms()
     }
 
@@ -237,18 +293,28 @@ const ManageProgram = () => {
     };
 
     const handleProgramClick = (programData) => {
-        // Pass program data to toggle for editing
         setSelectedProgram(programData)
+        const time = convertTimeGroup(timeGroup)
+        const select = time[programData.timeGroupIndex].name
+        const selectID = time[programData.timeGroupIndex].value
+        setSelectedTimeGroup(select)
+        setSelectedTimeGroupId(selectID)
         setModal(true)
     };
 
-    const processBatchOperations = async () => {
+    const processBatchOperations = async (status) => {
         //performing group actions
         try {
-            if (multiIDs.length > 0 && Object.keys(multiTargetIDs).length > 0) {
-                await axios.post(`${baseUrl}/admin/promo/program/batch-update`, { ids: multiIDs, ...multiTargetIDs });
+            if (multiIDs.length > 0 ) {
+                const data = status ? { ids: multiIDs, day: formattedData, timeGroupIndex: selectedTimeGroupId } : { ids: multiIDs, ...multiTargetIDs }
+                await axios.post(`${baseUrl}/admin/promo/program/batch-update`, data);
                 toast.success("Program data altered changes");
                 await fetchPrograms()
+                setMultiTargetIDs({})
+                setAssignActionModal(false)
+                setTimeModal(false)
+                setSelectedTimeGroup('')
+                setSelectedTimeGroupId(null)
             } else {
                 toast.error("Please, select at least 1 child/program to perform action")
             }
@@ -261,7 +327,7 @@ const ManageProgram = () => {
         //performing group actions
         try {
             if (multiIDs.length > 0) {
-                await axios.post(`${baseUrl}/admin/promo/parent/send/reminder`, { ids: multiIDs, ...multiTargetIDs });
+                await axios.post(`${baseUrl}/admin/promo/parent/send/reminder`, { ids: multiIDs });
                 toast.success("Class reminder sent successfully");
                 await fetchPrograms()
             } else {
@@ -286,7 +352,13 @@ const ManageProgram = () => {
         const time = convertLessonTimes(timeGroup, timezone)
         return time
     }
-console.log(multiIDs)
+
+    function renderDate(data) {
+        const parsedData = JSON.parse(data);
+        const formattedDates = parsedData.map(item => `${item.value}, ${item.name}`);
+        return formattedDates.join(' / ');
+    }
+
     return (
         <React.Fragment>
             <ToastContainer />
@@ -413,6 +485,11 @@ console.log(multiIDs)
                                             </button>
                                         </div>
                                         <div style={{ marginRight: 10 }}>
+                                            <button onClick={handleTimeClick}>
+                                                <i className="mdi mdi-clock font-size-20"></i>
+                                            </button>
+                                        </div>
+                                        <div style={{ marginRight: 10 }}>
                                             <button onClick={() => {
                                                 if (confirm("You're about to send a class reminder to parent, will you like to proceed ?")) {
                                                     processReminder();
@@ -490,7 +567,7 @@ console.log(multiIDs)
                                                         <td>{program.timeGroup.title}</td>
                                                         <td>{parentTimeZone(program.timeGroup.times, program?.timeGroupIndex, program?.child?.parent?.timezone)}</td>
                                                         <td>{FormatDate(program.timeGroup.times, program.timeGroupIndex)}</td>
-                                                        <td>{program?.day}</td>
+                                                        <td>{program?.day ? convertTimegroupToParentTimezone(renderDate(program?.day), program?.child?.parent?.timezone) : ""}</td>
                                                         <td>
                                                             <div style={{ width: 50 }}>
                                                                 {program.isPaid ? (
@@ -547,93 +624,61 @@ console.log(multiIDs)
                                     )}
                                     <Modal isOpen={modal} toggle={() => setModal(!modal)}>
                                         <ModalHeader toggle={() => setModal(!modal)}>
-                                            {"Modify Program Data"}
+                                            {"Time Group"}
                                         </ModalHeader>
                                         <ModalBody>
                                             <Row>
-                                                <small className={'mb-2 text-danger'}>Warning: Check and be sure of
-                                                    parent timezone offset before any changes</small>
+                                                <small className={'text-danger mb-3'}>Warning: This action will
+                                                    alter {multiIDs.length} children. confirm again !</small>
                                                 <Col xs={12}>
                                                     <div className="row">
-                                                        <div className="col-md-6">
-                                                            <div className="mb-3">
-                                                                <Label>Cohort</Label>
-                                                                <select className={'form-control'}
-                                                                    onChange={e => setProgramMData({
-                                                                        ...programMData,
-                                                                        cohortId: e.target.value
-                                                                    })}>
-                                                                    <option value="">Select Cohort</option>
-                                                                    {cohorts && cohorts.map((d, i) => <option
-                                                                        key={i} value={d.id}>{d.title}</option>)}
+                                                        <div className="col-md-12">
+                                                            <div className="mb-6">
+                                                                <select
+                                                                    className={'form-control'}
+                                                                    value={selectedTimeGroup}
+                                                                    onChange={(e) => handleTimeGroupSelection(e.target.value)}
+                                                                >
+                                                                    <option value="">{selectedTimeGroup ? selectedTimeGroup : "Select Time Group"}</option>
+                                                                    {convertTimeGroup(timeGroup)?.length > 0 &&
+                                                                        convertTimeGroup(timeGroup)?.map((time) => (
+                                                                            <option key={time?.value}
+                                                                                value={JSON.stringify(time)}>
+                                                                                {time.name}
+                                                                            </option>
+                                                                        ))}
                                                                 </select>
                                                             </div>
                                                         </div>
-                                                        <div className="col-md-6">
-                                                            <div className="mb-3">
-                                                                <Label>Packages</Label>
-                                                                <select className={'form-control'}
-                                                                    onChange={e => setProgramMData({
-                                                                        ...programMData,
-                                                                        packageId: e.target.value
-                                                                    })}>
-                                                                    <option value="">Select Package</option>
-                                                                    {packages && packages.map((d, i) => <option
-                                                                        key={i} value={d.id}>{d.title}</option>)}
-                                                                </select>
+                                                        {selectedTimeGroup && (
+                                                            <div className="row">
+                                                                {splitTimeSlots(selectedTimeGroup).map((timeSlot, index) => (
+                                                                    <div key={timeSlot} className="col-md-6 mt-3">
+                                                                        <div className="font-medium min-w-[120px]">{timeSlot}</div>
+                                                                        <input
+                                                                            type="date"
+                                                                            className="form-control"
+                                                                            value={selectedDates[timeSlot] || ''}
+                                                                            onChange={(e) => handleDateSelection(timeSlot, e.target.value)}
+                                                                        />
+                                                                        {selectedDates[timeSlot] && (
+                                                                            <div className="text-sm text-gray-600">
+                                                                                {new Date(selectedDates[timeSlot]).toLocaleDateString('en-US', {
+                                                                                    month: 'long',
+                                                                                    day: 'numeric'
+                                                                                })}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                ))}
                                                             </div>
-                                                        </div>
-                                                        <div className="col-md-6">
-                                                            <div className="mb-3">
-                                                                <Label>Level</Label>
-                                                                <select className={'form-control'}
-                                                                    onChange={e => setProgramMData({
-                                                                        ...programMData,
-                                                                        level: e.target.value
-                                                                    })}>
-                                                                    <option value="">Select Level</option>
-                                                                    <option value="4">4</option>
-                                                                    <option value="3">3</option>
-                                                                    <option value="2">2</option>
-                                                                    <option value="1">1</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div className="col-md-6">
-                                                            <div className="mb-3">
-                                                                <Label>Day</Label>
-                                                                <select className={'form-control'}
-                                                                    onChange={e => setProgramMData({
-                                                                        ...programMData,
-                                                                        day: e.target.value
-                                                                    })}>
-                                                                    <option value="">Select Day</option>
-                                                                    {days.map((d, i) => <option
-                                                                        key={i} value={i}>{d}</option>)}
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div className="col-md-6">
-                                                            <div className="mb-3">
-                                                                <Label>Time</Label>
-                                                                <select className={'form-control'}
-                                                                    onChange={e => setProgramMData({
-                                                                        ...programMData,
-                                                                        time: e.target.value
-                                                                    })}>
-                                                                    <option value="">Select Time</option>
-                                                                    {TIMES_.map((d, i) => <option
-                                                                        key={i} value={i}>{d}</option>)}
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
+                                                        )}
                                                     </div>
                                                 </Col>
                                             </Row>
                                             <Row>
                                                 <Col>
-                                                    <div className="text-end">
+                                                    <div className="text-end mt-4">
                                                         <button
                                                             onClick={handleProgramClickSubmit}
                                                             className="btn btn-primary save-user">
@@ -656,7 +701,7 @@ console.log(multiIDs)
                                                 <Row>
                                                     <Col xs={12}>
                                                         <div className="row">
-                                                            <div className="col-md-6">
+                                                            <div className="col-md-12 mb-3">
                                                                 <div className="mb-6">
                                                                     <Input
                                                                         name="teacherId"
@@ -671,23 +716,6 @@ console.log(multiIDs)
                                                                                 </option>
                                                                             ))}
                                                                     </Input>
-                                                                </div>
-                                                            </div>
-                                                            <div className="col-md-6">
-                                                                <div className="mb-6 ">
-                                                                    <input
-                                                                        type="date"
-                                                                        className="form-control"
-                                                                        onChange={e => {
-                                                                            // Convert the date to "Month Day" format
-                                                                            const date = new Date(e.target.value);
-                                                                            const formattedDate = date.toLocaleDateString('en-US', {
-                                                                                month: 'long',
-                                                                                day: 'numeric'
-                                                                            });
-                                                                            setSelectedDay(formattedDate)
-                                                                        }}
-                                                                    />
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -709,17 +737,85 @@ console.log(multiIDs)
                                         </ModalBody>
                                     </Modal>
 
-                                    <Modal isOpen={assignActionModal}
-                                        toggle={() => setAssignActionModal(!assignActionModal)}>
-                                        <ModalHeader toggle={() => setAssignActionModal(!assignActionModal)}>
-                                            Perform Group Action</ModalHeader>
+                                    <Modal isOpen={timeModal} toggle={() => setTimeModal(!timeModal)}>
+                                        <ModalHeader toggle={() => setTimeModal(!timeModal)}> Time Group (Group Action)
+                                        </ModalHeader>
                                         <ModalBody>
                                             <Row>
                                                 <small className={'text-danger mb-3'}>Warning: This action will
                                                     alter {multiIDs.length} children. confirm again !</small>
                                                 <Col xs={12}>
                                                     <div className="row">
-                                                        <div className="col-md-6">
+                                                        <div className="col-md-12">
+                                                            <div className="mb-6">
+                                                                <select
+                                                                    className={'form-control'}
+                                                                    value={selectedTimeGroup}
+                                                                    onChange={(e) => handleTimeGroupSelection(e.target.value)}
+                                                                >
+                                                                    <option value="">{selectedTimeGroup ? selectedTimeGroup : "Select Time Group"}</option>
+                                                                    {convertTimeGroup(timeGroup)?.length > 0 &&
+                                                                        convertTimeGroup(timeGroup)?.map((time) => (
+                                                                            <option key={time?.value}
+                                                                                value={JSON.stringify(time)}>
+                                                                                {time.name}
+                                                                            </option>
+                                                                        ))}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        {selectedTimeGroup && (
+                                                            <div className="row">
+                                                                {splitTimeSlots(selectedTimeGroup).map((timeSlot, index) => (
+                                                                    <div key={timeSlot} className="col-md-6 mt-3">
+                                                                        <div className="font-medium min-w-[120px]">{timeSlot}</div>
+                                                                        <input
+                                                                            type="date"
+                                                                            className="form-control"
+                                                                            value={selectedDates[timeSlot] || ''}
+                                                                            onChange={(e) => handleDateSelection(timeSlot, e.target.value)}
+                                                                        />
+                                                                        {selectedDates[timeSlot] && (
+                                                                            <div className="text-sm text-gray-600">
+                                                                                {new Date(selectedDates[timeSlot]).toLocaleDateString('en-US', {
+                                                                                    month: 'long',
+                                                                                    day: 'numeric'
+                                                                                })}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Col>
+                                                    <br />
+                                                    <div className="text-end">
+                                                        <button
+                                                             onClick={()=>processBatchOperations(true)}
+                                                            className="btn btn-primary save-user">
+                                                            Update
+                                                        </button>
+                                                    </div>
+                                                </Col>
+                                            </Row>
+                                        </ModalBody>
+                                    </Modal>
+
+                                    <Modal isOpen={assignActionModal}
+                                        toggle={() => setAssignActionModal(!assignActionModal)}>
+                                        <ModalHeader toggle={() => setAssignActionModal(!assignActionModal)}>
+                                            Assign Teacher (Group Action)</ModalHeader>
+                                        <ModalBody>
+                                            <Row>
+                                                <small className={'text-danger mb-3'}>Warning: This action will
+                                                    alter {multiIDs.length} children. confirm again !</small>
+                                                <Col xs={12}>
+                                                    <div className="row">
+                                                        <div className="col-md-12 mb-3">
                                                             <div className="mb-6">
                                                                 <select
                                                                     className={'form-control'}
@@ -738,26 +834,6 @@ console.log(multiIDs)
                                                                 </select>
                                                             </div>
                                                         </div>
-                                                        <div className="col-md-6">
-                                                            <div className="mb-6 ">
-                                                                <input
-                                                                    type="date"
-                                                                    className="form-control"
-                                                                    onChange={e => {
-                                                                        // Convert the date to "Month Day" format
-                                                                        const date = new Date(e.target.value);
-                                                                        const formattedDate = date.toLocaleDateString('en-US', {
-                                                                            month: 'long',
-                                                                            day: 'numeric'
-                                                                        });
-                                                                        setMultiTargetIDs({
-                                                                            ...multiTargetIDs,
-                                                                            day: formattedDate
-                                                                        });
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                        </div>
                                                     </div>
                                                 </Col>
                                             </Row>
@@ -766,7 +842,7 @@ console.log(multiIDs)
                                                     <br />
                                                     <div className="text-end">
                                                         <button
-                                                            onClick={processBatchOperations}
+                                                            onClick={() => processBatchOperations(false)}
                                                             type="submit"
                                                             className="btn btn-primary save-user">
                                                             Process Batch Data
