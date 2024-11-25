@@ -6,8 +6,8 @@ WORKDIR /app
 COPY . .
 
 #Yarn install
-ARG YARN_INSTALL="npm install -g yarn"
-RUN $YARN_INSTALL
+#ARG YARN_INSTALL="npm install -g yarn --force"
+#RUN ${YARN_INSTALL}
 
 # Install dependencies
 ARG SETUP_COMMAND="yarn install"
