@@ -5,10 +5,6 @@ WORKDIR /app
 # Copy source code
 COPY . .
 
-#Yarn install
-#ARG YARN_INSTALL="npm install -g yarn --force"
-#RUN ${YARN_INSTALL}
-
 # Install dependencies
 ARG SETUP_COMMAND="yarn install"
 RUN ${SETUP_COMMAND}
