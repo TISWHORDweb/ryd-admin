@@ -149,7 +149,7 @@ const ManagePartnerProgram = () => {
                 const xdata = response?.data?.data;
                 //setProgramsList(xdata.sort(compareFn))
                 const __xdata = xdata.sort(compareFn)
-               
+
                 setProgramsList(__xdata)
                 setDisplayProgramList(__xdata)
                 setFilteredProgramList0(__xdata)
@@ -166,7 +166,7 @@ const ManagePartnerProgram = () => {
         const org = [...new Set(programs.map(item => item?.partner?.organizationName))];
         setOrganizations(org)
     },[programs])
-    
+
     const fetchTeachers = async () => {
         try {
             const response = await axios.get(`${baseUrl}/admin/teacher/all`);
@@ -318,7 +318,7 @@ const ManagePartnerProgram = () => {
                                                 if (Number(e.target.value) === 0) {
                                                     window.location.reload()
                                                 } else {
-                                                    const __cohortFilter = programs.filter(r => r.partner.organizationName === e.target.value);
+                                                    const __cohortFilter = programs.filter(r => r?.partner?.organizationName === e.target.value);
                                                     setDisplayProgramList(__cohortFilter)
                                                     setFilteredProgramList0(__cohortFilter)
                                                     setFilteredProgramList2(__cohortFilter)

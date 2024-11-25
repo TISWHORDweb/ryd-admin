@@ -8,7 +8,7 @@ class Network {
   //baseUrl
   netData = null;
   headerConfig = { "Content-Type": "application/json" }
-  baseUrl = "https://api-pro.rydlearning.com"
+  //baseUrl = "https://api-pro.rydlearning.com"
   // baseUrl = "http://localhost:3000";
   // baseUrl = "https://ryd-learning-api-v2.onrender.com"
   paymentBaseUrl = this.baseUrl + "/v1/stripe/ask/create-pay"
