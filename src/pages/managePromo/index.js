@@ -237,8 +237,19 @@ const ManagePromo = () => {
       const selectedGroup = timeGroup.find(t => t.id === Number(validation.values.timeGroupId));
       if (selectedGroup) {
         try {
+          
           // Parse the times string
-          const parsedTimes = JSON.parse(selectedGroup.times);
+          let parsedTimes;
+          if (typeof selectedGroup.times === 'string') {
+            // If it's a string, try parsing
+            parsedTimes = JSON.parse(selectedGroup.times);
+          } else if (Array.isArray(selectedGroup.times)) {
+            // If it's already an array, use directly
+            parsedTimes = selectedGroup.times;
+          } else if (selectedGroup.times && typeof selectedGroup.times === 'object') {
+            // If it's an object, convert to array or handle appropriately
+            parsedTimes = Object.values(selectedGroup.times);
+          }
 
           // Handle both array formats
           const formattedTimes = Array.isArray(parsedTimes[0])
