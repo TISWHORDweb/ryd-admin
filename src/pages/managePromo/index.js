@@ -50,7 +50,7 @@ const ManagePromo = () => {
   const [phone, setPhone] = useState("");
   const [editTooltipOpen, setEditTooltipOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [additionalFields, setadditionalFields] = useState();
+  const [additionalFields, setadditionalFields] = useState([]);
   const [fields, setFields] = useState([]);
   const [checked, setChecked] = useState(false);
   const [timeGroups, setTimeGroups] = useState([]);
