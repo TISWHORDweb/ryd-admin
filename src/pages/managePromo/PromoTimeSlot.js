@@ -118,7 +118,10 @@ const ManageTimeSlot = () => {
     }, [timeGroup]);
 
     const getNumberOfKidsByIndex = (index) => {
-        const parsedSlots = JSON.parse(timeSlotData.slot);
+        const parsedSlots = Array.isArray(timeSlotData.slot)
+        ? timeSlotData.slot
+        : JSON.parse(timeSlotData.slot)
+
         const slotConfig = parsedSlots.find(config => config.index === index);
         return slotConfig ? slotConfig.numberOfKid : 0;
     };
