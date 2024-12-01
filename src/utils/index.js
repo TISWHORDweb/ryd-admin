@@ -43,6 +43,13 @@ export function calculateDebt(programs) {
   return debt
 }
 
+export function formatData(data) {
+  const parsed = Array.isArray(data)
+    ? data
+    : JSON.parse(data)
+  return parsed
+}
+
 export function convertLessonTimes(times, parentTimezone) {
   const defaultTimezone = "Africa/Lagos";
 
@@ -94,7 +101,7 @@ export function convertTimeGroup(times) {
 
 export function convertTimegroupToParentTimezone(timegroup, parentTimezone) {
 
-  const defaultTimezone = "Africa/Lagos"; 
+  const defaultTimezone = "Africa/Lagos";
 
   const timeStrings = timegroup.split('/').map(str => str.trim());
 
@@ -120,7 +127,7 @@ export function convertTimegroupToParentTimezone(timegroup, parentTimezone) {
       const convertedTime = time.clone().tz(parentTimezone);
 
       const isDST = convertedTime.isDST();
-      const timeZoneType = isDST ? "(DST)" : "(ST)"; 
+      const timeZoneType = isDST ? "(DST)" : "(ST)";
 
       return `${convertedTime.format('MMMM D')}, ${dayPart} ${convertedTime.format('h:mmA')} ${timeZoneType}`;
 

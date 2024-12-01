@@ -10,7 +10,7 @@ import { baseUrl } from '../../Network';
 import Moment from 'react-moment';
 import moment from 'moment-timezone';
 import 'moment-timezone';
-import { convertLessonTimes, convertTimeGroup, convertTimegroupToParentTimezone } from "../../utils";
+import { convertLessonTimes, convertTimeGroup, convertTimegroupToParentTimezone, formatData } from "../../utils";
 
 const TIMES_ = [
     "12:00AM",
@@ -103,7 +103,7 @@ const ManageProgram = () => {
     };
 
     const handleTimeGroupSelection = (timeValue) => {
-        const data = JSON.parse(timeValue)
+        const data = formatData(timeValue)
         setSelectedTimeGroupId(data.value)
         setSelectedTimeGroup(data.name);
         setSelectedDates({});
@@ -339,7 +339,7 @@ const ManageProgram = () => {
     }
 
     const FormatDate = (data, i) => {
-        const parsedTimeSlots = JSON.parse(data);
+        const parsedTimeSlots = formatData(data);
         if (parsedTimeSlots[i]) {
             return parsedTimeSlots[i].map(({ dayText, timeText }) => `${dayText} ${timeText}`).join(' - ');
         }
@@ -347,14 +347,14 @@ const ManageProgram = () => {
     };
 
     const parentTimeZone = (times, index, timezone) => {
-        const parsedTimes = JSON.parse(times)
+        const parsedTimes = formatData(times)
         const timeGroup = parsedTimes[index];
         const time = convertLessonTimes(timeGroup, timezone)
         return time
     }
 
     function renderDate(data) {
-        const parsedData = JSON.parse(data);
+        const parsedData = formatData(data);
         const formattedDates = parsedData.map(item => `${item.value}, ${item.name}`);
         return formattedDates.join(' / ');
     }
