@@ -22,6 +22,7 @@ const ManageTimeTable = () => {
     const [groupTime, setGroupTime] = useState([]);
     const [groupTimeUp, setGroupTimeUp] = useState([]);
     const [groupTimeMultiple, setGroupTimeMultiple] = useState([]);
+    const [multipleData, setMultipleData] = useState([]);
     const [groupTimeMultipleUp, setGroupTimeMultipleUp] = useState([]);
     const [groupTimeTitle, setGroupTimeTitle] = useState("");
     const [groupTimeTitleUp, setGroupTimeTitleUp] = useState("");
@@ -54,18 +55,112 @@ const ManageTimeTable = () => {
     }
 
     //add to group list
+    // const addToGroupList = (f) => {
+    //     console.log(updateSet)
+    //     setMultipleData(...multipleData, f)
+    //     if (updateSet) {
+    //         if (!isMultiUp) {
+    //             //show single
+    //             setGroupTimeUp([...groupTimeUp, f])
+    //             console.log("single")
+    //         } else {
+
+    //             setGroupTimeMultipleUp([...groupTimeMultipleUp, multipleData])
+    //         }
+    //     } else {
+    //         setGroupTime([...groupTime, f])
+    //     }
+    // }
+
+    // const addToGroupList = (f) => {
+    //     setMultipleData(prevData => {
+    //         // Create a copy of the previous data
+    //         const updatedData = [...prevData];
+
+    //         // If the last element is not an array, convert it to an array with the new object
+    //         if (!Array.isArray(updatedData[updatedData.length - 1])) {
+    //             updatedData[updatedData.length - 1] = [f];
+    //         } else {
+    //             // If the last element is already an array, push the new object to it
+    //             updatedData[updatedData.length - 1].push(f);
+    //         }
+
+    //         return updatedData;
+    //     });
+
+    //     // Apply similar logic to other state updates
+    //     if (updateSet) {
+    //         if (!isMultiUp) {
+    //             setGroupTimeUp(prevGroup => {
+    //                 const updatedGroup = [...prevGroup];
+
+    //                 if (updatedGroup.length === 0) {
+    //                     return [f];
+    //                 }
+
+    //                 if (!Array.isArray(updatedGroup[updatedGroup.length - 1])) {
+    //                     updatedGroup[updatedGroup.length - 1] = [f];
+    //                 } else {
+    //                     updatedGroup[updatedGroup.length - 1].push(f);
+    //                 }
+
+    //                 return updatedGroup;
+    //             });
+    //         } else {
+    //             setGroupTimeMultipleUp(prevMultipleGroup => {
+    //                 const updatedMultipleGroup = [...prevMultipleGroup];
+
+    //                 if (updatedMultipleGroup.length === 0) {
+    //                     return [f];
+    //                 }
+
+    //                 if (!Array.isArray(updatedMultipleGroup[updatedMultipleGroup.length - 1])) {
+    //                     updatedMultipleGroup[updatedMultipleGroup.length - 1] = [f];
+    //                 } else {
+    //                     updatedMultipleGroup[updatedMultipleGroup.length - 1].push(f);
+    //                 }
+
+    //                 return updatedMultipleGroup;
+    //             });
+    //         }
+    //     } else {
+    //         setGroupTime(prevGroup => {
+    //             const updatedGroup = [...prevGroup];
+
+    //             if (updatedGroup.length === 0) {
+    //                 return [f];
+    //             }
+
+    //             if (!Array.isArray(updatedGroup[updatedGroup.length - 1])) {
+    //                 updatedGroup[updatedGroup.length - 1] = [f];
+    //             } else {
+    //                 updatedGroup[updatedGroup.length - 1].push(f);
+    //             }
+
+    //             return updatedGroup;
+    //         });
+    //     }
+    // };
+
     const addToGroupList = (f) => {
+        setMultipleData(prevData => {
+          // Create a copy of the previous data and add a new array with the object
+          return [...prevData, [f]];
+        });
+
+        // Apply similar logic to other state updates
         if (updateSet) {
-            if (!isMultiUp) {
-                //show single
-                setGroupTimeUp([...groupTimeUp, f])
-            } else {
-                setGroupTimeMultipleUp([...groupTimeMultipleUp, f])
-            }
+          if (!isMultiUp) {
+            setGroupTimeUp(prevGroup => [...prevGroup, [f]]);
+          } else {
+            setGroupTimeMultipleUp(prevMultipleGroup => [...prevMultipleGroup, [f]]);
+          }
         } else {
-            setGroupTime([...groupTime, f])
+          setGroupTime(prevGroup => [...prevGroup, [f]]);
         }
-    }
+      };
+
+
 
     const addToMultiGroupList = () => {
         if (groupTime.length > 0) {
@@ -141,11 +236,10 @@ const ManageTimeTable = () => {
         setGroupTimeTitleUp(timeGroupData[i].title)
 
         const parsedTimeSlots = Array.isArray(timeGroupData[i].times)
-        ? timeGroupData[i].times
-        : JSON.parse(timeGroupData[i].times);
+            ? timeGroupData[i].times
+            : JSON.parse(timeGroupData[i].times);
 
         const isMulti = parsedTimeSlots[0]?.id
-        console.log(isMulti)
         if (isMulti) {
             setIsMultiUpd(false)
             setIsMultipleGroupUp(false)
@@ -198,7 +292,7 @@ const ManageTimeTable = () => {
         }
         setIsLoading(false)
     }
-    console.log(groupTimeMultipleUp)
+    // console.log(groupTimeMultipleUp)
     return (
         <React.Fragment>
             <div className="page-content">
@@ -495,7 +589,7 @@ const ManageTimeTable = () => {
                                                         <th>Time</th>
                                                         <th></th>
                                                     </tr>
-                                                    
+
                                                     {groupTimeMultipleUp?.length > 0 ? groupTimeMultipleUp.map((t, i) => <>
                                                         <tr style={{ backgroundColor: '#f6f5f5' }}>
                                                             <td style={{ fontWeight: 'bold' }}>Group #{i}</td>

@@ -600,21 +600,23 @@ const ManageProgram = () => {
                                                             </div>
                                                         </td>
                                                         <td>
-                                                            <Link
+                                                            <span
                                                                 className="text-danger"
+                                                                style={{cursor: 'pointer'}}
                                                                 to="#"
                                                                 id="edit"
                                                                 onClick={() => handleProgramClick(program)}>
                                                                 <i className="mdi mdi-clock-outline font-size-12"></i>
-                                                            </Link>
+                                                            </span>
 
-                                                            <Link
+                                                            <span
                                                                 className="text-primary"
                                                                 to="#"
+                                                                style={{cursor: 'pointer'}}
                                                                 id="assign"
                                                                 onClick={() => handleAssignClick(program)}>
                                                                 <i className="mdi mdi-clipboard-account font-size-12"></i>
-                                                            </Link>
+                                                            </span>
 
                                                         </td>
                                                     </tr>
