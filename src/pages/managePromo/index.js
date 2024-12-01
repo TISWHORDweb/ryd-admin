@@ -109,14 +109,22 @@ const ManagePromo = () => {
         additionalFields: additionalFields.length !== 0 ? additionalFields : [],
         slot: slot.length !== 0 ? slot : []
       }
-      console.log(newPromo)
       let response;
-      response = await axios.post(
-        `${baseUrl}/admin/promo/create`,
-        newPromo
-      );
-      toast.success("Promo created successfully");
 
+      if (isEdit) {
+        response = await axios.put(
+          `${baseUrl}/admin/promo/edit/${promo.id}`,
+          newPromo
+        );
+        toast.success("Promo updated successfully");
+      } else {
+
+        response = await axios.post(
+          `${baseUrl}/admin/promo/create`,
+          newPromo
+        );
+        toast.success("Promo created successfully");
+      }
 
       const responseData = response.data;
       setPromos([...promos, responseData]);
@@ -147,6 +155,12 @@ const ManagePromo = () => {
 
   const toggle = () => {
     setModal(!modal);
+  };
+
+  const handleEditClick = (promo) => {
+    setPromo(promo);
+    setIsEdit(true);
+    toggle();
   };
 
   const handleSearch = (e) => {
@@ -237,7 +251,7 @@ const ManagePromo = () => {
       const selectedGroup = timeGroup.find(t => t.id === Number(validation.values.timeGroupId));
       if (selectedGroup) {
         try {
-          
+
           // Parse the times string
           let parsedTimes;
           if (typeof selectedGroup.times === 'string') {
@@ -283,7 +297,7 @@ const ManagePromo = () => {
     }));
 
     setSlot(formattedData);
-    
+
   };
 
   const formatTimeSlotGroup = (timeSlotGroup) => {
@@ -433,6 +447,15 @@ const ManagePromo = () => {
                                     >
                                       <span className="">Manage Promo</span>
                                     </Link>
+                                    <Link
+                                      className="text-success"
+                                      to="#"
+                                      onClick={() => {
+                                        handleEditClick(p);
+                                      }}
+                                    >
+                                      <i className="mdi mdi-pencil font-size-18"></i>
+                                    </Link>
                                   </>
                                 </div>
                               </td>
@@ -446,7 +469,7 @@ const ManagePromo = () => {
                   )}
                   <Modal isOpen={modal} toggle={toggle}>
                     <ModalHeader toggle={toggle}>
-                      Add New Promo
+                        {isEdit ? "Edit Promo" : "Add New Promo"}
                     </ModalHeader>
                     <ModalBody>
                       <Form onSubmit={validation.handleSubmit}>
@@ -515,55 +538,55 @@ const ManagePromo = () => {
                                   {validation.errors.country}
                                 </FormFeedback>
                               </div>
-                                {/* Time Group Selection */}
-                                <div className="mb-3 col-md-6">
-                                  <Label className="form-label">Choose Time Group</Label>
-                                  <Input
-                                    name="timeGroupId"
-                                    type="select"
-                                    placeholder="Time Group"
-                                    onChange={validation.handleChange}
-                                    onBlur={validation.handleBlur}
-                                    value={validation.values.timeGroupId || ''}
-                                    invalid={validation.touched.timeGroupId && validation.errors.timeGroupId}
-                                  >
-                                    <option value="">--Choose--</option>
-                                    {timeGroup.map((t, i) => (
-                                      <option key={i} value={Number(t.id)}>
-                                        {t.title}
-                                      </option>
-                                    ))}
-                                  </Input>
-                                  {validation.touched.timeGroupId && validation.errors.timeGroupId && (
-                                    <FormFeedback type="invalid">
-                                      {validation.errors.timeGroupId}
-                                    </FormFeedback>
-                                  )}
-                                </div>
-
-                                {/* Time Slots with Kid Inputs */}
-                                {timeGroups.length > 0 && (
-                                  <div className="mt-4">
-                                    <Label className="form-label ">Specify Number of Kids for Each Time Slot</Label>
-                                    <div className="space-y-2">
-                                      {timeGroups.map((timeSlotGroup, index) => (
-                                        <div key={index} className="flex items-center gap-4">
-                                          <div className="flex-1">
-                                            {formatTimeSlotGroup(timeSlotGroup)}
-                                          </div>
-                                          <Input
-                                            type="number"
-                                            min="0"
-                                            value={kidInputs[index]}
-                                            onChange={(e) => handleKidInputChange(index, e.target.value)}
-                                            className="w-24"
-                                            placeholder="Kids"
-                                          />
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
+                              {/* Time Group Selection */}
+                              <div className="mb-3 col-md-6">
+                                <Label className="form-label">Choose Time Group</Label>
+                                <Input
+                                  name="timeGroupId"
+                                  type="select"
+                                  placeholder="Time Group"
+                                  onChange={validation.handleChange}
+                                  onBlur={validation.handleBlur}
+                                  value={validation.values.timeGroupId || ''}
+                                  invalid={validation.touched.timeGroupId && validation.errors.timeGroupId}
+                                >
+                                  <option value="">--Choose--</option>
+                                  {timeGroup.map((t, i) => (
+                                    <option key={i} value={Number(t.id)}>
+                                      {t.title}
+                                    </option>
+                                  ))}
+                                </Input>
+                                {validation.touched.timeGroupId && validation.errors.timeGroupId && (
+                                  <FormFeedback type="invalid">
+                                    {validation.errors.timeGroupId}
+                                  </FormFeedback>
                                 )}
+                              </div>
+
+                              {/* Time Slots with Kid Inputs */}
+                              {timeGroups.length > 0 && (
+                                <div className="mt-4">
+                                  <Label className="form-label ">Specify Number of Kids for Each Time Slot</Label>
+                                  <div className="space-y-2">
+                                    {timeGroups.map((timeSlotGroup, index) => (
+                                      <div key={index} className="flex items-center gap-4">
+                                        <div className="flex-1">
+                                          {formatTimeSlotGroup(timeSlotGroup)}
+                                        </div>
+                                        <Input
+                                          type="number"
+                                          min="0"
+                                          value={kidInputs[index]}
+                                          onChange={(e) => handleKidInputChange(index, e.target.value)}
+                                          className="w-24"
+                                          placeholder="Kids"
+                                        />
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </Row>
                             <h5 className="my-4">Head of Promo Info </h5>
                             <div className="row">
@@ -728,7 +751,7 @@ const ManagePromo = () => {
                                 type="submit"
                                 className="btn btn-primary save-user"
                               >
-                                Add Promo
+                                {isEdit ? "Update" : "Create"}
                               </button>
                             </div>
                           </Col>
