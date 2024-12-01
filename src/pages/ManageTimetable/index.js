@@ -1,14 +1,14 @@
-import React, {useEffect, useState} from "react";
-import {Link} from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import DeleteModal from "../../components/Common/DeleteModal";
 import * as Yup from "yup";
-import {useFormik} from "formik";
+import { useFormik } from "formik";
 import Breadcrumbs from "../../components/Common/Breadcrumb";
 import withAuth from '../withAuth';
 import axios from "axios";
-import {baseUrl} from '../../Network';
-import {Col, Container, Row} from "reactstrap";
-import {toast, ToastContainer} from 'react-toastify';
+import { baseUrl } from '../../Network';
+import { Col, Container, Row } from "reactstrap";
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 
@@ -55,14 +55,14 @@ const ManageTimeTable = () => {
 
     //add to group list
     const addToGroupList = (f) => {
-        if(updateSet){
-            if(!isMultiUp){
+        if (updateSet) {
+            if (!isMultiUp) {
                 //show single
-               setGroupTimeUp([...groupTimeUp, f])
-            }else{
+                setGroupTimeUp([...groupTimeUp, f])
+            } else {
                 setGroupTimeMultipleUp([...groupTimeMultipleUp, f])
             }
-        }else{
+        } else {
             setGroupTime([...groupTime, f])
         }
     }
@@ -105,7 +105,7 @@ const ManageTimeTable = () => {
             if (!isMultipleGroupUp) {
                 const response = await axios.post(
                     `${baseUrl}/admin/timegroup/update/${updateSet}`,
-                    {times: groupTimeUp}
+                    { times: groupTimeUp }
                 );
                 if (response.data.status) {
                     toast.success("TimeGroup updated successfully")
@@ -119,7 +119,7 @@ const ManageTimeTable = () => {
                 //create for multiple groups
                 const response = await axios.post(
                     `${baseUrl}/admin/timegroup/update/${updateSet}`,
-                    {times: groupTimeMultipleUp}
+                    { times: groupTimeMultipleUp }
                 );
                 if (response.data.status) {
                     toast.success("Multiple TimeGroup updated successfully")
@@ -136,19 +136,26 @@ const ManageTimeTable = () => {
         setIsLoading(false)
     }
 
-    const setUpdatePanel=(i)=>{
+    const setUpdatePanel = (i) => {
         setUpdateSet(timeGroupData[i].id)
         setGroupTimeTitleUp(timeGroupData[i].title)
-        const isMulti = timeGroupData[i].times[0]?.id
-        if(isMulti){
+
+        const parsedTimeSlots = Array.isArray(timeGroupData[i].times)
+        ? timeGroupData[i].times
+        : JSON.parse(timeGroupData[i].times);
+
+        const isMulti = parsedTimeSlots[0]?.id
+        console.log(isMulti)
+        if (isMulti) {
             setIsMultiUpd(false)
             setIsMultipleGroupUp(false)
-            setGroupTimeUp(timeGroupData[i].times)
+            console.log(parsedTimeSlots)
+            setGroupTimeUp(parsedTimeSlots)
             setGroupTimeMultipleUp([])
-        }else {
+        } else {
             setIsMultiUpd(true)
             setIsMultipleGroupUp(true)
-            setGroupTimeMultipleUp(timeGroupData[i].times)
+            setGroupTimeMultipleUp(parsedTimeSlots)
             setGroupTimeUp([])
         }
     }
@@ -161,7 +168,7 @@ const ManageTimeTable = () => {
             if (!isMultipleGroup) {
                 const response = await axios.post(
                     `${baseUrl}/admin/timegroup/create`,
-                    {title: groupTimeTitle, times: groupTime}
+                    { title: groupTimeTitle, times: groupTime }
                 );
                 if (response.data.status) {
                     toast.success("TimeGroup created successfully")
@@ -175,7 +182,7 @@ const ManageTimeTable = () => {
                 //create for multiple groups
                 const response = await axios.post(
                     `${baseUrl}/admin/timegroup/create`,
-                    {title: groupTimeTitle, times: groupTimeMultiple}
+                    { title: groupTimeTitle, times: groupTimeMultiple }
                 );
                 if (response.data.status) {
                     toast.success("Multiple TimeGroup created successfully")
@@ -191,12 +198,12 @@ const ManageTimeTable = () => {
         }
         setIsLoading(false)
     }
-
+    console.log(groupTimeMultipleUp)
     return (
         <React.Fragment>
             <div className="page-content">
                 <Container fluid>
-                    <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Timetable"/>
+                    <Breadcrumbs title="Dashboard" breadcrumbItem="Manage Timetable" />
                     <Row>
                         <Col lg="2">
                             <Row className="align-items-center">
@@ -216,9 +223,9 @@ const ManageTimeTable = () => {
                                             onClick={(e) => {
                                                 e.preventDefault()
                                                 daysPicker(i)
-                                            }} style={{height: 50, marginTop: 20}}>{t} <i
-                                            className="bx bx-check-circle font-size-12"
-                                            style={{color: WeekColors[i]}}></i></button>
+                                            }} style={{ height: 50, marginTop: 20 }}>{t} <i
+                                                className="bx bx-check-circle font-size-12"
+                                                style={{ color: WeekColors[i] }}></i></button>
                                     </>)}
 
                                 </Row>
@@ -232,8 +239,8 @@ const ManageTimeTable = () => {
                                         <h5 className="card-title">
                                             Timetable List{" "}
                                             <span className="text-muted fw-normal ms-2">
-                        ({timetables.length})
-                      </span>
+                                                ({timetables.length})
+                                            </span>
                                         </h5>
                                     </div>
                                 </Col>
@@ -245,38 +252,38 @@ const ManageTimeTable = () => {
                                     ) : (
                                         <table className="table align-middle">
                                             <thead>
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Day of Week</th>
-                                                <th>Week Abbr</th>
-                                                <th>Time</th>
-                                                <th>Hour</th>
-                                                <th>Timezone</th>
-                                                <th>Action</th>
-                                            </tr>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Day of Week</th>
+                                                    <th>Week Abbr</th>
+                                                    <th>Time</th>
+                                                    <th>Hour</th>
+                                                    <th>Timezone</th>
+                                                    <th>Action</th>
+                                                </tr>
                                             </thead>
                                             <tbody>
-                                            {timetables.filter(f => f.day === weeksDayPicker).map((data, index) => (
-                                                <tr key={index}>
-                                                    <td>{index + 1}</td>
-                                                    <td>{data.dayText}</td>
-                                                    <td>{data.dayAbbr}</td>
-                                                    <td>{data.timeText}</td>
-                                                    <td>{data.timex}</td>
-                                                    <td>WAT +1 GMT</td>
-                                                    <td>
-                                                        <Link
-                                                            className="text-success"
-                                                            to="#"
-                                                            onClick={(e) => {
-                                                                e.preventDefault()
-                                                                addToGroupList(data)
-                                                            }}>
-                                                            <i className="bx bx-arrow-to-right font-size-18"></i>
-                                                        </Link>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                                {timetables.filter(f => f.day === weeksDayPicker).map((data, index) => (
+                                                    <tr key={index}>
+                                                        <td>{index + 1}</td>
+                                                        <td>{data.dayText}</td>
+                                                        <td>{data.dayAbbr}</td>
+                                                        <td>{data.timeText}</td>
+                                                        <td>{data.timex}</td>
+                                                        <td>WAT +1 GMT</td>
+                                                        <td>
+                                                            <Link
+                                                                className="text-success"
+                                                                to="#"
+                                                                onClick={(e) => {
+                                                                    e.preventDefault()
+                                                                    addToGroupList(data)
+                                                                }}>
+                                                                <i className="bx bx-arrow-to-right font-size-18"></i>
+                                                            </Link>
+                                                        </td>
+                                                    </tr>
+                                                ))}
                                             </tbody>
                                         </table>
                                     )}
@@ -311,7 +318,7 @@ const ManageTimeTable = () => {
                                 <Row>
                                     <Col xl="12">
                                         <div className="col-md-12 mb-3">
-                                            <table style={{width: '100%'}}>
+                                            <table style={{ width: '100%' }}>
                                                 <tr>
                                                     <th>Day</th>
                                                     <th>Abbr</th>
@@ -321,20 +328,20 @@ const ManageTimeTable = () => {
                                                     <th></th>
                                                 </tr>
                                                 {groupTime?.map((t, i) => <>
-                                                        <tr>
-                                                            <td style={{color: WeekColors[t.day]}}>{t.dayText}</td>
-                                                            <td style={{color: WeekColors[t.day]}}>{t.dayAbbr}</td>
-                                                            <td>{t.timex}</td>
-                                                            <td>{t.timeText}</td>
-                                                            <td>WAT +1 GMT</td>
-                                                            <td><i className="bx bx-x font-size-18"
-                                                                   style={{cursor: 'pointer'}}
-                                                                   onClick={() => {
-                                                                       removeTimeGroup(t.id)
-                                                                   }}></i></td>
-                                                        </tr>
-                                                    </>) ||
-                                                    <p style={{width: '100%', textAlign: 'left', color: '#6e6e6e'}}>No
+                                                    <tr>
+                                                        <td style={{ color: WeekColors[t.day] }}>{t.dayText}</td>
+                                                        <td style={{ color: WeekColors[t.day] }}>{t.dayAbbr}</td>
+                                                        <td>{t.timex}</td>
+                                                        <td>{t.timeText}</td>
+                                                        <td>WAT +1 GMT</td>
+                                                        <td><i className="bx bx-x font-size-18"
+                                                            style={{ cursor: 'pointer' }}
+                                                            onClick={() => {
+                                                                removeTimeGroup(t.id)
+                                                            }}></i></td>
+                                                    </tr>
+                                                </>) ||
+                                                    <p style={{ width: '100%', textAlign: 'left', color: '#6e6e6e' }}>No
                                                         New
                                                         Group Entries</p>}
                                             </table>
@@ -350,8 +357,8 @@ const ManageTimeTable = () => {
                                             </div>
 
                                             {isMultipleGroup ? <>
-                                                <hr/>
-                                                <table style={{width: '100%'}}>
+                                                <hr />
+                                                <table style={{ width: '100%' }}>
                                                     <tr>
                                                         <th>Group</th>
                                                         <th>Week Day</th>
@@ -360,31 +367,31 @@ const ManageTimeTable = () => {
                                                         <th></th>
                                                     </tr>
                                                     {groupTimeMultiple?.length > 0 && groupTimeMultiple?.map((t, i) => <>
-                                                            <tr style={{backgroundColor: '#f6f5f5'}}>
-                                                                <td style={{fontWeight: 'bold'}}>Group #{i}</td>
-                                                                <td></td>
-                                                                <td></td>
-                                                                <td></td>
-                                                                <td>
-                                                                    <a href={'#'} onClick={(e) => {
-                                                                        e.preventDefault()
-                                                                        removeTimeGroupMulti(i)
-                                                                    }} className={'d-inline-flex'}><i
-                                                                        className="bx bx-trash font-size-15"></i></a>
-                                                                </td>
-                                                            </tr>
-                                                            {
-                                                                t.map((c, j) => <>
-                                                                    <tr>
-                                                                        <td>-</td>
-                                                                        <td style={{color: WeekColors[c.day]}}>{c.dayText}</td>
-                                                                        <td>{c.timex}</td>
-                                                                        <td>{c.timeText}</td>
-                                                                        <td></td>
-                                                                    </tr>
-                                                                </>)
-                                                            }
-                                                        </>) ||
+                                                        <tr style={{ backgroundColor: '#f6f5f5' }}>
+                                                            <td style={{ fontWeight: 'bold' }}>Group #{i}</td>
+                                                            <td></td>
+                                                            <td></td>
+                                                            <td></td>
+                                                            <td>
+                                                                <a href={'#'} onClick={(e) => {
+                                                                    e.preventDefault()
+                                                                    removeTimeGroupMulti(i)
+                                                                }} className={'d-inline-flex'}><i
+                                                                    className="bx bx-trash font-size-15"></i></a>
+                                                            </td>
+                                                        </tr>
+                                                        {
+                                                            t.map((c, j) => <>
+                                                                <tr>
+                                                                    <td>-</td>
+                                                                    <td style={{ color: WeekColors[c.day] }}>{c.dayText}</td>
+                                                                    <td>{c.timex}</td>
+                                                                    <td>{c.timeText}</td>
+                                                                    <td></td>
+                                                                </tr>
+                                                            </>)
+                                                        }
+                                                    </>) ||
                                                         <p style={{
                                                             width: '100%',
                                                             textAlign: 'left',
@@ -393,14 +400,14 @@ const ManageTimeTable = () => {
                                                             New
                                                             Multi-Group Entries</p>}
                                                 </table>
-                                                <hr/>
+                                                <hr />
                                             </> : null}
                                             <input onChange={e => setGroupTimeTitle(e.target.value)}
-                                                   value={groupTimeTitle}
-                                                   placeholder={"Group Name"}
-                                                   className={'w-100 form-control mb-3 mt-3'}/>
+                                                value={groupTimeTitle}
+                                                placeholder={"Group Name"}
+                                                className={'w-100 form-control mb-3 mt-3'} />
                                             <button disabled={isLoading} onClick={submitTimeSheet}
-                                                    className={'btn btn-primary w-100'}>{isLoading ? "Please wait..." : `Create ${isMultipleGroup ? "Multiple" : "Single"} Group`}</button>
+                                                className={'btn btn-primary w-100'}>{isLoading ? "Please wait..." : `Create ${isMultipleGroup ? "Multiple" : "Single"} Group`}</button>
                                         </div>
                                     </Col>
                                 </Row>
@@ -408,7 +415,7 @@ const ManageTimeTable = () => {
                             <Col lg="4">
                                 <Row className="align-items-center">
                                     <Col md={12}>
-                                    <div className="mb-3">
+                                        <div className="mb-3">
                                             <h5 className="card-title">
                                                 <Row xl={12}>
                                                     <Col xl={8}>
@@ -427,18 +434,18 @@ const ManageTimeTable = () => {
                                 <Row>
                                     <Col xl="12">
                                         <div className="col-md-12 mb-3">
-                                            <table style={{width: '100%'}}>
+                                            <table style={{ width: '100%' }}>
                                                 <tr>
                                                     <th>#</th>
                                                     <th>Title</th>
                                                     <th>Type</th>
                                                     <th></th>
                                                 </tr>
-                                                {timeGroupData.map((it, index)=>{
-                                                    return <tr key={index} style={{cursor: 'pointer'}} onClick={()=>setUpdatePanel(index)}>
-                                                        <td>{index+1}</td>
+                                                {timeGroupData.map((it, index) => {
+                                                    return <tr key={index} style={{ cursor: 'pointer' }} onClick={() => setUpdatePanel(index)}>
+                                                        <td>{index + 1}</td>
                                                         <td>{it.title}</td>
-                                                        <td>{it?.times[0]?.id?"Single": "Multiple"}</td>
+                                                        <td>{it?.times[0]?.id ? "Single" : "Multiple"}</td>
                                                         <td>-</td>
                                                     </tr>
                                                 })}
@@ -450,37 +457,37 @@ const ManageTimeTable = () => {
                                     <Col xl="12">
                                         <div className="col-md-12 mb-3">
                                             {!isMultipleGroupUp ? <>
-                                            <table style={{width: '100%', display: updateSet>0?'':'none'}}>
-                                                <tr>
-                                                    <th>Day</th>
-                                                    <th>Abbr</th>
-                                                    <th>Hour</th>
-                                                    <th>Time</th>
-                                                    <th>TimeZone</th>
-                                                    <th></th>
-                                                </tr>
-                                                {groupTimeUp?.map((t, i) => <>
+                                                <table style={{ width: '100%', display: updateSet > 0 ? '' : 'none' }}>
+                                                    <tr>
+                                                        <th>Day</th>
+                                                        <th>Abbr</th>
+                                                        <th>Hour</th>
+                                                        <th>Time</th>
+                                                        <th>TimeZone</th>
+                                                        <th></th>
+                                                    </tr>
+                                                    {groupTimeUp?.map((t, i) => <>
                                                         <tr>
-                                                            <td style={{color: WeekColors[t.day]}}>{t.dayText}</td>
-                                                            <td style={{color: WeekColors[t.day]}}>{t.dayAbbr}</td>
+                                                            <td style={{ color: WeekColors[t.day] }}>{t.dayText}</td>
+                                                            <td style={{ color: WeekColors[t.day] }}>{t.dayAbbr}</td>
                                                             <td>{t.timex}</td>
                                                             <td>{t.timeText}</td>
                                                             <td>WAT +1 GMT</td>
                                                             <td><i className="bx bx-x font-size-18"
-                                                                   style={{cursor: 'pointer'}}
-                                                                   onClick={() => {
-                                                                       removeTimeGroupUp(t.id)
-                                                                   }}></i></td>
+                                                                style={{ cursor: 'pointer' }}
+                                                                onClick={() => {
+                                                                    removeTimeGroupUp(t.id)
+                                                                }}></i></td>
                                                         </tr>
                                                     </>) ||
-                                                    <p style={{width: '100%', textAlign: 'left', color: '#6e6e6e'}}>No
-                                                        New
-                                                        Group Entries</p>}
-                                            </table>
-                                            </>:null}
+                                                        <p style={{ width: '100%', textAlign: 'left', color: '#6e6e6e' }}>No
+                                                            New
+                                                            Group Entries</p>}
+                                                </table>
+                                            </> : null}
                                             {isMultipleGroupUp ? <>
-                                                <hr/>
-                                                <table style={{width: '100%'}}>
+                                                <hr />
+                                                <table style={{ width: '100%' }}>
                                                     <tr>
                                                         <th>Group</th>
                                                         <th>Week Day</th>
@@ -488,32 +495,33 @@ const ManageTimeTable = () => {
                                                         <th>Time</th>
                                                         <th></th>
                                                     </tr>
-                                                    {groupTimeMultipleUp?.length > 0 && groupTimeMultipleUp?.map((t, i) => <>
-                                                            <tr style={{backgroundColor: '#f6f5f5'}}>
-                                                                <td style={{fontWeight: 'bold'}}>Group #{i}</td>
-                                                                <td></td>
-                                                                <td></td>
-                                                                <td></td>
-                                                                <td>
-                                                                    <a href={'#'} onClick={(e) => {
-                                                                        e.preventDefault()
-                                                                        removeTimeGroupMultiUp(i)
-                                                                    }} className={'d-inline-flex'}><i
-                                                                        className="bx bx-trash font-size-15"></i></a>
-                                                                </td>
-                                                            </tr>
-                                                            {
-                                                                t.map((c, j) => <>
-                                                                    <tr>
-                                                                        <td>-</td>
-                                                                        <td style={{color: WeekColors[c.day]}}>{c.dayText}</td>
-                                                                        <td>{c.timex}</td>
-                                                                        <td>{c.timeText}</td>
-                                                                        <td></td>
-                                                                    </tr>
-                                                                </>)
-                                                            }
-                                                        </>) ||
+                                                    
+                                                    {groupTimeMultipleUp?.length > 0 ? groupTimeMultipleUp.map((t, i) => <>
+                                                        <tr style={{ backgroundColor: '#f6f5f5' }}>
+                                                            <td style={{ fontWeight: 'bold' }}>Group #{i}</td>
+                                                            <td></td>
+                                                            <td></td>
+                                                            <td></td>
+                                                            <td>
+                                                                <a href={'#'} onClick={(e) => {
+                                                                    e.preventDefault()
+                                                                    removeTimeGroupMultiUp(i)
+                                                                }} className={'d-inline-flex'}><i
+                                                                    className="bx bx-trash font-size-15"></i></a>
+                                                            </td>
+                                                        </tr>
+                                                        {
+                                                            t.map((c, j) => <>
+                                                                <tr>
+                                                                    <td>-</td>
+                                                                    <td style={{ color: WeekColors[c.day] }}>{c.dayText}</td>
+                                                                    <td>{c.timex}</td>
+                                                                    <td>{c.timeText}</td>
+                                                                    <td></td>
+                                                                </tr>
+                                                            </>)
+                                                        }
+                                                    </>) :
                                                         <p style={{
                                                             width: '100%',
                                                             textAlign: 'left',
@@ -522,10 +530,10 @@ const ManageTimeTable = () => {
                                                             New
                                                             Multi-Group Entries</p>}
                                                 </table>
-                                                <hr/>
+                                                <hr />
                                             </> : null}
-                                            <button style={{display: updateSet>0?'block':'none'}} disabled={isLoading} onClick={submitUpdatedTimeSheet}
-                                                    className={'btn btn-primary w-100'}>Update [{groupTimeTitleUp}]</button>
+                                            <button style={{ display: updateSet > 0 ? 'block' : 'none' }} disabled={isLoading} onClick={submitUpdatedTimeSheet}
+                                                className={'btn btn-primary w-100'}>Update [{groupTimeTitleUp}]</button>
                                         </div>
                                     </Col>
                                 </Row>
@@ -534,7 +542,7 @@ const ManageTimeTable = () => {
                     </Row>
                 </Container>
             </div>
-            <ToastContainer/>
+            <ToastContainer />
         </React.Fragment>
     );
 };
