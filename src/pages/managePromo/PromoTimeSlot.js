@@ -91,7 +91,17 @@ const ManageTimeSlot = () => {
             try {
                 const parsedTimeSlots = timeGroup.times;
                 let formatted = [];
-                if (Array.isArray(parsedTimeSlots[0]) && Array.isArray(parsedTimeSlots)) {
+    
+                if (Array.isArray(parsedTimeSlots) && parsedTimeSlots.every(Array.isArray)) {
+                    formatted = parsedTimeSlots.flatMap((slotGroup, groupIndex) => 
+                        slotGroup.map((slot, slotIndex) => ({
+                            value: slot.id || `${groupIndex}-${slotIndex}`,
+                            name: `${slot.dayText} ${slot.timeText}`,
+                        }))
+                    );
+                } 
+
+                else if (Array.isArray(parsedTimeSlots[0]) && Array.isArray(parsedTimeSlots)) {
                     formatted = parsedTimeSlots.map((slotPair, index) => {
                         const [start, end] = slotPair;
                         return {
@@ -99,17 +109,16 @@ const ManageTimeSlot = () => {
                             name: `${start.dayText} ${start.timeText}, ${end.dayText} ${end.timeText}`,
                         };
                     });
-                }
-
+                } 
                 else if (Array.isArray(parsedTimeSlots)) {
                     formatted = parsedTimeSlots.map((slot) => ({
                         value: slot.id,
                         name: `${slot.dayText} ${slot.timeText}`,
                     }));
                 }
-
+    
                 setFormattedData(formatted);
-                setFilterData(formatted)
+                setFilterData(formatted);
             } catch (error) {
                 console.error('Error parsing time slots:', error);
                 setFormattedData([]);
