@@ -295,11 +295,14 @@ const ManageProgram = () => {
     const handleProgramClick = (programData) => {
         setSelectedProgram(programData)
         const time = convertTimeGroup(timeGroup)
-        const select = time[programData.timeGroupIndex].name
-        const selectID = time[programData.timeGroupIndex].value
+        if(time){
+        const select = time[programData.timeGroupIndex]?.name
+        const selectID = time[programData.timeGroupIndex]?.value
+        console.log(select,selectID,time)
         setSelectedTimeGroup(select)
         setSelectedTimeGroupId(selectID)
         setModal(true)
+        }
     };
 
     const processBatchOperations = async (status) => {
