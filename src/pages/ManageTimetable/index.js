@@ -28,6 +28,7 @@ const ManageTimeTable = () => {
     const [groupTimeTitleUp, setGroupTimeTitleUp] = useState("");
     const [weeksDayPicker, setWeeksDayPicker] = useState(0);
     const [isMultipleGroup, setIsMultipleGroup] = useState(false);
+    const [check, setCheck] = useState(false);
     const [isMultipleGroupUp, setIsMultipleGroupUp] = useState(false);
     const [timeGroupData, setTimeGroupData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -54,109 +55,27 @@ const ManageTimeTable = () => {
         setWeeksDayPicker(i)
     }
 
-    //add to group list
-    // const addToGroupList = (f) => {
-    //     console.log(updateSet)
-    //     setMultipleData(...multipleData, f)
-    //     if (updateSet) {
-    //         if (!isMultiUp) {
-    //             //show single
-    //             setGroupTimeUp([...groupTimeUp, f])
-    //             console.log("single")
-    //         } else {
-
-    //             setGroupTimeMultipleUp([...groupTimeMultipleUp, multipleData])
-    //         }
-    //     } else {
-    //         setGroupTime([...groupTime, f])
-    //     }
-    // }
-
-    // const addToGroupList = (f) => {
-    //     setMultipleData(prevData => {
-    //         // Create a copy of the previous data
-    //         const updatedData = [...prevData];
-
-    //         // If the last element is not an array, convert it to an array with the new object
-    //         if (!Array.isArray(updatedData[updatedData.length - 1])) {
-    //             updatedData[updatedData.length - 1] = [f];
-    //         } else {
-    //             // If the last element is already an array, push the new object to it
-    //             updatedData[updatedData.length - 1].push(f);
-    //         }
-
-    //         return updatedData;
-    //     });
-
-    //     // Apply similar logic to other state updates
-    //     if (updateSet) {
-    //         if (!isMultiUp) {
-    //             setGroupTimeUp(prevGroup => {
-    //                 const updatedGroup = [...prevGroup];
-
-    //                 if (updatedGroup.length === 0) {
-    //                     return [f];
-    //                 }
-
-    //                 if (!Array.isArray(updatedGroup[updatedGroup.length - 1])) {
-    //                     updatedGroup[updatedGroup.length - 1] = [f];
-    //                 } else {
-    //                     updatedGroup[updatedGroup.length - 1].push(f);
-    //                 }
-
-    //                 return updatedGroup;
-    //             });
-    //         } else {
-    //             setGroupTimeMultipleUp(prevMultipleGroup => {
-    //                 const updatedMultipleGroup = [...prevMultipleGroup];
-
-    //                 if (updatedMultipleGroup.length === 0) {
-    //                     return [f];
-    //                 }
-
-    //                 if (!Array.isArray(updatedMultipleGroup[updatedMultipleGroup.length - 1])) {
-    //                     updatedMultipleGroup[updatedMultipleGroup.length - 1] = [f];
-    //                 } else {
-    //                     updatedMultipleGroup[updatedMultipleGroup.length - 1].push(f);
-    //                 }
-
-    //                 return updatedMultipleGroup;
-    //             });
-    //         }
-    //     } else {
-    //         setGroupTime(prevGroup => {
-    //             const updatedGroup = [...prevGroup];
-
-    //             if (updatedGroup.length === 0) {
-    //                 return [f];
-    //             }
-
-    //             if (!Array.isArray(updatedGroup[updatedGroup.length - 1])) {
-    //                 updatedGroup[updatedGroup.length - 1] = [f];
-    //             } else {
-    //                 updatedGroup[updatedGroup.length - 1].push(f);
-    //             }
-
-    //             return updatedGroup;
-    //         });
-    //     }
-    // };
 
     const addToGroupList = (f) => {
-        setMultipleData(prevData => {
-          // Create a copy of the previous data and add a new array with the object
-          return [...prevData, [f]];
-        });
-
+        setMultipleData(prevData => [...prevData, f]);
         // Apply similar logic to other state updates
         if (updateSet) {
           if (!isMultiUp) {
-            setGroupTimeUp(prevGroup => [...prevGroup, [f]]);
+            setGroupTimeUp([...groupTimeUp, f])
           } else {
-            setGroupTimeMultipleUp(prevMultipleGroup => [...prevMultipleGroup, [f]]);
+            setGroupTimeMultipleUp(prevGroup => {
+                const updatedGroups = [...prevGroup];
+                if (!check) {
+                    setCheck(true)
+                  return [...prevGroup,[f]];
+                }
+
+                updatedGroups[updatedGroups.length - 1].push(f);
+                return updatedGroups;
+              });
           }
         } else {
-          setGroupTime(prevGroup => [...prevGroup, [f]]);
+            setGroupTime([...groupTime, f])
         }
       };
 
