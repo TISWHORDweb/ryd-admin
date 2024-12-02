@@ -106,8 +106,8 @@ const ManagePromo = () => {
         email: values.email,
         phone: values.phone,
         timeGroupId: Number(values.timeGroupId),
-        additionalFields: additionalFields.length !== 0 ? additionalFields : [],
-        slot: slot.length !== 0 ? slot : []
+        additionalFields: additionalFields,
+        slot: slot
       }
       let response;
 
