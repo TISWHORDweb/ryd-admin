@@ -330,11 +330,33 @@ const ManageProgram = () => {
         //performing group actions
         try {
             if (multiIDs.length > 0) {
-                await axios.post(`${baseUrl}/admin/promo/parent/send/reminder`, { ids: multiIDs });
+               const response = await axios.post(`${baseUrl}/admin/promo/parent/send/reminder`, { ids: multiIDs });
+               if(!response.data.status){
+                toast.error(response.data.message);
+               }else{
                 toast.success("Class reminder sent successfully");
                 await fetchPrograms()
+               }
+               
             } else {
                 toast.error("Please, select at least 1 child/program to perform action")
+            }
+        } catch (e) {
+            toast.error("Reload this page and try again")
+        }
+    }
+
+    const procesSinglesReminder = async (id) => {
+        //performing group actions
+        try {
+            if (id) {
+               const response = await axios.post(`${baseUrl}/admin/promo/parent/send/single/reminder`, {id});
+               if(!response.data.status){
+                toast.error(response.data.message);
+               }else{
+                toast.success("Class reminder sent successfully");
+                await fetchPrograms()
+               }
             }
         } catch (e) {
             toast.error("Reload this page and try again")
@@ -611,7 +633,14 @@ const ManageProgram = () => {
                                                                 onClick={() => handleProgramClick(program)}>
                                                                 <i className="mdi mdi-clock-outline font-size-12"></i>
                                                             </span>
-
+                                                            <span
+                                                                className="text-danger"
+                                                                style={{cursor: 'pointer'}}
+                                                                to="#"
+                                                                id="edit"
+                                                                onClick={() => procesSinglesReminder(program.id)}>
+                                                                <i className="mdi mdi-bell font-size-12"></i>
+                                                            </span>
                                                             <span
                                                                 className="text-primary"
                                                                 to="#"
