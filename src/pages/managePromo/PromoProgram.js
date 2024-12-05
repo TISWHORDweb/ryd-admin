@@ -75,7 +75,8 @@ const ManageProgram = () => {
     const [assignActionModal, setAssignActionModal] = useState(false);
     const [teachers, setTeachers] = useState([]);
     const [selectedTeacher, setSelectedTeacher] = useState("");
-    const [selectedDay, setSelectedDay] = useState("");
+    const [firstSelectedDay, setFirstSelectedDay] = useState("");
+    const [LastSelectedDay, setLastSelectedDay] = useState("");
     const [selectedProgram, setSelectedProgram] = useState(null);
     const [loading, setLoading] = useState(true);
     const [multiIDs, setMultiIDs] = useState([]);
@@ -93,6 +94,8 @@ const ManageProgram = () => {
     const [selectedTimeGroup, setSelectedTimeGroup] = useState('');
     const [selectedTimeGroupId, setSelectedTimeGroupId] = useState();
     const [selectedDates, setSelectedDates] = useState({});
+    const [timeWATFilter, setTimeWATFilter] = useState('');
+    const [dayFilter, setDayFilter] = useState('');
 
 
     const splitTimeSlots = (timeString) => {
@@ -109,25 +112,13 @@ const ManageProgram = () => {
         setSelectedDates({});
     };
 
-    const handleDateSelection = (timeSlot, date) => {
-        setSelectedDates(prev => ({
-            ...prev,
-            [timeSlot]: date
-        }));
+    const formattedData = (date) => {
+        return new Date(date).toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric'
+        })
     };
 
-    const getFormattedData = () => {
-        return Object.entries(selectedDates).map(([timeSlot, date], index) => ({
-            id: index,
-            name: timeSlot,
-            value: new Date(date).toLocaleDateString('en-US', {
-                month: 'long',
-                day: 'numeric'
-            })
-        }));
-    };
-
-    const formattedData = getFormattedData();
     useEffect(() => {
         fetchPrograms().then(r => null);
     }, [modal]);
@@ -163,18 +154,7 @@ const ManageProgram = () => {
 
     useEffect(() => {
         fetchTeachers().then(r => null)
-        //fetch coupon
-        fetchCoupons().then(r => null)
     }, []);
-
-    const fetchCoupons = async () => {
-        try {
-            const response = await axios.get(`${baseUrl}/admin/coupon/all`);
-            setCoupons(response.data.data);
-        } catch (error) {
-            console.error("Error:", error);
-        }
-    };
 
     function compareFn(a, b) {
         if (a.time < b.time && a.day < b.day) {
@@ -250,66 +230,52 @@ const ManageProgram = () => {
     };
 
     const handleProgramClickSubmit = async () => {
+        if (!firstSelectedDay) {
+            toast.error("Please, select a date")
+            return;
+        }
+        const newDay = firstSelectedDay + " & " + LastSelectedDay
+
         if (!selectedProgram || !selectedProgram?.id) {
             //console.error("Invalid program data.");
             toast.warn("Reload this page and try again")
             return;
         }
         //check and push to server
-        await axios.put(`${baseUrl}/admin/promo/program/edit/${selectedProgram.id}`, {day: formattedData, timeGroupIndex: selectedTimeGroupId});
+        await axios.put(`${baseUrl}/admin/promo/program/edit/${selectedProgram.id}`, { day: newDay, timeGroupIndex: selectedTimeGroupId });
         toast.success("Program data altered changes");
         setSelectedTimeGroup('')
+        setFirstSelectedDay("")
+        setLastSelectedDay("")
         setSelectedTimeGroupId(null)
         setModal(false)
         await fetchPrograms()
     }
 
-    const handleToggleIsPaid = async (programData) => {
-        try {
-            if (!programData || !programData.id) {
-                //console.error("Invalid program data.");
-                return;
-            }
-            const updatedProgram = { ...programData, isPaid: !programData.isPaid };
-            await axios.put(
-                `${baseUrl}/admin/promo/program/edit/${programData.id}`,
-                updatedProgram
-            );
-
-            const confirmMarkAsPaid = window.confirm(
-                "Are you sure you want to toggle this program payment status ?"
-            );
-            if (confirmMarkAsPaid) {
-                const updatedPrograms = programs.map((program) =>
-                    program.id === programData.id ? updatedProgram : program
-                );
-                setPrograms(updatedPrograms);
-                toast.success("Program marked as paid.");
-                await fetchPrograms();
-            }
-        } catch (error) {
-            console.error("Error:", error);
-        }
-    };
-
     const handleProgramClick = (programData) => {
+        setFirstSelectedDay("")
+        setLastSelectedDay("")
         setSelectedProgram(programData)
         const time = convertTimeGroup(timeGroup)
-        if(time){
-        const select = time[programData.timeGroupIndex]?.name
-        const selectID = time[programData.timeGroupIndex]?.value
-        console.log(select,selectID,time)
-        setSelectedTimeGroup(select)
-        setSelectedTimeGroupId(selectID)
-        setModal(true)
+        if (time) {
+            const select = time[programData.timeGroupIndex]?.name
+            const selectID = time[programData.timeGroupIndex]?.value
+            setSelectedTimeGroup(select)
+            setSelectedTimeGroupId(selectID)
+            setModal(true)
         }
     };
 
     const processBatchOperations = async (status) => {
         //performing group actions
+        if (status && !firstSelectedDay) {
+            toast.error("Please, select a date")
+            return;
+        }
+        const newDay = firstSelectedDay + " & " + LastSelectedDay
         try {
-            if (multiIDs.length > 0 ) {
-                const data = status ? { ids: multiIDs, day: formattedData, timeGroupIndex: selectedTimeGroupId } : { ids: multiIDs, ...multiTargetIDs }
+            if (multiIDs.length > 0) {
+                const data = status ? { ids: multiIDs, day: newDay } : { ids: multiIDs, ...multiTargetIDs }
                 await axios.post(`${baseUrl}/admin/promo/program/batch-update`, data);
                 toast.success("Program data altered changes");
                 await fetchPrograms()
@@ -317,6 +283,8 @@ const ManageProgram = () => {
                 setAssignActionModal(false)
                 setTimeModal(false)
                 setSelectedTimeGroup('')
+                setFirstSelectedDay("")
+                setLastSelectedDay("")
                 setSelectedTimeGroupId(null)
             } else {
                 toast.error("Please, select at least 1 child/program to perform action")
@@ -330,14 +298,14 @@ const ManageProgram = () => {
         //performing group actions
         try {
             if (multiIDs.length > 0) {
-               const response = await axios.post(`${baseUrl}/admin/promo/parent/send/reminder`, { ids: multiIDs });
-               if(!response.data.status){
-                toast.error(response.data.message);
-               }else{
-                toast.success("Class reminder sent successfully");
-                await fetchPrograms()
-               }
-               
+                const response = await axios.post(`${baseUrl}/admin/promo/parent/send/reminder`, { ids: multiIDs });
+                if (!response.data.status) {
+                    toast.error(response.data.message);
+                } else {
+                    toast.success("Class reminder sent successfully");
+                    await fetchPrograms()
+                }
+
             } else {
                 toast.error("Please, select at least 1 child/program to perform action")
             }
@@ -350,13 +318,13 @@ const ManageProgram = () => {
         //performing group actions
         try {
             if (id) {
-               const response = await axios.post(`${baseUrl}/admin/promo/parent/send/single/reminder`, {id});
-               if(!response.data.status){
-                toast.error(response.data.message);
-               }else{
-                toast.success("Class reminder sent successfully");
-                await fetchPrograms()
-               }
+                const response = await axios.post(`${baseUrl}/admin/promo/parent/send/single/reminder`, { id });
+                if (!response.data.status) {
+                    toast.error(response.data.message);
+                } else {
+                    toast.success("Class reminder sent successfully");
+                    await fetchPrograms()
+                }
             }
         } catch (e) {
             toast.error("Reload this page and try again")
@@ -381,8 +349,48 @@ const ManageProgram = () => {
     function renderDate(data) {
         const parsedData = formatData(data);
         const formattedDates = parsedData.map(item => `${item.value}, ${item.name}`);
-        return formattedDates.join(' / ');
+        return formattedDates.join(' & ');
     }
+
+    const filteredPrograms = React.useMemo(() => {
+        // First, filter the programs
+        const filtered = displayProgramList.filter(program => {
+            // Time (WAT) Filter
+            const matchTimeWAT = !timeWATFilter ||
+                parentTimeZone(program.timeGroup.times, program?.timeGroupIndex, program?.child?.parent?.timezone)
+                    .toLowerCase().includes(timeWATFilter.toLowerCase());
+
+            // Day Filter
+            const matchDay = !dayFilter ||
+                convertTimegroupToParentTimezone(renderDate(program?.day), program?.child?.parent?.timezone)
+                    .toLowerCase().includes(dayFilter.toLowerCase());
+
+            return matchTimeWAT && matchDay;
+        });
+
+        // Then, sort the filtered programs by WAT time
+        return filtered.sort((a, b) => {
+            const timeA = parentTimeZone(a.timeGroup.times, a?.timeGroupIndex, a?.child?.parent?.timezone);
+            const timeB = parentTimeZone(b.timeGroup.times, b?.timeGroupIndex, b?.child?.parent?.timezone);
+
+            // Convert time to a comparable format (assuming the time is in format like "9:00 AM")
+            const parseTime = (timeStr) => {
+                const [time, period] = timeStr.split(' ');
+                let [hours, minutes] = time.split(':').map(Number);
+
+                // Adjust hours for 12-hour format
+                if (period === 'PM' && hours !== 12) hours += 12;
+                if (period === 'AM' && hours === 12) hours = 0;
+
+                return hours * 60 + (minutes || 0);
+            };
+
+            return parseTime(timeA) - parseTime(timeB);
+        });
+    }, [displayProgramList, timeWATFilter, dayFilter]);
+
+
+
 
     return (
         <React.Fragment>
@@ -416,6 +424,22 @@ const ManageProgram = () => {
                                                 }}
                                             />
                                         </div>
+                                        <div>
+                                            <Input
+                                                type="text"
+                                                placeholder="Filter by Time (WAT)"
+                                                value={timeWATFilter}
+                                                onChange={(e) => setTimeWATFilter(e.target.value)}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Input
+                                                type="text"
+                                                placeholder="Filter by Day"
+                                                value={dayFilter}
+                                                onChange={(e) => setDayFilter(e.target.value)}
+                                            />
+                                        </div>
                                         {/* <div>
                                             <select className={'form-control'} onChange={(e) => {
                                                 //filter based on cohorts
@@ -433,58 +457,7 @@ const ManageProgram = () => {
                                                     value={d.id}>{d.title}</option>)}
                                             </select>
                                         </div> */}
-                                        <div>
-                                            <select className={'form-control'} onChange={(e) => {
-                                                //filter based on status
-                                                if (Number(e.target.value) === 1) {
-                                                    const __activeProgramFilter = filteredProgramList0.filter(r => r.isPaid === true && r.isCompleted === false)
-                                                    setDisplayProgramList(__activeProgramFilter)
-                                                    setFilteredProgramList2(__activeProgramFilter)
-                                                } else if (Number(e.target.value) === 2) {
-                                                    setDisplayProgramList(filteredProgramList0.filter(r => r.isPaid === false && r.isCompleted === false))
-                                                } else {
-                                                    window.location.reload()
-                                                }
-                                            }}>
-                                                <option value={0}>All Programs</option>
-                                                <option value={1}>Active Enrolment</option>
-                                                <option value={2}>Awaiting Checkout</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <select style={{ width: 150 }} className={'form-control'} onChange={(e) => {
-                                                //filter based on coupon
-                                                const packageID = Number(e.target.value)
-                                                if (Number(packageID) === 0) {
-                                                    //reload to fetch new data
-                                                    window.location.reload()
-                                                } else {
-                                                    //filter with coupon code
-                                                    setDisplayProgramList(filteredProgramList2.filter((p) => p?.package?.id === packageID))
-                                                }
-                                            }}>
-                                                <option value={0}>All Packages</option>
-                                                {packages.map((p, i) => <option key={i}
-                                                    value={p.id}>{p.title}</option>)}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <select style={{ width: 150 }} className={'form-control'} onChange={(e) => {
-                                                //filter based on coupon
-                                                const couponID = Number(e.target.value)
-                                                if (Number(couponID) === 0) {
-                                                    //reload to fetch new data
-                                                    window.location.reload()
-                                                } else {
-                                                    //filter with coupon code
-                                                    setDisplayProgramList(filteredProgramList2.filter((p) => p?.coupon?.id === couponID))
-                                                }
-                                            }}>
-                                                <option value={0}>All Coupon</option>
-                                                {coupons.map((c, i) => <option key={i}
-                                                    value={c.id}>{c.code} [{c.value}]</option>)}
-                                            </select>
-                                        </div>
+
                                         <div>
                                             <select className={'form-control'} onChange={(e) => {
                                                 //filter based on status
@@ -516,7 +489,7 @@ const ManageProgram = () => {
                                         </div>
                                         <div style={{ marginRight: 10 }}>
                                             <button onClick={() => {
-                                                if (confirm("You're about to send a class reminder to parent, will you like to proceed ?")) {
+                                                if (confirm(`You're about to send a class reminder to ${multiIDs.length} parent, will you like to proceed ?`)) {
                                                     processReminder();
                                                 }
                                             }}>
@@ -534,7 +507,7 @@ const ManageProgram = () => {
                                                 <span className="visually-hidden">Loading...</span>
                                             </div>
                                         </div>
-                                    ) : displayProgramList.length === 0 ? (
+                                    ) : filteredPrograms.length === 0 ? (
                                         <div className="text-center mt-5">
                                             <h3>No data available</h3>
                                         </div>
@@ -554,12 +527,11 @@ const ManageProgram = () => {
                                                     <th>P.Time</th>
                                                     <th>Time(WAT)</th>
                                                     <th>Day</th>
-                                                    <th>Status</th>
                                                     <th></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {displayProgramList.map((program, index) => (
+                                                {filteredPrograms.map((program, index) => (
                                                     <tr key={index}
                                                         style={{ backgroundColor: (program.isPaid) ? '#f1fdf4' : '#fff' }}>
                                                         <td>
@@ -592,42 +564,11 @@ const ManageProgram = () => {
                                                         <td>{program.timeGroup.title}</td>
                                                         <td>{parentTimeZone(program.timeGroup.times, program?.timeGroupIndex, program?.child?.parent?.timezone)}</td>
                                                         <td>{FormatDate(program.timeGroup.times, program.timeGroupIndex)}</td>
-                                                        <td>{program?.day ? convertTimegroupToParentTimezone(renderDate(program?.day), program?.child?.parent?.timezone) : ""}</td>
-                                                        <td>
-                                                            <div style={{ width: 50 }}>
-                                                                {program.isPaid ? (
-                                                                    <a rel={'noreferrer'}
-                                                                        href={'#' + program.trxId}
-                                                                        onClick={(e) => {
-                                                                            e.preventDefault()
-                                                                            handleToggleIsPaid(program).then(r => null)
-                                                                        }}
-                                                                    >Paid</a>
-                                                                ) : (
-                                                                    <a rel={'noreferrer'} href={'#'} onClick={(e) => {
-                                                                        e.preventDefault()
-                                                                        handleToggleIsPaid(program).then(r => null)
-                                                                    }}
-                                                                        disabled={program.isPaid}>
-                                                                        Unpaid
-                                                                    </a>
-                                                                )}
-                                                                {!program.isPaid && (
-                                                                    <Link
-                                                                        className="ms-1 text-primary"
-                                                                        to="#"
-                                                                        onClick={(e) => e.preventDefault()}
-                                                                    ></Link>
-                                                                )}
-                                                                <br />
-                                                                <small style={{ fontSize: 10, backgroundColor: "#e3e3e3", padding: 2, display: program?.promo_coupon?.code ? "block" : "none" }}>{program?.promo_coupon?.code}</small>
-                                                                <small style={{ fontSize: 10 }}><Moment format={'DD-MM-YY'} date={program?.createdAt} /></small>
-                                                            </div>
-                                                        </td>
+                                                        <td>{program?.day? program?.day : "No date assigned"}</td>
                                                         <td>
                                                             <span
                                                                 className="text-danger"
-                                                                style={{cursor: 'pointer'}}
+                                                                style={{ cursor: 'pointer' }}
                                                                 to="#"
                                                                 id="edit"
                                                                 onClick={() => handleProgramClick(program)}>
@@ -635,16 +576,20 @@ const ManageProgram = () => {
                                                             </span>
                                                             <span
                                                                 className="text-danger"
-                                                                style={{cursor: 'pointer'}}
+                                                                style={{ cursor: 'pointer' }}
                                                                 to="#"
                                                                 id="edit"
-                                                                onClick={() => procesSinglesReminder(program.id)}>
+                                                                onClick={() => {
+                                                                    if (confirm(`You're about to send a class reminder to this parent, will you like to proceed ?`)) {
+                                                                        procesSinglesReminder(program.id)
+                                                                    }
+                                                                }}>
                                                                 <i className="mdi mdi-bell font-size-12"></i>
                                                             </span>
                                                             <span
                                                                 className="text-primary"
                                                                 to="#"
-                                                                style={{cursor: 'pointer'}}
+                                                                style={{ cursor: 'pointer' }}
                                                                 id="assign"
                                                                 onClick={() => handleAssignClick(program)}>
                                                                 <i className="mdi mdi-clipboard-account font-size-12"></i>
@@ -658,55 +603,59 @@ const ManageProgram = () => {
                                     )}
                                     <Modal isOpen={modal} toggle={() => setModal(!modal)}>
                                         <ModalHeader toggle={() => setModal(!modal)}>
-                                            {"Time Group"}
+                                            {"Assign Date "}
                                         </ModalHeader>
                                         <ModalBody>
                                             <Row>
                                                 <small className={'text-danger mb-3'}>Warning: This action will
                                                     alter {multiIDs.length} children. confirm again !</small>
                                                 <Col xs={12}>
-                                                    <div className="row">
-                                                        <div className="col-md-12">
-                                                            <div className="mb-6">
-                                                                <select
-                                                                    className={'form-control'}
-                                                                    value={selectedTimeGroup}
-                                                                    onChange={(e) => handleTimeGroupSelection(e.target.value)}
-                                                                >
-                                                                    <option value="">{selectedTimeGroup ? selectedTimeGroup : "Select Time Group"}</option>
-                                                                    {convertTimeGroup(timeGroup)?.length > 0 &&
-                                                                        convertTimeGroup(timeGroup)?.map((time) => (
-                                                                            <option key={time?.value}
-                                                                                value={JSON.stringify(time)}>
-                                                                                {time.name}
-                                                                            </option>
-                                                                        ))}
-                                                                </select>
-                                                            </div>
+                                                    <div className="col-md-12">
+                                                        <div className="mb-6">
+                                                            <select
+                                                                className={'form-control'}
+                                                                value={selectedTimeGroup}
+                                                                onChange={(e) => handleTimeGroupSelection(e.target.value)}
+                                                            >
+                                                                <option value="">{selectedTimeGroup ? selectedTimeGroup : "Select Time Group"}</option>
+                                                                {convertTimeGroup(timeGroup)?.length > 0 &&
+                                                                    convertTimeGroup(timeGroup)?.map((time) => (
+                                                                        <option key={time?.value}
+                                                                            value={JSON.stringify(time)}>
+                                                                            {time.name}
+                                                                        </option>
+                                                                    ))}
+                                                            </select>
                                                         </div>
-                                                        {selectedTimeGroup && (
-                                                            <div className="row">
-                                                                {splitTimeSlots(selectedTimeGroup).map((timeSlot, index) => (
-                                                                    <div key={timeSlot} className="col-md-6 mt-3">
-                                                                        <div className="font-medium min-w-[120px]">{timeSlot}</div>
-                                                                        <input
-                                                                            type="date"
-                                                                            className="form-control"
-                                                                            value={selectedDates[timeSlot] || ''}
-                                                                            onChange={(e) => handleDateSelection(timeSlot, e.target.value)}
-                                                                        />
-                                                                        {selectedDates[timeSlot] && (
-                                                                            <div className="text-sm text-gray-600">
-                                                                                {new Date(selectedDates[timeSlot]).toLocaleDateString('en-US', {
-                                                                                    month: 'long',
-                                                                                    day: 'numeric'
-                                                                                })}
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
+                                                    </div>
+
+                                                    <div className="row">
+                                                        <div className="col-md-6 mt-3">
+                                                            <div className="font-medium min-w-[120px]">First day</div>
+                                                            <input
+                                                                type="date"
+                                                                className="form-control"
+                                                                onChange={(e) => setFirstSelectedDay(formattedData(e.target.value))}
+                                                            />
+                                                            {firstSelectedDay && (
+                                                                <div className="text-sm text-gray-600">
+                                                                     {firstSelectedDay}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="col-md-6 mt-3">
+                                                            <div className="font-medium min-w-[120px]">Second day</div>
+                                                            <input
+                                                                type="date"
+                                                                className="form-control"
+                                                                onChange={(e) => setLastSelectedDay(formattedData(e.target.value))}
+                                                            />
+                                                            {LastSelectedDay && (
+                                                                <div className="text-sm text-gray-600">
+                                                                   {LastSelectedDay}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </Col>
                                             </Row>
@@ -772,7 +721,7 @@ const ManageProgram = () => {
                                     </Modal>
 
                                     <Modal isOpen={timeModal} toggle={() => setTimeModal(!timeModal)}>
-                                        <ModalHeader toggle={() => setTimeModal(!timeModal)}> Time Group (Group Action)
+                                        <ModalHeader toggle={() => setTimeModal(!timeModal)}> Assign Date (Group Action)
                                         </ModalHeader>
                                         <ModalBody>
                                             <Row>
@@ -780,47 +729,32 @@ const ManageProgram = () => {
                                                     alter {multiIDs.length} children. confirm again !</small>
                                                 <Col xs={12}>
                                                     <div className="row">
-                                                        <div className="col-md-12">
-                                                            <div className="mb-6">
-                                                                <select
-                                                                    className={'form-control'}
-                                                                    value={selectedTimeGroup}
-                                                                    onChange={(e) => handleTimeGroupSelection(e.target.value)}
-                                                                >
-                                                                    <option value="">{selectedTimeGroup ? selectedTimeGroup : "Select Time Group"}</option>
-                                                                    {convertTimeGroup(timeGroup)?.length > 0 &&
-                                                                        convertTimeGroup(timeGroup)?.map((time) => (
-                                                                            <option key={time?.value}
-                                                                                value={JSON.stringify(time)}>
-                                                                                {time.name}
-                                                                            </option>
-                                                                        ))}
-                                                                </select>
-                                                            </div>
+                                                        <div className="col-md-6 mt-3">
+                                                            <div className="font-medium min-w-[120px]">First day</div>
+                                                            <input
+                                                                type="date"
+                                                                className="form-control"
+                                                                onChange={(e) => setFirstSelectedDay(formattedData(e.target.value))}
+                                                            />
+                                                            {firstSelectedDay && (
+                                                                <div className="text-sm text-gray-600">
+                                                                   {firstSelectedDay}
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        {selectedTimeGroup && (
-                                                            <div className="row">
-                                                                {splitTimeSlots(selectedTimeGroup).map((timeSlot, index) => (
-                                                                    <div key={timeSlot} className="col-md-6 mt-3">
-                                                                        <div className="font-medium min-w-[120px]">{timeSlot}</div>
-                                                                        <input
-                                                                            type="date"
-                                                                            className="form-control"
-                                                                            value={selectedDates[timeSlot] || ''}
-                                                                            onChange={(e) => handleDateSelection(timeSlot, e.target.value)}
-                                                                        />
-                                                                        {selectedDates[timeSlot] && (
-                                                                            <div className="text-sm text-gray-600">
-                                                                                {new Date(selectedDates[timeSlot]).toLocaleDateString('en-US', {
-                                                                                    month: 'long',
-                                                                                    day: 'numeric'
-                                                                                })}
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
+                                                        <div className="col-md-6 mt-3">
+                                                            <div className="font-medium min-w-[120px]">Second day</div>
+                                                            <input
+                                                                type="date"
+                                                                className="form-control"
+                                                                onChange={(e) => setLastSelectedDay(formattedData(e.target.value))}
+                                                            />
+                                                            {LastSelectedDay && (
+                                                                <div className="text-sm text-gray-600">
+                                                                    {LastSelectedDay}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </Col>
                                             </Row>
@@ -829,7 +763,7 @@ const ManageProgram = () => {
                                                     <br />
                                                     <div className="text-end">
                                                         <button
-                                                             onClick={()=>processBatchOperations(true)}
+                                                            onClick={() => processBatchOperations(true)}
                                                             className="btn btn-primary save-user">
                                                             Update
                                                         </button>

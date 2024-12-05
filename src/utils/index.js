@@ -50,6 +50,8 @@ export function formatData(data) {
   return parsed
 }
 
+
+
 export function convertLessonTimes(times, parentTimezone) {
   const defaultTimezone = "Africa/Lagos";
 
@@ -64,7 +66,7 @@ export function convertLessonTimes(times, parentTimezone) {
       ? time
       : time.clone().tz(parentTimezone);
 
-    return `${slot.dayText} ${convertedTime.format('h:mmA')}`;
+    return `${convertedTime.format('dddd')} ${convertedTime.format('h:mmA')}`;
   });
 
   return convertedTimes.join(', ');
@@ -103,7 +105,7 @@ export function convertTimegroupToParentTimezone(timegroup, parentTimezone) {
 
   const defaultTimezone = "Africa/Lagos";
 
-  const timeStrings = timegroup.split('/').map(str => str.trim());
+  const timeStrings = timegroup.split('&').map(str => str.trim());
 
   const convertedTimes = timeStrings.map(timeString => {
     try {
@@ -126,17 +128,14 @@ export function convertTimegroupToParentTimezone(timegroup, parentTimezone) {
 
       const convertedTime = time.clone().tz(parentTimezone);
 
-      const isDST = convertedTime.isDST();
-      const timeZoneType = isDST ? "(DST)" : "(ST)";
-
-      return `${convertedTime.format('MMMM D')}, ${dayPart} ${convertedTime.format('h:mmA')} ${timeZoneType}`;
+      return `${convertedTime.format('MMMM D')}, ${dayPart} ${convertedTime.format('h:mmA')} `;
 
     } catch (error) {
       return 'Invalid date';
     }
   });
 
-  return convertedTimes.join(' / ');
+  return convertedTimes.join(' & ');
 }
 
 
