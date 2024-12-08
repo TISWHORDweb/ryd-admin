@@ -23,6 +23,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { baseUrl } from '../../Network';
+import { formatData } from "../../utils";
 
 const ManageTimeSlot = () => {
     document.title = "Manage Promo Child | RYD Admin";
@@ -118,7 +119,7 @@ const ManageTimeSlot = () => {
     }, [timeGroup]);
 
     const getNumberOfKidsByIndex = (index) => {
-        const parsedSlots = JSON.parse(timeSlotData.slot);
+        const parsedSlots = formatData(timeSlotData.slot);
         const slotConfig = parsedSlots.find(config => config.index === index);
         return slotConfig ? slotConfig.numberOfKid : 0;
     };

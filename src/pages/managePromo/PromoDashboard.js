@@ -58,7 +58,7 @@ const Dashboard = () => {
         setPromo(promoDashboardResponse.data.data.promo)
         setProgramData([
           { title: "Total Programs", count: programCount, statusColor: "primary" },
-          { title: "Teacher Child", count: childCount, statusColor: "success" },
+          { title: "Total Child", count: childCount, statusColor: "success" },
           { title: "Total Parents", count: parentCount, statusColor: "danger" },
           // { title: "Total Debt", count: (promoDashboardResponse.data.data?.rate?.currencyCode || "$") +debtCount, statusColor: "secondary" }
         ]);
