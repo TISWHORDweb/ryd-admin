@@ -251,6 +251,11 @@ const ManageProgram = () => {
             toast.error("Reload this page and try again")
         }
     }
+
+    const getStatusColor = (status) => {
+        return status === 1 ? 'green' : 'gray'; 
+      };
+      
     return (
         <React.Fragment>
             <ToastContainer/>
@@ -410,6 +415,7 @@ const ManageProgram = () => {
                                                 <th>Time</th>
                                                 <th>(WAT)</th>
                                                 <th>Day</th>
+                                                <th>Curriculum</th>
                                                 <th>Status</th>
                                                 <th></th>
                                             </tr>
@@ -457,6 +463,10 @@ const ManageProgram = () => {
                                                                 date={formatTimeZone(program?.child?.parent?.timeOffset, program.day, program.time).toISOString()}
                                                                 tz={"Africa/Lagos"}></Moment></td>
                                                     <td>{formatDay(program.day)}</td>
+                                                    <td> <span style={{ color: getStatusColor(program.curriculum) }}>
+                                                                    {program.curriculum === 1 ? 'New' : 'Old'}
+                                                                </span>
+                                                    </td>
                                                     <td>
                                                         <div style={{width: 50}}>
                                                             {program.isPaid ? (
