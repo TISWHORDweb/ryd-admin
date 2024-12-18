@@ -124,7 +124,7 @@ const Dashboard = () => {
                         type="text"
                         readOnly
                         ref={inputRef}
-                        value={`${promoUrl === ""? WEB_APP_USER_URL : promoUrl}/promo/parent/register?promoID=${id ? parseInt(id) + 100 : ""
+                        value={`${promoUrl === ""? WEB_APP_USER_URL : promoUrl}/parent/register/${id ? parseInt(id) + 100 : ""
                           }`}
                         className="text-[#000] placeholder:text-[#000] border-[0.5px] border-[#000] rounded-md mr-2 px-2 w-600px text-xs py-2"
                       />
