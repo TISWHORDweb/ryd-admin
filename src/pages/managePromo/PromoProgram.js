@@ -314,6 +314,26 @@ const ManageProgram = () => {
         }
     }
 
+    const processCertificate = async () => {
+        //performing group actions
+        try {
+            if (id) {
+                const response = await axios.post(`${baseUrl}/admin/promo/parent/certificate`, { id });
+                if (!response.data.status) {
+                    toast.error(response.data.message);
+                } else {
+                    toast.success("Certificate downloader email  sent successfully");
+                    await fetchPrograms()
+                }
+
+            } else {
+                toast.error("Error, Try again later")
+            }
+        } catch (e) {
+            toast.error("Reload this page and try again")
+        }
+    }
+
     const procesSinglesReminder = async (id) => {
         //performing group actions
         try {
@@ -494,6 +514,15 @@ const ManageProgram = () => {
                                                 }
                                             }}>
                                                 <i className="mdi mdi-bell font-size-20"></i>
+                                            </button>
+                                        </div>
+                                        <div style={{ marginRight: 10 }}>
+                                            <button onClick={() => {
+                                                if (confirm(`You're about to send a certificate downloader email to all parent that their child have completed this probono, will you like to proceed ?`)) {
+                                                    processCertificate();
+                                                }
+                                            }}>
+                                                <i className="mdi mdi-mail font-size-20"></i>
                                             </button>
                                         </div>
                                     </div>
