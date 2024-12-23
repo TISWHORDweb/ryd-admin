@@ -347,7 +347,7 @@ const ManageParent = () => {
                                                     <th>Email</th>
                                                     <th>Phone</th>
                                                     <th>State</th>
-                                                    {/*<th>Data Privacy</th>*/}
+                                                    <th>Survey</th>
                                                     <th>Country</th>
                                                     <th>Timezone</th>
                                                     <th>No.Child</th>
@@ -377,7 +377,7 @@ const ManageParent = () => {
                                                                 <td>{user.email}</td>
                                                                 <td>{user.phone}</td>
                                                                 <td style={{ width: 20 }}>{user.state}</td>
-                                                                {/*<td>{user.privacyMode ? "Private" : "Not Private"}</td>*/}
+                                                                <td>{user.survey}</td>
                                                                 <td>{user.country}</td>
                                                                 <td>{user.timezone}</td>
                                                                 <td>{user?.children?.length}</td>
