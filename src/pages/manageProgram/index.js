@@ -10,6 +10,7 @@ import {baseUrl} from '../../Network';
 import Moment from 'react-moment';
 import moment from 'moment-timezone';
 import 'moment-timezone';
+import { convertSingleLessonTimes } from "../../utils";
 
 const TIMES_ = [
     "12:00AM",
@@ -459,9 +460,7 @@ const ManageProgram = () => {
                                                     {/*</td>*/}
                                                     <td>{program?.package?.level}</td>
                                                     <td>{formatTime(program.time)}</td>
-                                                    <td><Moment format='hh:mm A'
-                                                                date={formatTimeZone(program?.child?.parent?.timeOffset, program.day, program.time).toISOString()}
-                                                                tz={"Africa/Lagos"}></Moment></td>
+                                                    <td><td>{convertSingleLessonTimes(formatTime(program.time), program?.child?.parent?.timezone, formatDay(program.day))}</td></td>
                                                     <td>{formatDay(program.day)}</td>
                                                     <td> <span style={{ color: getStatusColor(program.curriculum) }}>
                                                                     {program.curriculum === 1 ? 'New' : 'Old'}

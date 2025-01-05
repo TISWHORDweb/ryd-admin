@@ -96,6 +96,7 @@ const ManageProgram = () => {
     const [selectedDates, setSelectedDates] = useState({});
     const [timeWATFilter, setTimeWATFilter] = useState('');
     const [dayFilter, setDayFilter] = useState('');
+    const [selectAll, setSelectAll] = useState(false);
 
 
     const splitTimeSlots = (timeString) => {
@@ -418,7 +419,19 @@ const ManageProgram = () => {
         });
     }, [displayProgramList, timeWATFilter, dayFilter]);
 
-
+    const handleSelectAllChange = () => {
+        if (selectAll) {
+            // Unselect all items
+            setMultiIDs([]);
+            toast.error("All items have been removed from the action list.");
+        } else {
+            // Select all items
+            const allIDs = filteredPrograms.map(program => program.id);
+            setMultiIDs(allIDs);
+            toast.warn("All items have been added to the action list.");
+        }
+        setSelectAll(!selectAll);  // Toggle the "All" checkbox state
+    };
 
 
     return (
@@ -559,7 +572,17 @@ const ManageProgram = () => {
                                         <table className="table align-middle table-hover">
                                             <thead>
                                                 <tr>
-                                                    <th>#{multiIDs.length || ""}</th>
+                                                    <th>
+                                                        <div style={{ width: 50 }} className={'align-middle'}>
+                                                            <input
+                                                                style={{ marginRight: 5 }}
+                                                                type={'checkbox'}
+                                                                checked={selectAll}
+                                                                onClick={handleSelectAllChange}
+                                                            />
+                                                            All
+                                                        </div>
+                                                    </th>
                                                     <th>P.Name</th>
                                                     <th>C.Name</th>
                                                     <th>Phone</th>
