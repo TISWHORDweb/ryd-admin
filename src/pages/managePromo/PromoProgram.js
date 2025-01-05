@@ -381,11 +381,20 @@ const ManageProgram = () => {
                     .toLowerCase().includes(timeWATFilter.toLowerCase());
 
             // Day Filter
-            const matchDay = !dayFilter ||
-                convertTimegroupToParentTimezone(renderDate(program?.day), program?.child?.parent?.timezone)
-                    .toLowerCase().includes(dayFilter.toLowerCase());
+            const matchDay = !dayFilter || (
+                program?.day &&
+                program?.child?.parent?.timezone && program.day
+                    .toLowerCase()
+                    .includes(dayFilter.toLowerCase())
+            );
 
-            return matchTimeWAT && matchDay;
+
+            const matchTime = !timeWATFilter ||
+                FormatDate(program.timeGroup.times, program.timeGroupIndex)
+                    .toLowerCase().includes(timeWATFilter.toLowerCase());
+
+
+            return matchTimeWAT && matchDay && matchTime;
         });
 
         // Then, sort the filtered programs by WAT time
@@ -498,12 +507,12 @@ const ManageProgram = () => {
                                             </select>
                                         </div>
                                         <div style={{ marginRight: 10 }}>
-                                            <button onClick={handleActionAssignClick}>
+                                            <button onClick={handleActionAssignClick} title="Assign Teacher">
                                                 <i className="mdi mdi-clipboard-account font-size-20"></i>
                                             </button>
                                         </div>
                                         <div style={{ marginRight: 10 }}>
-                                            <button onClick={handleTimeClick}>
+                                            <button onClick={handleTimeClick} title="Assign Date">
                                                 <i className="mdi mdi-clock font-size-20"></i>
                                             </button>
                                         </div>
@@ -512,18 +521,24 @@ const ManageProgram = () => {
                                                 if (confirm(`You're about to send a class reminder to ${multiIDs.length} parent, will you like to proceed ?`)) {
                                                     processReminder();
                                                 }
-                                            }}>
+                                            }}
+                                                title="Class Reminder"
+                                            >
                                                 <i className="mdi mdi-bell font-size-20"></i>
                                             </button>
                                         </div>
                                         <div style={{ marginRight: 10 }}>
-                                            <button onClick={() => {
-                                                if (confirm(`You're about to send a certificate downloader email to all parent that their child have completed this probono, will you like to proceed ?`)) {
-                                                    processCertificate();
-                                                }
-                                            }}>
+                                            <button
+                                                onClick={() => {
+                                                    if (confirm(`You're about to send a certificate downloader email to all parent that their child have completed this probono, will you like to proceed ?`)) {
+                                                        processCertificate();
+                                                    }
+                                                }}
+                                                title="Send certificate email to parents"
+                                            >
                                                 <i className="mdi mdi-mail font-size-20"></i>
                                             </button>
+
                                         </div>
                                     </div>
                                 </Col>
@@ -593,7 +608,7 @@ const ManageProgram = () => {
                                                         <td>{program.timeGroup.title}</td>
                                                         <td>{parentTimeZone(program.timeGroup.times, program?.timeGroupIndex, program?.child?.parent?.timezone)}</td>
                                                         <td>{FormatDate(program.timeGroup.times, program.timeGroupIndex)}</td>
-                                                        <td>{program?.day? program?.day : "No date assigned"}</td>
+                                                        <td>{program?.day ? program?.day : "No date assigned"}</td>
                                                         <td>
                                                             <span
                                                                 className="text-danger"
@@ -668,7 +683,7 @@ const ManageProgram = () => {
                                                             />
                                                             {firstSelectedDay && (
                                                                 <div className="text-sm text-gray-600">
-                                                                     {firstSelectedDay}
+                                                                    {firstSelectedDay}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -681,7 +696,7 @@ const ManageProgram = () => {
                                                             />
                                                             {LastSelectedDay && (
                                                                 <div className="text-sm text-gray-600">
-                                                                   {LastSelectedDay}
+                                                                    {LastSelectedDay}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -767,7 +782,7 @@ const ManageProgram = () => {
                                                             />
                                                             {firstSelectedDay && (
                                                                 <div className="text-sm text-gray-600">
-                                                                   {firstSelectedDay}
+                                                                    {firstSelectedDay}
                                                                 </div>
                                                             )}
                                                         </div>
