@@ -93,6 +93,25 @@ export function convertSingleLessonTimes(timeText, parentTimezone, customDay) {
   return convertedTime.format('h:mmA');
 }
 
+export function convertSingleLessonTimesProgram(timeText, parentTimezone, customDay) {
+  const defaultTimezone = "Africa/Lagos";
+
+  const day = customDay || 'Monday';  // Default to 'Monday' if customDay is not passed
+
+  // Parsing the time and day with the default timezone 'Africa/Lagos'
+  const time = moment.tz(
+      `${timeText} ${day}`,
+      "hA dddd",
+      parentTimezone
+  );
+
+  // Convert to parentTimezone if needed, or keep it in default timezone
+  const convertedTime = time.clone().tz(defaultTimezone);
+
+  // Return the time formatted as 'h:mmA'
+  return convertedTime.format('h:mmA');
+}
+
 export function convertTimeGroup(times) {
   try {
     let formatted = [];
