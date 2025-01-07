@@ -467,7 +467,7 @@ const ManageProgram = () => {
                                         <div>
                                             <Input
                                                 type="text"
-                                                placeholder="Filter by Time (WAT)"
+                                                placeholder="Filter by Time "
                                                 value={timeWATFilter}
                                                 onChange={(e) => setTimeWATFilter(e.target.value)}
                                             />
