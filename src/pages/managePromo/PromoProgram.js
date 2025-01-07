@@ -113,12 +113,17 @@ const ManageProgram = () => {
         setSelectedDates({});
     };
 
+    // const formattedData = (date) => {
+    //     return new Date(date).toLocaleDateString('en-US', {
+    //         month: 'long',
+    //         day: 'numeric'
+    //     })
+    // };
+    
     const formattedData = (date) => {
-        return new Date(date).toLocaleDateString('en-US', {
-            month: 'long',
-            day: 'numeric'
-        })
+        return moment.utc(date).format('MMMM D'); // Format as desired
     };
+    
 
     useEffect(() => {
         fetchPrograms().then(r => null);
