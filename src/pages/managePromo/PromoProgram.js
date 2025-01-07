@@ -419,18 +419,16 @@ const ManageProgram = () => {
         });
     }, [displayProgramList, timeWATFilter, dayFilter]);
 
-    const handleSelectAllChange = () => {
-        if (selectAll) {
-            // Unselect all items
-            setMultiIDs([]);
-            toast.error("All items have been removed from the action list.");
-        } else {
+    const handleSelectAllChange = (e) => {
+        if (e.target.checked) {
             // Select all items
             const allIDs = filteredPrograms.map(program => program.id);
             setMultiIDs(allIDs);
             toast.warn("All items have been added to the action list.");
+        }else{
+            setMultiIDs([])
+            toast.error("All items have been removed from the action list.");
         }
-        setSelectAll(!selectAll);  // Toggle the "All" checkbox state
     };
 
 
@@ -577,8 +575,7 @@ const ManageProgram = () => {
                                                             <input
                                                                 style={{ marginRight: 5 }}
                                                                 type={'checkbox'}
-                                                                checked={selectAll}
-                                                                onClick={handleSelectAllChange}
+                                                                onChange={e=>handleSelectAllChange(e)}
                                                             />
                                                             All
                                                         </div>
@@ -604,7 +601,7 @@ const ManageProgram = () => {
                                                         <td>
                                                             <div style={{ width: 50 }} className={'align-middle'}>
                                                                 <input style={{ marginRight: 5 }} type={'checkbox'}
-                                                                    onChange={(d) => {
+                                                                    onClick={(d) => {
                                                                         //multiple selection push to array
                                                                         if (multiIDs.includes(program.id)) {
                                                                             //remove from array
@@ -614,6 +611,9 @@ const ManageProgram = () => {
                                                                             setMultiIDs([...multiIDs, program.id])
                                                                             toast.warn(program?.child?.firstName + " has been added to action list.")
                                                                         }
+                                                                    }} checked={multiIDs.includes(program.id) || false} onChange={()=>{
+                                                                        //multiple selection push to array
+                                                                       
                                                                     }} />
                                                                 {index + 1}
                                                             </div>
