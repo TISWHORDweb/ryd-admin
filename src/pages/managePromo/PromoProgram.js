@@ -119,11 +119,11 @@ const ManageProgram = () => {
     //         day: 'numeric'
     //     })
     // };
-    
+
     const formattedData = (date) => {
         return moment.utc(date).format('MMMM D'); // Format as desired
     };
-    
+
 
     useEffect(() => {
         fetchPrograms().then(r => null);
@@ -382,11 +382,14 @@ const ManageProgram = () => {
         // First, filter the programs
         const filtered = displayProgramList.filter(program => {
             // Time (WAT) Filter
-            const matchTimeWAT = !timeWATFilter ||
-                parentTimeZone(program.timeGroup.times, program?.timeGroupIndex, program?.child?.parent?.timezone)
+            // const matchTimeWAT = !timeWATFilter ||
+            //     parentTimeZone(program.timeGroup.times, program?.timeGroupIndex, program?.child?.parent?.timezone)
+            //         .toLowerCase().includes(timeWATFilter.toLowerCase());
+
+            const matchTime = !timeWATFilter ||
+                FormatDate(program.timeGroup.times, program.timeGroupIndex)
                     .toLowerCase().includes(timeWATFilter.toLowerCase());
 
-            // Day Filter
             const matchDay = !dayFilter || (
                 program?.day &&
                 program?.child?.parent?.timezone && program.day
@@ -394,13 +397,7 @@ const ManageProgram = () => {
                     .includes(dayFilter.toLowerCase())
             );
 
-
-            const matchTime = !timeWATFilter ||
-                FormatDate(program.timeGroup.times, program.timeGroupIndex)
-                    .toLowerCase().includes(timeWATFilter.toLowerCase());
-
-
-            return matchTimeWAT && matchDay && matchTime;
+            return matchTime & matchDay
         });
 
         // Then, sort the filtered programs by WAT time
@@ -408,7 +405,6 @@ const ManageProgram = () => {
             const timeA = parentTimeZone(a.timeGroup.times, a?.timeGroupIndex, a?.child?.parent?.timezone);
             const timeB = parentTimeZone(b.timeGroup.times, b?.timeGroupIndex, b?.child?.parent?.timezone);
 
-            // Convert time to a comparable format (assuming the time is in format like "9:00 AM")
             const parseTime = (timeStr) => {
                 const [time, period] = timeStr.split(' ');
                 let [hours, minutes] = time.split(':').map(Number);
@@ -424,13 +420,14 @@ const ManageProgram = () => {
         });
     }, [displayProgramList, timeWATFilter, dayFilter]);
 
+
     const handleSelectAllChange = (e) => {
         if (e.target.checked) {
             // Select all items
             const allIDs = filteredPrograms.map(program => program.id);
             setMultiIDs(allIDs);
             toast.warn("All items have been added to the action list.");
-        }else{
+        } else {
             setMultiIDs([])
             toast.error("All items have been removed from the action list.");
         }
@@ -580,7 +577,7 @@ const ManageProgram = () => {
                                                             <input
                                                                 style={{ marginRight: 5 }}
                                                                 type={'checkbox'}
-                                                                onChange={e=>handleSelectAllChange(e)}
+                                                                onChange={e => handleSelectAllChange(e)}
                                                             />
                                                             All
                                                         </div>
@@ -616,9 +613,9 @@ const ManageProgram = () => {
                                                                             setMultiIDs([...multiIDs, program.id])
                                                                             toast.warn(program?.child?.firstName + " has been added to action list.")
                                                                         }
-                                                                    }} checked={multiIDs.includes(program.id) || false} onChange={()=>{
+                                                                    }} checked={multiIDs.includes(program.id) || false} onChange={() => {
                                                                         //multiple selection push to array
-                                                                       
+
                                                                     }} />
                                                                 {index + 1}
                                                             </div>

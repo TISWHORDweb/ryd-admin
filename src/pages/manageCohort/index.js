@@ -137,6 +137,9 @@ const ManageProgram = () => {
         }
     }
 
+    function countPaidPrograms(programs) {
+        return programs.filter(program => program.isPaid).length;
+    }
     return (
         <React.Fragment>
             <ToastContainer />
@@ -198,7 +201,7 @@ const ManageProgram = () => {
                                                         <td>{i + 1}</td>
                                                         <td>{d.title}</td>
                                                         <td style={{ width: 200 }}>{d.description}</td>
-                                                        <td>{d?.programs.length}</td>
+                                                        <td>{countPaidPrograms(d?.programs)}</td>
                                                         <td><Moment date={d.startDate} format={"ddd, MMM Do YYYY"} /></td>
                                                         <td><Moment date={d.endDate} format={"ddd, MMM Do YYYY"} /></td>
                                                         <td><Moment date={d.startDate} fromNow={true} /></td>
