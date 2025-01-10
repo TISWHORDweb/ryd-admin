@@ -236,11 +236,11 @@ const ManageProgram = () => {
     };
 
     const handleProgramClickSubmit = async () => {
-        if (!firstSelectedDay) {
-            toast.error("Please, select a date")
-            return;
-        }
-        const newDay = firstSelectedDay + " & " + LastSelectedDay
+        // if (!firstSelectedDay) {
+        //     toast.error("Please, select a date")
+        //     return;
+        // }
+        const newDay = firstSelectedDay ? firstSelectedDay + " & " + LastSelectedDay : null
 
         if (!selectedProgram || !selectedProgram?.id) {
             //console.error("Invalid program data.");
