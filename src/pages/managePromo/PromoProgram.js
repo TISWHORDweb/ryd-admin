@@ -323,8 +323,28 @@ const ManageProgram = () => {
     const processCertificate = async () => {
         //performing group actions
         try {
+            if (multiIDs.length > 0) {
+                const response = await axios.post(`${baseUrl}/admin/promo/parent/certificate`, { id: multiIDs });
+                if (!response.data.status) {
+                    toast.error(response.data.message);
+                } else {
+                    toast.success("Certificate downloader email  sent successfully");
+                    await fetchPrograms()
+                }
+
+            } else {
+                toast.error("Please, select at least 1 child/program to perform action")
+            }
+        } catch (e) {
+            toast.error("Reload this page and try again")
+        }
+    }
+
+    const processSingleCertificate = async (id) => {
+        //performing group actions
+        try {
             if (id) {
-                const response = await axios.post(`${baseUrl}/admin/promo/parent/certificate`, { id });
+                const response = await axios.post(`${baseUrl}/admin/promo/parent/single/certificate`, { id });
                 if (!response.data.status) {
                     toast.error(response.data.message);
                 } else {
@@ -431,6 +451,10 @@ const ManageProgram = () => {
             setMultiIDs([])
             toast.error("All items have been removed from the action list.");
         }
+    };
+
+    const getStatusColor = (status) => {
+        return status === true ? 'green' : 'gray';
     };
 
 
@@ -543,7 +567,7 @@ const ManageProgram = () => {
                                         <div style={{ marginRight: 10 }}>
                                             <button
                                                 onClick={() => {
-                                                    if (confirm(`You're about to send a certificate downloader email to all parent that their child have completed this probono, will you like to proceed ?`)) {
+                                                    if (confirm(`You're about to send a certificate downloader email to ${multiIDs.length} parent that their child have completed this probono, will you like to proceed ?`)) {
                                                         processCertificate();
                                                     }
                                                 }}
@@ -593,6 +617,7 @@ const ManageProgram = () => {
                                                     <th>P.Time</th>
                                                     <th>Time(WAT)</th>
                                                     <th>Day</th>
+                                                    <th>Status</th>
                                                     <th></th>
                                                 </tr>
                                             </thead>
@@ -634,6 +659,9 @@ const ManageProgram = () => {
                                                         <td>{parentTimeZone(program.timeGroup.times, program?.timeGroupIndex, program?.child?.parent?.timezone)}</td>
                                                         <td>{FormatDate(program.timeGroup.times, program.timeGroupIndex)}</td>
                                                         <td>{program?.day ? program?.day : "No date assigned"}</td>
+                                                        <td> <span style={{ color: getStatusColor(program.isCompleted) }}>
+                                                            {program.isCompleted === true ? 'Completed' : 'Ongoing'}
+                                                        </span></td>
                                                         <td>
                                                             <span
                                                                 className="text-danger"
@@ -644,7 +672,7 @@ const ManageProgram = () => {
                                                                 <i className="mdi mdi-clock-outline font-size-12"></i>
                                                             </span>
                                                             <span
-                                                                className="text-danger"
+                                                                className="text-warning"
                                                                 style={{ cursor: 'pointer' }}
                                                                 to="#"
                                                                 id="edit"
@@ -663,7 +691,18 @@ const ManageProgram = () => {
                                                                 onClick={() => handleAssignClick(program)}>
                                                                 <i className="mdi mdi-clipboard-account font-size-12"></i>
                                                             </span>
-
+                                                            <span
+                                                                className="text-success"
+                                                                to="#"
+                                                                style={{ cursor: 'pointer' }}
+                                                                id="assign"
+                                                                onClick={() => {
+                                                                    if (confirm(`You're about to send a certificate downloader email to ${program?.child?.parent?.firstName + " " + program?.child?.parent?.lastName}, will you like to proceed ?`)) {
+                                                                        processSingleCertificate(program.id);
+                                                                    }
+                                                                }}>
+                                                                <i className="mdi mdi-mail font-size-12"></i>
+                                                            </span>
                                                         </td>
                                                     </tr>
                                                 ))}
