@@ -93,6 +93,21 @@ const Dashboard = () => {
     toast.success("Promo link copied successfully!");
   };
 
+  const handleDisablePromo = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      const response = await axios.put(`${baseUrl}/admin/promo/disable/${id}`);
+      if (!response.status) {
+        toast.error(response.message);
+        return;
+      }
+      toast.success("Promo link disabled successfully");
+    } catch (error) {
+      toast.error("Failed to disable promo");
+    }
+  };
+
   return (
     <React.Fragment>
        <ToastContainer/>
@@ -140,10 +155,15 @@ const Dashboard = () => {
                     </div>
                   </Col>
                   <Col>
-                    <button
+                    <span
+                    onClick={(e) => {
+                      if (confirm("Are you sure you want to DISABLE " + promo.title + " ?")) {
+                        handleDisablePromo(e)
+                      }
+                    }}
                       className="btn btn-danger">
                       Disable Link
-                    </button>
+                    </span>
                   </Col>
                 </Row>
               </form>
