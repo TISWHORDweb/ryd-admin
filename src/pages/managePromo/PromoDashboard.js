@@ -93,6 +93,22 @@ const Dashboard = () => {
     toast.success("Promo link copied successfully!");
   };
 
+
+  const handlPromoRegistration = async (status) => {
+    setLoading(true)
+    try {
+      const response = await axios.put(`${baseUrl}/admin/promo/registration/${status ? `enable` : `disable`}/${id}`);
+      if (!response.status) {
+        toast.error(response.message);
+        return;
+      }
+      toast.success(`Promo link ${status ? "ENABLED" : "DISABLED"} successfully`);
+      window.location.reload();
+    } catch (error) {
+      toast.error("Failed to disable promo");
+    }
+  };
+
   return (
     <React.Fragment>
        <ToastContainer/>
@@ -139,12 +155,18 @@ const Dashboard = () => {
                       </div>
                     </div>
                   </Col>
-                  <Col>
-                    <button
-                      className="btn btn-danger">
-                      Disable Link
-                    </button>
-                  </Col>
+                  {promo ?
+                    <Col>
+                    <span
+                    onClick={(e) => {
+                      if (confirm(`Are you sure you want to ${ promo.isActive ? `ENABLE` : `DISABLE`} ${promo.title }?`)) {
+                        handlPromoRegistration(promo.isActive)
+                      }
+                    }}
+                      className={`btn ${promo.isActive ? "btn-success" : "btn-danger"}`}>
+                       {promo.isActive ? "Enable Link":"Disable Link"}
+                    </span>
+                  </Col> : <></>}
                 </Row>
               </form>
             </Col>
