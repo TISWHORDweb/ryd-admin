@@ -12,7 +12,7 @@ import { ToastContainer, toast } from 'react-toastify';
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [programs, setPrograms] = useState([]);
-  
+  const [migration, setMigration] = useState(false);
   const [promo, setPromo] = useState();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterData, setFilterData] = useState([]);
@@ -77,6 +77,23 @@ const Dashboard = () => {
     });
   }
 
+  useEffect(()=>{
+    if(id){
+      checkMigration()
+    }
+  },[id])
+
+  const checkMigration = async()=>{
+    const response = await axios.get(`${baseUrl}/common/migration/check/${id}`);
+    console.log(response)
+    if(!response.data.status){
+      setMigration(false)
+      return;
+    }else{
+      setMigration(response.data.data.status)
+    }
+  }
+
   useEffect(() => {
     if (searchQuery) {
       setFilterData(filterTableData(programs, searchQuery));
@@ -109,9 +126,43 @@ const Dashboard = () => {
     }
   };
 
+  const handleMigration= async (status) => {
+    setLoading(true)
+    try {
+      if(status){
+        const data = {
+          id,
+          status: false
+        }
+        const response = await axios.put(`${baseUrl}/admin/promo/migration/disable`, data);
+        if (!response.status) {
+          toast.error(response.message);
+          return;
+        }
+        toast.success(`Migration DISABLED successfully`);
+      }else{
+        const data = {
+          promoId: id
+        }
+        const response = await axios.post(`${baseUrl}/admin/promo/migration`, data);
+        if (!response.status) {
+          toast.error(response.message);
+          return;
+        }
+        toast.success(`Migration ENABLED successfully`);
+      }
+      window.location.reload();
+    } catch (error) {
+      console.log(error)
+      toast.error(" MIGRATION request failed");
+    }
+  };
+
+  console.log(migration)
+
   return (
     <React.Fragment>
-       <ToastContainer/>
+      <ToastContainer />
       <div className="page-content">
         <Container fluid>
           <Row>
@@ -129,6 +180,17 @@ const Dashboard = () => {
               </Col>
             ))}
           </Row>
+            <Col>
+              <span
+                onClick={(e) => {
+                  if (confirm(`Are you sure you want to ${migration ? `DISABLE` : `ENABLE`} parent migration for ${promo.title}?`)) {
+                    handleMigration(migration)
+                  }
+                }}
+                className={`btn ${migration? "btn-danger" : "btn-success" }`}>
+                {migration ? "Disable Migaration" :  "Enable Migration" }
+              </span>
+            </Col>
           <div className="my-5">
             <p>Promo Link</p>
             <Col>
@@ -140,14 +202,14 @@ const Dashboard = () => {
                         type="text"
                         readOnly
                         ref={inputRef}
-                        value={`${promoUrl === ""? WEB_APP_USER_URL : promoUrl}/parent/register/${id ? parseInt(id) + 100 : ""
+                        value={`${promoUrl === "" ? WEB_APP_USER_URL : promoUrl}/parent/register/${id ? parseInt(id) + 100 : ""
                           }`}
                         className="text-[#000] placeholder:text-[#000] border-[0.5px] border-[#000] rounded-md mr-2 px-2 w-600px text-xs py-2"
                       />
                       <div
                         className="absolute right-3 top-[0.1px] cursor-pointer"
                         onClick={handleCopy}
-                        
+
                       >
                         <FeatherIcon
                           icon="copy"
@@ -157,16 +219,16 @@ const Dashboard = () => {
                   </Col>
                   {promo ?
                     <Col>
-                    <span
-                    onClick={(e) => {
-                      if (confirm(`Are you sure you want to ${ promo.isActive ? `ENABLE` : `DISABLE`} ${promo.title }?`)) {
-                        handlPromoRegistration(promo.isActive)
-                      }
-                    }}
-                      className={`btn ${promo.isActive ? "btn-success" : "btn-danger"}`}>
-                       {promo.isActive ? "Enable Link":"Disable Link"}
-                    </span>
-                  </Col> : <></>}
+                      <span
+                        onClick={(e) => {
+                          if (confirm(`Are you sure you want to ${promo.isActive ? `ENABLE` : `DISABLE`} ${promo.title}?`)) {
+                            handlPromoRegistration(promo.isActive)
+                          }
+                        }}
+                        className={`btn ${promo.isActive ? "btn-success" : "btn-danger"}`}>
+                        {promo.isActive ? "Enable Link" : "Disable Link"}
+                      </span>
+                    </Col> : <></>}
                 </Row>
               </form>
             </Col>
@@ -223,8 +285,8 @@ const Dashboard = () => {
                     {filterData.map((p, index) => (
                       <tr key={index}>
                         <td>{index + 1}</td>
-                        <td>{p?.child.parent.firstName+ " "+ p?.child.parent.lastName}</td>
-                        <td>{p?.child.firstName+ " "+ p?.child.lastName}</td>
+                        <td>{p?.child.parent.firstName + " " + p?.child.parent.lastName}</td>
+                        <td>{p?.child.firstName + " " + p?.child.lastName}</td>
                         <td>{p?.child.parent.country}</td>
                         <td>{p?.child.gender}</td>
                         {/* <td>{newFormatDate(p?.startDate)}</td>

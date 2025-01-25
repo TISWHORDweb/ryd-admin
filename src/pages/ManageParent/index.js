@@ -186,6 +186,16 @@ const ManageParent = () => {
         }
     }
 
+    const performExtenalFilter = (n) => {
+        if (n === 1) {
+            const __filter = [...usersRawF].filter((x => x.isExternal === 1))
+            setUsers(__filter)
+        }
+        if (n === 0) {
+            window.location.reload()
+        }
+    }
+
     const groupEmail = (t, e) => {
         SetGroupEmailData({...groupEmailData, [t]: e.target.value})
     }
@@ -260,6 +270,14 @@ const ManageParent = () => {
                                                 <option value={1}>With Active Cohort</option>
                                                 <option value={2}>With No Active Cohort</option>
                                                 <option value={3}>All Alumni</option>
+                                            </select>
+                                        </div>
+                                        <div style={{width: 200}}>
+                                            <select className={'form-control'} onChange={(e) => {
+                                                performExtenalFilter(Number(e.target.value))
+                                            }}>
+                                                <option value={0}>RYD Parent</option>
+                                                <option value={1}>Promo Parent</option>
                                             </select>
                                         </div>
                                         <div style={{width: 200, display: 'none'}}>
