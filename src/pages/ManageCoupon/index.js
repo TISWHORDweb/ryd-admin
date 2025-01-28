@@ -181,6 +181,20 @@ const ManageCoupon = () => {
    coupon.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const countUniqueProgramUsers = (coupon) => {
+    if (!coupon?.programs || !Array.isArray(coupon.programs)) {
+      return 0;
+    }
+  
+    const uniqueUserIds = new Set(
+      coupon.programs
+        .filter(program => program?.childId)
+        .map(program => program.childId)
+    );
+  
+    return uniqueUserIds.size;
+  };
+
   return (
     <React.Fragment>
       <DeleteModal
@@ -230,7 +244,7 @@ const ManageCoupon = () => {
                 </Col>
               </Row>
               <Row>
-                <Col xl="12">
+                <Col xl="12"  style={{overflow: 'scroll', width: '98%'}} > 
                   {loading ? (
                     <div className="text-center mt-5">
                       <div className="spinner-border text-primary" role="status">
@@ -242,7 +256,7 @@ const ManageCoupon = () => {
                       <h3>No data available</h3>
                     </div>
                   ) : (
-                    <table className="table align-middle">
+                    <table className="table align-middle  table-hover">
                       <thead>
                         <tr>
                           <th>#</th>
@@ -250,6 +264,7 @@ const ManageCoupon = () => {
                           <th>Access key</th>
                           <th>Discount</th>
                           <th>Usage</th>
+                          <th>Total Unique</th>
                           <th>Country</th>
                           <th>Level</th>
                           <th>Status</th>
@@ -268,6 +283,7 @@ const ManageCoupon = () => {
                                 : `${c.value}%`}
                             </td>
                             <td>{c?.programs?.length}</td>
+                            <td>{countUniqueProgramUsers(c)}</td>
                             <td>
                               {c.byCountry}
                             </td>
@@ -347,7 +363,7 @@ const ManageCoupon = () => {
                                   onClick={() => toggleRevoke(c.id)}
                                   id="revoke"
                                 >
-                                  <button className="btn btn-primary">Revoke</button>
+                                  <button className="btn btn-primary">Access_key</button>
                                 </Link>
                               </div>
                             </td>
