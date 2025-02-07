@@ -223,7 +223,7 @@ const ManageProgram = () => {
                 teacherId: selectedTeacher
             });
             // Fetch the updated programs after successful assignment
-            await fetchPrograms(); // Assuming fetchPrograms function updates the programs state
+            // await fetchPrograms(); // Assuming fetchPrograms function updates the programs state
 
             toast.success("Teacher assigned successfully.");
             setAssignModal(false);
@@ -255,7 +255,7 @@ const ManageProgram = () => {
         setLastSelectedDay("")
         setSelectedTimeGroupId(null)
         setModal(false)
-        await fetchPrograms()
+        // await fetchPrograms()
     }
 
     const handleProgramClick = (programData) => {
@@ -284,7 +284,7 @@ const ManageProgram = () => {
                 const data = status ? { ids: multiIDs, day: newDay } : { ids: multiIDs, ...multiTargetIDs }
                 await axios.post(`${baseUrl}/admin/promo/program/batch-update`, data);
                 toast.success("Program data altered changes");
-                await fetchPrograms()
+                // await fetchPrograms()
                 setMultiTargetIDs({})
                 setAssignActionModal(false)
                 setTimeModal(false)
@@ -309,7 +309,7 @@ const ManageProgram = () => {
                     toast.error(response.data.message);
                 } else {
                     toast.success("Class reminder sent successfully");
-                    await fetchPrograms()
+                    // await fetchPrograms()
                 }
 
             } else {
@@ -329,7 +329,27 @@ const ManageProgram = () => {
                     toast.error(response.data.message);
                 } else {
                     toast.success("Certificate downloader email  sent successfully");
-                    await fetchPrograms()
+                    // await fetchPrograms()
+                }
+
+            } else {
+                toast.error("Please, select at least 1 child/program to perform action")
+            }
+        } catch (e) {
+            toast.error("Reload this page and try again")
+        }
+    }
+
+    const processComplete = async (status) => {
+        //performing group actions
+        try {
+            if (multiIDs.length > 0) {
+                const response = await axios.post(`${baseUrl}/admin/promo/program/complete`, { ids: multiIDs, status });
+                if (!response.data.status) {
+                    toast.error(response.data.message);
+                } else {
+                    toast.success("Programs completed successfully");
+                    // await fetchPrograms()
                 }
 
             } else {
@@ -349,7 +369,27 @@ const ManageProgram = () => {
                     toast.error(response.data.message);
                 } else {
                     toast.success("Certificate downloader email  sent successfully");
-                    await fetchPrograms()
+                    // await fetchPrograms()
+                }
+
+            } else {
+                toast.error("Error, Try again later")
+            }
+        } catch (e) {
+            toast.error("Reload this page and try again")
+        }
+    }
+
+    const processSingleComplete = async (id,status) => {
+        //performing group actions
+        try {
+            if (id) {
+                const response = await axios.put(`${baseUrl}/admin/promo/program/complete/${id}`, { status });
+                if (!response.data.status) {
+                    toast.error(response.data.message);
+                } else {
+                    toast.success("Programs completed successfully");
+                    // await fetchPrograms()
                 }
 
             } else {
@@ -369,7 +409,7 @@ const ManageProgram = () => {
                     toast.error(response.data.message);
                 } else {
                     toast.success("Class reminder sent successfully");
-                    await fetchPrograms()
+                    // await fetchPrograms()
                 }
             }
         } catch (e) {
@@ -543,6 +583,26 @@ const ManageProgram = () => {
                                                 <option value={2}>With No Teacher</option>
                                             </select>
                                         </div>
+                                        <div>
+                                            <select className={'form-control'} onChange={(e) => {
+                                                //filter based on status
+                                                if (Number(e.target.value) !== 0) {
+                                                    const __activeProgramFilter = filteredProgramList2.filter(r => r.teacherId === Number(e.target.value))
+                                                    setDisplayProgramList(__activeProgramFilter)
+                                                }  else {
+                                                    window.location.reload()
+                                                }
+                                            }}>
+                                                <option value={0}>Filter by Teacher(s)</option>
+                                                {teachers?.length > 0 &&
+                                                    teachers?.map((teacher) => (
+                                                        <option key={teacher?.id}
+                                                            value={teacher?.id}>
+                                                            {teacher.firstName} {teacher.lastName}
+                                                        </option>
+                                                    ))}
+                                            </select>
+                                        </div>
                                         <div style={{ marginRight: 10 }}>
                                             <button onClick={handleActionAssignClick} title="Assign Teacher">
                                                 <i className="mdi mdi-clipboard-account font-size-20"></i>
@@ -575,7 +635,18 @@ const ManageProgram = () => {
                                             >
                                                 <i className="mdi mdi-mail font-size-20"></i>
                                             </button>
-
+                                        </div>
+                                        <div style={{ marginRight: 10 }}>
+                                            <button
+                                                onClick={() => {
+                                                    if (confirm(`You're about to complete ${multiIDs.length} children program, will you like to proceed ?`)) {
+                                                        processComplete(true);
+                                                    }
+                                                }}
+                                                title="Send certificate email to parents"
+                                            >
+                                                <i className="mdi mdi-check font-size-20"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 </Col>
@@ -668,6 +739,7 @@ const ManageProgram = () => {
                                                                 style={{ cursor: 'pointer' }}
                                                                 to="#"
                                                                 id="edit"
+                                                                title="Assign Date"
                                                                 onClick={() => handleProgramClick(program)}>
                                                                 <i className="mdi mdi-clock-outline font-size-12"></i>
                                                             </span>
@@ -676,6 +748,7 @@ const ManageProgram = () => {
                                                                 style={{ cursor: 'pointer' }}
                                                                 to="#"
                                                                 id="edit"
+                                                                title="Reminder"
                                                                 onClick={() => {
                                                                     if (confirm(`You're about to send a class reminder to this parent, will you like to proceed ?`)) {
                                                                         procesSinglesReminder(program.id)
@@ -688,6 +761,7 @@ const ManageProgram = () => {
                                                                 to="#"
                                                                 style={{ cursor: 'pointer' }}
                                                                 id="assign"
+                                                                title="Assign Teacher"
                                                                 onClick={() => handleAssignClick(program)}>
                                                                 <i className="mdi mdi-clipboard-account font-size-12"></i>
                                                             </span>
@@ -696,12 +770,26 @@ const ManageProgram = () => {
                                                                 to="#"
                                                                 style={{ cursor: 'pointer' }}
                                                                 id="assign"
+                                                                title="Send certificate"
                                                                 onClick={() => {
                                                                     if (confirm(`You're about to send a certificate downloader email to ${program?.child?.parent?.firstName + " " + program?.child?.parent?.lastName}, will you like to proceed ?`)) {
                                                                         processSingleCertificate(program.id);
                                                                     }
                                                                 }}>
                                                                 <i className="mdi mdi-mail font-size-12"></i>
+                                                            </span>
+                                                            <span
+                                                                className="text-blue"
+                                                                to="#"
+                                                                style={{ cursor: 'pointer' }}
+                                                                id="assign"
+                                                                title="Complete program"
+                                                                onClick={() => {
+                                                                    if (confirm(`Are you sure you want to change the status of this child promo program, will you like to proceed ?`)) {
+                                                                        processSingleComplete(program.id, program?.isCompleted ? false : true,);
+                                                                    }
+                                                                }}>
+                                                                <i className="mdi mdi-check font-size-12"></i>
                                                             </span>
                                                         </td>
                                                     </tr>

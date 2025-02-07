@@ -377,6 +377,26 @@ const ManageProgram = () => {
                                                 <option value={2}>With No Teacher</option>
                                             </select>
                                         </div>
+                                        <div>
+                                            <select className={'form-control'} onChange={(e) => {
+                                                //filter based on status
+                                                if (Number(e.target.value) !== 0) {
+                                                    const __activeProgramFilter = filteredProgramList2.filter(r => r.teacherId === Number(e.target.value))
+                                                    setDisplayProgramList(__activeProgramFilter)
+                                                }  else {
+                                                    window.location.reload()
+                                                }
+                                            }}>
+                                                <option value={0}>Filter by Teacher(s)</option>
+                                                {teachers?.length > 0 &&
+                                                    teachers?.map((teacher) => (
+                                                        <option key={teacher?.id}
+                                                            value={teacher?.id}>
+                                                            {teacher.firstName} {teacher.lastName}
+                                                        </option>
+                                                    ))}
+                                            </select>
+                                        </div>
                                         <div style={{marginRight: 20}}>
                                             <button onClick={handleActionAssignClick}>
                                                 <i className="mdi mdi-run-fast font-size-20"></i>

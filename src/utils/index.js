@@ -1,4 +1,38 @@
 import moment from 'moment-timezone';
+import { Cloudinary } from "cloudinary-core";
+new Cloudinary({ cloud_name: "dq5nc6lbr" });
+
+export const UploadImage = async (file) => {
+    try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", "Emmanuel");
+        formData.append("folder", "DevSync");
+
+        const response = await fetch(
+            `https://api.cloudinary.com/v1_1/dq5nc6lbr/image/upload`,
+            {
+                method: "POST",
+                body: formData,
+            }
+        );
+
+        const data = await response.json();
+console.log(data)
+        return data.secure_url; // This is the URL of the uploaded image
+    } catch (error) {
+        console.error("Error uploading image:", error);
+    }
+};
+
+export function slugify(str) {
+  str = str.replace(/^\s+|\s+$/g, ''); // trim leading/trailing white space
+  str = str.toLowerCase(); // convert string to lowercase
+  str = str.replace(/[^a-z0-9 -]/g, '') // remove any non-alphanumeric characters
+           .replace(/\s+/g, '-') // replace spaces with hyphens
+           .replace(/-+/g, '-'); // remove consecutive hyphens
+  return str;
+}
 
 export const totalCohortChild = (programs, id) => {
   const filteredPrograms = programs.filter((program) => program.partnerId === id);

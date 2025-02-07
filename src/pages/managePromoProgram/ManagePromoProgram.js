@@ -184,7 +184,7 @@ const ManagePartnerProgram = () => {
                 teacherId: selectedTeacher
             });
             // Fetch the updated programs after successful assignment
-            await fetchPrograms(); // Assuming fetchPrograms function updates the programs state
+            // await fetchPrograms(); // Assuming fetchPrograms function updates the programs state
 
             toast.success("Teacher assigned successfully.");
             setAssignModal(false);
@@ -209,7 +209,7 @@ const ManagePartnerProgram = () => {
         //check and push to server
         await axios.put(`${baseUrl}/admin/promo/program/edit/${selectedProgram.id}`, programMData);
         toast.success("Program data altered changes");
-        await fetchPrograms()
+        // await fetchPrograms()
     }
 
     const handleToggleIsPaid = async (programData) => {
@@ -234,7 +234,7 @@ const ManagePartnerProgram = () => {
                 );
                 setPrograms(updatedPrograms);
                 toast.success("Program marked as paid.");
-                await fetchPrograms();
+                // await fetchPrograms();
             }
         } catch (error) {
             console.error("Error:", error);
@@ -254,7 +254,7 @@ const ManagePartnerProgram = () => {
             if (multiIDs.length > 0 && Object.keys(multiTargetIDs).length > 0) {
                 await axios.post(`${baseUrl}/admin/promo/program/batch-update`, { ids: multiIDs, ...multiTargetIDs });
                 toast.success("Program data altered changes");
-                await fetchPrograms()
+                // await fetchPrograms()
             } else {
                 toast.error("Please, select at least 1 child/program to perform action")
             }
@@ -407,6 +407,26 @@ const ManagePartnerProgram = () => {
                                                 <option value={0}>All Filter(s)</option>
                                                 <option value={1}>With Teacher</option>
                                                 <option value={2}>With No Teacher</option>
+                                            </select>
+                                        </div>
+                                               <div>
+                                            <select className={'form-control'} onChange={(e) => {
+                                                //filter based on status
+                                                if (Number(e.target.value) !== 0) {
+                                                    const __activeProgramFilter = filteredProgramList2.filter(r => r.teacherId === Number(e.target.value))
+                                                    setDisplayProgramList(__activeProgramFilter)
+                                                }  else {
+                                                    window.location.reload()
+                                                }
+                                            }}>
+                                                <option value={0}>Filter by Teacher(s)</option>
+                                                {teachers?.length > 0 &&
+                                                    teachers?.map((teacher) => (
+                                                        <option key={teacher?.id}
+                                                            value={teacher?.id}>
+                                                            {teacher.firstName} {teacher.lastName}
+                                                        </option>
+                                                    ))}
                                             </select>
                                         </div>
                                         <div style={{ marginRight: 20 }}>

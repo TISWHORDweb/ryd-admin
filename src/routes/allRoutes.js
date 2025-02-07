@@ -37,6 +37,7 @@ import ManagePartnerProgram from "../pages/managePartnerPrograms/ManagePartnerPr
 import ManagePromo from "../pages/managePromo";
 import ManagePromoProgram from "../pages/managePromoProgram/ManagePromoProgram";
 import PromoTimeSlot from "../pages/managePromo/PromoTimeSlot";
+import ManageBlog from "../pages/ManageBlog";
 
 const userRoutes = [
   //dashboard
@@ -80,6 +81,8 @@ const userRoutes = [
 
   //profile
   { path: "/profile", component: <UserProfile /> },
+
+  { path: "/manage-blog", component: <ManageBlog /> },
 
   // this route should be at the end of all other routes
   { path: "/", exact: true, component: <Navigate to="/dashboard" /> },
