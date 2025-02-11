@@ -77,6 +77,7 @@ const ManageCoupon = () => {
             newCoupon
           );
           toast.success("Coupon updated successfully");
+          window.location.reload()
         } else {
 
           response = await axios.post(
@@ -84,6 +85,9 @@ const ManageCoupon = () => {
             newCoupon
           );
           toast.success("Coupon created successfully");
+        //   setTimeout(() => {
+        //     window.location.reload()
+        // }, 1000)
         }
 
         const responseData = response.data;
@@ -177,9 +181,12 @@ const ManageCoupon = () => {
     }
   };
   
-  const filteredCoupons = coupons.filter(coupon =>
-   coupon.code.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+
+  const filteredCoupons = coupons?.filter(coupon => {
+    console.log(coupon);
+    const code = coupon?.code || "";
+    return code.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   const countUniqueProgramUsers = (coupon) => {
     if (!coupon?.programs || !Array.isArray(coupon.programs)) {
