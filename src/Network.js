@@ -4,7 +4,7 @@
  Git: nusktec
  **/
 
-class Network {
+ class Network {
   //baseUrl
   netData = null;
   headerConfig = { "Content-Type": "application/json" }
