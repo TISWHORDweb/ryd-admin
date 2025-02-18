@@ -40,17 +40,14 @@ const ManageBlog = () => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-
-  // Categories for the dropdown
   const categories = [
     'All',
-    'Beginner',
-    'Intermediate',
-    'Advanced',
-    'Teaching Tips',
+    'News',
+    'Technology',
+    'Education',
     'Python',
     'Web Development',
-    'Game Development',
+    'Kids & Learning',
   ];
 
   // Status enum
