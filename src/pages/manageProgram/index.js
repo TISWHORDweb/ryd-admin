@@ -253,6 +253,46 @@ const ManageProgram = () => {
         }
     }
 
+    const processCertificate = async () => {
+        //performing group actions
+        try {
+            if (multiIDs.length > 0) {
+                const response = await axios.post(`${baseUrl}/admin/parent/certificate`, { id: multiIDs });
+                if (!response.data.status) {
+                    toast.error(response.data.message);
+                } else {
+                    toast.success("Certificate downloader email  sent successfully");
+                    // await fetchPrograms()
+                }
+
+            } else {
+                toast.error("Please, select at least 1 child/program to perform action")
+            }
+        } catch (e) {
+            toast.error("Reload this page and try again")
+        }
+    }
+
+    const processSingleCertificate = async (id) => {
+        //performing group actions
+        try {
+            if (id) {
+                const response = await axios.post(`${baseUrl}/admin/parent/single/certificate`, { id });
+                if (!response.data.status) {
+                    toast.error(response.data.message);
+                } else {
+                    toast.success("Certificate downloader email  sent successfully");
+                    // await fetchPrograms()
+                }
+
+            } else {
+                toast.error("Error, Try again later")
+            }
+        } catch (e) {
+            toast.error("Reload this page and try again")
+        }
+    }
+
     const getStatusColor = (status) => {
         return status === 1 ? 'green' : 'gray'; 
       };
@@ -397,6 +437,18 @@ const ManageProgram = () => {
                                                     ))}
                                             </select>
                                         </div>
+                                        <div >
+                                            <button
+                                                onClick={() => {
+                                                    if (confirm(`You're about to send a certificate downloader email to ${multiIDs.length} parent that their child have completed this probono, will you like to proceed ?`)) {
+                                                        processCertificate();
+                                                    }
+                                                }}
+                                                title="Send certificate email to parents"
+                                            >
+                                                <i className="mdi mdi-mail font-size-20"></i>
+                                            </button>
+                                        </div>
                                         <div style={{marginRight: 20}}>
                                             <button onClick={handleActionAssignClick}>
                                                 <i className="mdi mdi-run-fast font-size-20"></i>
@@ -525,7 +577,17 @@ const ManageProgram = () => {
                                                             onClick={() => handleProgramClick(program)}>
                                                             <i className="mdi mdi-clock-outline font-size-12"></i>
                                                         </Link>
-
+                                                        <Link
+                                                            className="text-success"
+                                                            to="#"
+                                                            id="certificate"
+                                                            onClick={() => {
+                                                                if (confirm(`You're about to send a certificate downloader email to ${program?.child?.parent?.firstName + " " + program?.child?.parent?.lastName}, will you like to proceed ?`)) {
+                                                                    processSingleCertificate(program.id);
+                                                                }
+                                                            }}>
+                                                            <i className="mdi mdi-mail font-size-12"></i>
+                                                        </Link> 
                                                         <Link
                                                             className="text-primary"
                                                             to="#"
