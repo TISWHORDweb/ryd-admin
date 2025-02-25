@@ -65,7 +65,7 @@ const CountrySelect = ({ onChange, onBlur, value, invalid }) => {
     onChange({
       target: {
         name: "byCountry",
-        value: uniqueLabels.join(", "),
+        value: uniqueLabels.join(","),
       },
     });
   };
